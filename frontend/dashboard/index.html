@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard monitoring lingkungan WSN." />
+    <title>Ringkasan — WSN Monitor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+  </head>
+  <body class="dashboard-body">
+    <div class="dashboard-shell">
+      <aside class="sidebar" id="sidebar">
+        <a class="brand sidebar-brand" href="/">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span>
+          <span><strong>WSN Monitor</strong><small>Control center</small></span>
+        </a>
+
+        <div class="sidebar-zone"><span>Zona aktif</span><strong><i></i> Zona 1</strong><small>3 node terdaftar</small></div>
+
+        <nav class="side-nav" aria-label="Navigasi dashboard">
+          <span class="nav-label">Monitoring</span>
+          <a class="active" href="/dashboard/"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z" /></svg><span>Ringkasan</span></a>
+          <a href="/dashboard/nodes/"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M5.6 18.4a9 9 0 0 1 0-12.8m12.8 0a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7m7 0a5 5 0 0 1 0 7" /></svg><span>Node Sensor</span><em>3</em></a>
+          <a href="/dashboard/fan/"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" /><path d="M12 10c-1-5 1-7 3-7 3 1 3 5-1 8m0 2c5-1 7 1 7 3-1 3-5 3-8-1m-2-1c1 5-1 7-3 7-3-1-3-5 1-8m1-2C5 12 3 10 3 8c1-3 5-3 8 1" /></svg><span>Fan & Kendali</span></a>
+          <a href="/dashboard/history/"><svg viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg><span>Riwayat</span></a>
+          <span class="nav-label">Analisis</span>
+          <a href="/dashboard/fuzzy/"><svg viewBox="0 0 24 24"><path d="M4 16c3-7 5-9 8-9s5 2 8 9M4 12h16M8 5v14m8-14v14" /></svg><span>Analisis Fuzzy</span></a>
+          <a href="/dashboard/simulation/"><svg viewBox="0 0 24 24"><path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8" /></svg><span>Simulasi What-If</span></a>
+          <span class="nav-label">Sistem</span>
+          <a href="/dashboard/settings/"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a2 2 0 0 0 .4 2.2l.1.1-2.6 2.6-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8V21h-3.6v-.2A2 2 0 0 0 9 19a2 2 0 0 0-2.2.4l-.1.1-2.6-2.6.1-.1A2 2 0 0 0 4.6 15a2 2 0 0 0-1.8-1.2H3v-3.6h.2A2 2 0 0 0 5 9a2 2 0 0 0-.4-2.2l-.1-.1 2.6-2.6.1.1A2 2 0 0 0 9 4.6a2 2 0 0 0 1.2-1.8V3h3.6v.2A2 2 0 0 0 15 5a2 2 0 0 0 2.2-.4l.1-.1 2.6 2.6-.1.1a2 2 0 0 0-.4 2.2 2 2 0 0 0 1.8 1.2h.2v3.6h-.2A2 2 0 0 0 19.4 15Z" /></svg><span>Konfigurasi</span></a>
+        </nav>
+
+        <div class="sidebar-footer"><a href="/"><span>←</span> Kembali ke beranda</a><small>Versi prototipe 0.1.0</small></div>
+      </aside>
+
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <main class="dashboard-main">
+        <header class="dashboard-topbar">
+          <div class="topbar-title"><button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button><div><h1>Monitoring Lingkungan</h1><p>Ringkasan kondisi Zona 1</p></div></div>
+          <div class="topbar-actions">
+            <label class="compact-select"><span>Zona</span><select aria-label="Pilih zona"><option>Zona 1</option></select></label>
+            <label class="compact-select"><span>Node</span><select id="node-select" aria-label="Pilih node"><option value="">Memuat...</option></select></label>
+            <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa data</span></div>
+            <span class="updated-at" id="updated-at">—</span>
+            <button class="icon-button" id="refresh-button" aria-label="Muat ulang data" title="Muat ulang data"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15" /></svg></button>
+          </div>
+        </header>
+
+        <div class="dashboard-content">
+          <section class="metric-grid" aria-label="Parameter utama">
+            <article class="metric-card"><div class="metric-head"><span>Suhu</span><span class="metric-icon metric-blue">°</span></div><div class="metric-value"><strong id="metric-temp">—</strong><span>°C</span></div><div class="metric-foot"><span id="metric-temp-node">—</span><svg id="spark-temp" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Kelembapan</span><span class="metric-icon metric-cyan">◌</span></div><div class="metric-value"><strong id="metric-rh">—</strong><span>% RH</span></div><div class="metric-foot"><span id="metric-rh-node">—</span><svg id="spark-rh" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Indeks Debu</span><span class="metric-icon metric-sky">✦</span></div><div class="metric-value"><strong id="metric-dust">—</strong><span>indeks</span></div><div class="metric-foot"><span id="metric-dust-node">—</span><svg id="spark-dust" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Node Aktif</span><span class="metric-icon metric-green">⌁</span></div><div class="metric-value"><strong id="metric-nodes">—</strong><span>node</span></div><div class="metric-foot"><span id="metric-valid">Menunggu data</span><div class="mini-status-dots" id="node-dots"></div></div></article>
+          </section>
+
+          <section class="overview-grid">
+            <article class="panel history-panel">
+              <div class="panel-header"><div><h2>Riwayat Parameter</h2><p id="history-caption">Perubahan data node terpilih</p></div><div class="panel-tools"><div class="segmented" id="metric-tabs"><button class="active" data-metric="temperature">Suhu</button><button data-metric="humidity">Kelembapan</button><button data-metric="dust_index">Debu</button></div><div class="segmented range-tabs" id="range-tabs"><button data-range="1h">1 Jam</button><button data-range="6h">6 Jam</button><button class="active" data-range="24h">24 Jam</button></div></div></div>
+              <div class="chart-wrap" id="history-chart"><div class="chart-loading">Memuat riwayat data...</div></div>
+              <div class="chart-legend"><span><i class="legend-blue"></i><b id="legend-label">Suhu</b></span><span class="chart-note">Data sensor aktual · tanpa nilai perkiraan</span></div>
+            </article>
+
+            <article class="panel control-panel">
+              <div class="panel-header"><div><h2>Kendali Fan · Zona 1</h2><p>Status perintah saat ini</p></div><span class="status-pill" id="fan-status">Memuat</span></div>
+              <div class="control-body">
+                <div class="gauge" id="control-gauge"><svg viewBox="0 0 140 140"><circle class="gauge-track" cx="70" cy="70" r="54" /><circle class="gauge-value" id="gauge-value" cx="70" cy="70" r="54" /></svg><div><span>Tingkat kendali</span><strong id="gauge-number">—</strong><small>skala 0–100</small></div></div>
+                <dl class="control-facts"><div><dt>Node penentu</dt><dd id="control-node">—</dd></div><div><dt>Perintah PWM</dt><dd id="control-pwm">—</dd></div><div><dt>Waktu perintah</dt><dd id="control-time">—</dd></div><div><dt>Konfigurasi</dt><dd id="control-config">—</dd></div></dl>
+              </div>
+              <p class="panel-footnote">Perintah mengikuti kebutuhan kendali tertinggi dari node dengan data yang dapat digunakan.</p>
+            </article>
+
+            <article class="panel nodes-panel">
+              <div class="panel-header"><div><h2>Hasil Per Node</h2><p>Ringkasan kondisi dan kendali otomatis</p></div><a class="text-button" href="/dashboard/nodes/">Lihat detail <span>→</span></a></div>
+              <div class="table-wrap"><table><thead><tr><th>Node</th><th>Suhu</th><th>Kelembapan</th><th>Indeks Debu</th><th>Kondisi</th><th>Tingkat Kendali</th><th>Status</th></tr></thead><tbody id="nodes-table"><tr><td colspan="7" class="table-loading">Memuat data node...</td></tr></tbody></table></div>
+            </article>
+
+            <article class="panel node-info-panel">
+              <div class="panel-header"><div><h2 id="info-title">Informasi Node</h2><p>Detail data yang sedang dipilih</p></div><span class="condition-pill" id="condition-pill">—</span></div>
+              <div class="info-grid"><div><span>Data terakhir</span><strong id="info-time">—</strong></div><div><span>Status data</span><strong id="info-validity">—</strong></div><div><span>Skor kondisi</span><strong id="info-score">—</strong></div><div><span>Tingkat kendali</span><strong id="info-control">—</strong></div><div><span>Tegangan debu</span><strong id="info-dust-voltage">—</strong></div><div><span>Zona</span><strong>Zona 1</strong></div></div>
+              <p class="panel-footnote">Parameter pendukung ditampilkan sebagai informasi dan tidak selalu digunakan dalam penilaian kondisi.</p>
+            </article>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><div><strong id="toast-title">Info</strong><p id="toast-message"></p></div></div>
+    <script type="module" src="/src/dashboard.js?v=20261029-3"></script>
+  </body>
+</html>

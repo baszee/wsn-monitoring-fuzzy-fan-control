@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sistem monitoring lingkungan multi-node berbasis WSN dan kendali fan otomatis." />
+    <title>WSN Monitor — Monitoring Lingkungan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+  </head>
+  <body class="landing-body">
+    <header class="landing-header">
+      <a class="brand" href="/" aria-label="WSN Monitor, kembali ke beranda">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg>
+        </span>
+        <span><strong>WSN Monitor</strong><small>Environmental intelligence</small></span>
+      </a>
+
+      <nav class="landing-nav" aria-label="Navigasi utama">
+        <a href="#tentang">Tentang</a><a href="#alur">Cara Kerja</a><a href="#tim">Tim</a>
+      </nav>
+
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow"><i></i> Prototipe penelitian Teknik Komputer</span>
+          <h1>Lingkungan lebih mudah dipahami, <span>keputusan lebih transparan.</span></h1>
+          <p>Platform monitoring multi-node yang menyatukan data suhu, kelembapan, dan debu menjadi informasi yang mudah dibaca serta perintah fan yang dapat ditelusuri.</p>
+          <div class="hero-actions">
+            <a class="button button-quiet" href="#alur">Pelajari sistem</a>
+          </div>
+          <div class="hero-facts" aria-label="Ringkasan sistem">
+            <div><strong>3</strong><span>Node sensor</span></div>
+            <div><strong>433 MHz</strong><span>Komunikasi LoRa</span></div>
+            <div><strong>12 V</strong><span>Fan DC open-loop</span></div>
+          </div>
+        </div>
+
+        <div class="network-stage" aria-label="Ilustrasi data dua node menuju gateway">
+          <div class="stage-glow"></div>
+          <div class="stage-label"><span class="live-dot"></span> Aliran data lingkungan</div>
+          <svg class="network-map" viewBox="0 0 680 430" role="img" aria-labelledby="network-title">
+            <title id="network-title">Dua node sensor mengirim data menuju gateway</title>
+            <defs>
+              <linearGradient id="route" x1="0" x2="1"><stop offset="0" stop-color="#7dd3fc" /><stop offset="1" stop-color="#2563eb" /></linearGradient>
+              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            </defs>
+            <path id="leftRoute" class="data-route" d="M118 254 C190 194 245 182 330 214" />
+            <path id="rightRoute" class="data-route" d="M562 254 C490 194 435 182 350 214" />
+            <g class="signal signal-left" opacity=".36"><path d="M82 217a51 51 0 0 1 72 0" /><path d="M96 231a31 31 0 0 1 44 0" /></g>
+            <g class="signal signal-right" opacity=".36"><path d="M526 217a51 51 0 0 1 72 0" /><path d="M540 231a31 31 0 0 1 44 0" /></g>
+            <g class="antenna antenna-left"><circle cx="118" cy="254" r="48" /><path d="M118 268v-42m-14 42h28M109 226a9 9 0 0 1 18 0" /><text x="118" y="330" text-anchor="middle">NODE 01</text></g>
+            <g class="antenna antenna-right"><circle cx="562" cy="254" r="48" /><path d="M562 268v-42m-14 42h28M553 226a9 9 0 0 1 18 0" /><text x="562" y="330" text-anchor="middle">NODE 02</text></g>
+            <g class="gateway"><circle cx="340" cy="214" r="72" /><rect x="306" y="185" width="68" height="58" rx="16" /><path d="M326 205h28m-28 12h20" /><circle cx="360" cy="225" r="5" /><text x="340" y="310" text-anchor="middle">GATEWAY</text></g>
+            <circle class="packet packet-one" r="7" filter="url(#softGlow)"><animateMotion dur="3.2s" repeatCount="indefinite" begin="-.4s"><mpath href="#leftRoute" /></animateMotion></circle>
+            <circle class="packet packet-two" r="7" filter="url(#softGlow)"><animateMotion dur="3.5s" repeatCount="indefinite" begin="-1.7s"><mpath href="#rightRoute" /></animateMotion></circle>
+            <g class="data-chip chip-temp"><rect width="92" height="34" rx="17" /><text x="46" y="22" text-anchor="middle">28.4 °C</text></g>
+            <g class="data-chip chip-rh"><rect width="92" height="34" rx="17" /><text x="46" y="22" text-anchor="middle">58.2% RH</text></g>
+            <g class="data-chip chip-dust"><rect width="108" height="34" rx="17" /><text x="54" y="22" text-anchor="middle">Indeks 0.46</text></g>
+          </svg>
+          <div class="stage-result"><span>Data diterima</span><strong>Siap dianalisis</strong></div>
+        </div>
+      </section>
+
+      <section class="trust-strip" aria-label="Komponen sistem"><span>BME280</span><i></i><span>GP2Y1010AU0F</span><i></i><span>LoRa SX1278</span><i></i><span>Fuzzy Mamdani</span><i></i><span>FastAPI</span></section>
+
+      <section class="section intro-section" id="tentang">
+        <div class="section-heading"><span class="eyebrow">Tentang sistem</span><h2>Dari angka sensor menjadi gambaran kondisi yang jelas.</h2></div>
+        <p class="section-lead">Sistem ini membantu pengguna memantau beberapa node sekaligus, memahami kondisi lingkungan, serta mengetahui alasan di balik perintah fan—tanpa perlu membaca rumus teknis di layar utama.</p>
+        <div class="feature-grid">
+          <article class="feature-card feature-wide"><div class="feature-icon">⌁</div><span class="feature-number">01</span><h3>Monitoring multi-node</h3><p>Nilai terbaru, status data, dan perbandingan antar-node tersaji dalam satu tampilan.</p><div class="mini-node-row"><span>Node 01</span><span>Node 02</span><span>Node 03</span></div></article>
+          <article class="feature-card"><div class="feature-icon">◎</div><span class="feature-number">02</span><h3>Keputusan transparan</h3><p>Pengguna dapat melihat node penentu, tingkat kendali, dan perintah fan secara ringkas.</p></article>
+          <article class="feature-card"><div class="feature-icon">↗</div><span class="feature-number">03</span><h3>Simulasi aman</h3><p>Skenario hipotetis dapat diuji terpisah tanpa mengubah perintah ke perangkat.</p></article>
+        </div>
+      </section>
+
+      <section class="section flow-section" id="alur">
+        <div class="section-heading centered"><span class="eyebrow">Cara kerja</span><h2>Satu alur yang mudah diikuti.</h2><p>Setiap tahap dibuat terlihat agar keputusan sistem tidak terasa seperti kotak hitam.</p></div>
+        <div class="flow-grid">
+          <article><span>1</span><div class="flow-icon">⌁</div><h3>Sensor membaca</h3><p>Suhu, kelembapan, dan debu dibaca pada setiap node.</p></article>
+          <article><span>2</span><div class="flow-icon">⌁⌁</div><h3>Data dikirim</h3><p>Data valid diteruskan melalui jaringan LoRa ke gateway.</p></article>
+          <article><span>3</span><div class="flow-icon">◌</div><h3>Kondisi dinilai</h3><p>Sistem mengubah data menjadi kondisi dan kebutuhan kendali.</p></article>
+          <article><span>4</span><div class="flow-icon">✣</div><h3>Fan diperintah</h3><p>Node dengan kebutuhan tertinggi menentukan perintah fan zona.</p></article>
+        </div>
+      </section>
+
+      <section class="section team-section" id="tim">
+        <div class="team-copy"><span class="eyebrow">Tim penelitian</span><h2>Dikembangkan sebagai prototipe tugas akhir.</h2><p>Penelitian Teknik Komputer Universitas Negeri Semarang yang berfokus pada monitoring lingkungan, keterlacakan keputusan, dan kendali fan.</p></div>
+        <div class="people-grid">
+          <article class="person-card"><div class="avatar">AL</div><div><span>Tim Peneliti</span><h3>Arief Muhammad Luthfi Yanuar</h3><p>Teknik Komputer · UNNES</p></div></article>
+          <article class="person-card"><div class="avatar">FN</div><div><span>Tim Peneliti</span><h3>Fatahillah Nabil Fawwaz</h3><p>Teknik Komputer · UNNES</p></div></article>
+          <article class="person-card"><div class="avatar">AA</div><div><span>Peneliti &amp; Pengembang</span><h3>Abbas Abdurrahman</h3><p>Teknik Komputer · UNNES</p></div></article>
+          <article class="person-card"><div class="avatar avatar-soft">VN</div><div><span>Dosen pembimbing</span><h3>Vera Noviana Sulistyawan, S.T., M.T.</h3><p>Universitas Negeri Semarang</p></div></article>
+        </div>
+      </section>
+
+      <section class="cta-section"><div><span class="eyebrow eyebrow-light">Dashboard monitoring</span><h2>Lihat kondisi lingkungan secara langsung.</h2><p>Ringkasan setiap node dan status kendali tersedia dalam satu dashboard yang bersih.</p></div><a class="button button-white" href="/dashboard/">Masuk ke Dashboard <span>→</span></a></section>
+    </main>
+
+    <footer class="landing-footer">
+      <a class="brand" href="/"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span><span><strong>WSN Monitor</strong><small>Environmental intelligence</small></span></a>
+      <p>Prototipe penelitian · Teknik Komputer UNNES</p><p>© 2026 Abbas Abdurrahman</p>
+    </footer>
+  </body>
+</html>

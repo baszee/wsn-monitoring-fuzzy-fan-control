@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulasi What-If — WSN Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/src/site.css?v=20261029-3"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
+</head>
+<body class="dashboard-body">
+<div class="p2-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <div class="p2-main">
+    <header class="p2-topbar">
+      <div class="p2-topbar-title">
+        <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+        <div>
+          <h1>Simulasi What-If</h1>
+          <p>Uji skenario fuzzy tanpa mempengaruhi fisik fan aktuator</p>
+        </div>
+      </div>
+      <div class="p2-topbar-right">
+        <div class="data-badge badge-ok"><i>●</i><span>Mode Simulasi</span></div>
+        <button class="icon-button" id="reset-btn" title="Reset ke default">
+          <svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- Info notice -->
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
+        <span style="font-size:1.25rem;">🧪</span>
+        <div style="font-size:0.82rem;color:#1e40af;">
+          <strong>Laboratorium Uji Mandiri:</strong> Geser nilai untuk mencoba skenario. Hasil simulasi tidak mengubah data tersimpan dan tidak mengirim perintah ke fan.
+        </div>
+      </div>
+
+      <div class="sim-layout">
+        <!-- Input Sliders -->
+        <div class="sim-inputs">
+          <h3>Parameter Masukan</h3>
+
+          <div class="sim-slider-group">
+            <label for="sim-temp">
+              <span>Suhu Udara</span>
+              <strong id="val-temp">28.0 °C</strong>
+            </label>
+            <input type="range" id="sim-temp" min="0" max="50" step="0.5" value="28.0"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0 °C (Rendah)</span>
+              <span>25 °C</span>
+              <span>50 °C (Tinggi)</span>
+            </div>
+          </div>
+
+          <div class="sim-slider-group">
+            <label for="sim-rh">
+              <span>Kelembapan Relatif (RH)</span>
+              <strong id="val-rh">55 %</strong>
+            </label>
+            <input type="range" id="sim-rh" min="0" max="100" step="1" value="55"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0% (Kering)</span>
+              <span>50%</span>
+              <span>100% (Lembap)</span>
+            </div>
+          </div>
+
+          <div class="sim-slider-group">
+            <label for="sim-dust">
+              <span>Indeks Debu (Normalisasi)</span>
+              <strong id="val-dust">0.250</strong>
+            </label>
+            <input type="range" id="sim-dust" min="0" max="1" step="0.01" value="0.25"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0.0 (Bersih)</span>
+              <span>0.5 (Sedang)</span>
+              <span>1.0 (Pekat)</span>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--text-soft);display:block;margin-bottom:0.5rem;">Skenario Cepat (Preset):</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+              <button class="sim-preset-btn" data-t="24" data-rh="50" data-d="0.10" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">🍃 Normal / Sejuk</button>
+              <button class="sim-preset-btn" data-t="34" data-rh="30" data-d="0.15" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">☀️ Panas Kering</button>
+              <button class="sim-preset-btn" data-t="28" data-rh="75" data-d="0.20" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">💧 Sangat Lembap</button>
+              <button class="sim-preset-btn" data-t="36" data-rh="40" data-d="0.85" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">🚨 Kritis (Debu Pekat)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Results -->
+        <div class="sim-results">
+          <h3>Hasil Simulasi</h3>
+
+          <div class="sim-result-grid">
+            <div class="sim-result-item">
+              <span>Skor Kondisi</span>
+              <strong id="res-score">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>Kelas Kondisi</span>
+              <strong id="res-class" style="font-size:1.1rem;">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>Tingkat Kendali</span>
+              <strong id="res-control">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>Perkiraan Perintah Fan</span>
+              <strong id="res-pwm" style="color:var(--blue);">—</strong>
+            </div>
+          </div>
+
+          <!-- Derajat Keanggotaan Terhitung -->
+          <div style="margin-bottom:1.25rem;">
+            <h4 style="font-size:0.82rem;font-weight:700;margin:0 0 0.5rem;color:var(--text);">Kecocokan Kondisi:</h4>
+            <div id="sim-mf-badges" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+              <span class="mf-badge">Memuat...</span>
+            </div>
+          </div>
+
+          <!-- Active Rules -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <h4 style="font-size:0.82rem;font-weight:700;margin:0;color:var(--text);">Aturan yang Memengaruhi Hasil:</h4>
+              <span id="active-rules-count" style="font-size:0.75rem;color:var(--text-soft);">0 aturan aktif</span>
+            </div>
+            <div class="sim-rules-list" id="sim-rules-list">
+              <div class="sim-empty">Menggeser slider akan menampilkan aturan aktif di sini.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span>✓</span>
+  <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
+</div>
+
+<script type="module" src="/src/simulation.js?v=20261029-3"></script>
+</body>
+</html>

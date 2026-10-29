@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analisis Fuzzy — WSN Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/src/site.css?v=20261029-3"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
+</head>
+<body class="dashboard-body">
+<div class="p2-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <div class="p2-main">
+    <header class="p2-topbar">
+      <div class="p2-topbar-title">
+        <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+        <div>
+          <h1>Analisis Fuzzy</h1>
+          <p>Alasan di balik penilaian kondisi dan kendali setiap node</p>
+        </div>
+      </div>
+      <div class="p2-topbar-right">
+        <div class="fuzzy-node-selector">
+          <label for="node-select">Node:</label>
+          <select id="node-select">
+            <option value="">Memuat...</option>
+          </select>
+        </div>
+        <div class="data-badge" id="connection-badge"><i>●</i><span>Memeriksa</span></div>
+        <span class="updated-at" id="updated-at">—</span>
+        <button class="icon-button" id="refresh-btn" title="Muat ulang">
+          <svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- Output Summary -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+        <div class="metric-card">
+          <div class="metric-head"><span>Skor Kondisi</span><span class="metric-icon metric-blue">◌</span></div>
+          <div class="metric-value"><strong id="out-score">—</strong><span>/100</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Tingkat Kendali</span><span class="metric-icon metric-sky">↗</span></div>
+          <div class="metric-value"><strong id="out-control">—</strong><span>/100</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Kelas Kondisi</span><span class="metric-icon metric-green">✓</span></div>
+          <div class="metric-value"><strong id="out-class" style="font-size:1rem;">—</strong></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Aturan Aktif</span><span class="metric-icon metric-cyan">#</span></div>
+          <div class="metric-value"><strong id="out-rules">—</strong><span>aturan</span></div>
+        </div>
+      </div>
+
+      <!-- MF Charts -->
+      <div class="fuzzy-grid">
+        <div class="mf-card">
+          <h3>Peta Kategori Suhu</h3>
+          <svg class="mf-chart" id="mf-temp" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-temp"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Kelembapan</h3>
+          <svg class="mf-chart" id="mf-rh" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-rh"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Indeks Debu</h3>
+          <svg class="mf-chart" id="mf-dust" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-dust"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Skor Kondisi</h3>
+          <svg class="mf-chart" id="mf-score" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-score"></div>
+        </div>
+      </div>
+
+      <!-- Active Rules Table -->
+      <div class="rules-card">
+        <h3>Aturan yang Aktif</h3>
+        <p style="font-size:.76rem;color:var(--text-soft);margin:0 0 .75rem;">Baris berikut menjelaskan kombinasi kondisi yang memengaruhi hasil node terpilih.</p>
+        <div style="overflow-x:auto;">
+          <table class="rules-table" id="rules-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Suhu</th>
+                <th>Kelembapan</th>
+                <th>Debu</th>
+                <th>Hasil Kondisi</th>
+                <th>Hasil Kendali</th>
+                <th>Kekuatan</th>
+                <th>Visual</th>
+              </tr>
+            </thead>
+            <tbody id="rules-tbody">
+              <tr><td colspan="8" class="table-loading">Pilih node untuk melihat aturan</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span>✓</span>
+  <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
+</div>
+
+<script type="module" src="/src/fuzzy-analysis.js?v=20261029-3"></script>
+</body>
+</html>

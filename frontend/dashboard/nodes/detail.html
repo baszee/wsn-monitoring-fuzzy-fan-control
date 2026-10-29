@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Node — WSN Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+  <link rel="stylesheet" href="/src/pages.css?v=20261029-3" />
+</head>
+
+<body class="dashboard-body">
+  <div class="p2-shell">
+    <aside class="sidebar" id="sidebar-root"></aside>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="p2-main">
+      <header class="p2-topbar">
+        <div class="p2-topbar-title">
+          <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+          <div>
+            <h1 id="page-title">Detail Node</h1>
+            <p id="page-sub">Memuat...</p>
+          </div>
+        </div>
+        <div class="p2-topbar-right">
+          <a href="/dashboard/nodes/" style="font-size:.82rem;color:var(--blue);">← Semua Node</a>
+          <div class="data-badge" id="connection-badge"><i>●</i><span>Memeriksa</span></div>
+          <span class="updated-at" id="updated-at">—</span>
+        </div>
+      </header>
+
+      <div class="page-body">
+        <!-- Readings -->
+        <div>
+          <h2 style="font-size:.9rem;font-weight:700;margin:0 0 .75rem;">Pembacaan Terkini</h2>
+          <div class="detail-readings">
+            <div class="reading-card">
+              <div class="reading-label">Suhu</div>
+              <div class="reading-value" id="rd-temp">—</div>
+              <div class="reading-unit">°C</div>
+            </div>
+            <div class="reading-card">
+              <div class="reading-label">Kelembapan Relatif</div>
+              <div class="reading-value" id="rd-rh">—</div>
+              <div class="reading-unit">% RH</div>
+            </div>
+            <div class="reading-card">
+              <div class="reading-label">Tegangan Debu</div>
+              <div class="reading-value" id="rd-voltage">—</div>
+              <div class="reading-unit">V</div>
+            </div>
+            <div class="reading-card">
+              <div class="reading-label">Indeks Debu</div>
+              <div class="reading-value" id="rd-dust">—</div>
+              <div class="reading-unit">ternormalisasi</div>
+            </div>
+            <div class="reading-card">
+              <div class="reading-label">Skor Kondisi</div>
+              <div class="reading-value" id="rd-score">—</div>
+              <div class="reading-unit">0–100</div>
+            </div>
+            <div class="reading-card">
+              <div class="reading-label">Tingkat Kendali</div>
+              <div class="reading-value" id="rd-control">—</div>
+              <div class="reading-unit">0–100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Condition & Fuzzy Summary -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="panel-full">
+            <h3>Kondisi & Kelas</h3>
+            <div class="settings-list">
+              <div class="settings-row"><span>Kelas Kondisi</span><strong id="info-class">—</strong></div>
+              <div class="settings-row"><span>Skor Kondisi</span><strong id="info-score2">—</strong></div>
+              <div class="settings-row"><span>Tingkat Kendali</span><strong id="info-ctrl">—</strong></div>
+              <div class="settings-row"><span>Status Data</span><strong id="info-valid">—</strong></div>
+              <div class="settings-row"><span>Waktu Data</span><strong id="info-time">—</strong></div>
+              <div class="settings-row"><span>Zona</span><strong>Zona 1</strong></div>
+            </div>
+          </div>
+          <div class="panel-full">
+            <h3>Ringkasan Pembacaan Fuzzy</h3>
+            <div id="mf-list" style="display:flex;flex-direction:column;gap:.4rem;">
+              <p style="color:var(--text-soft);font-size:.8rem;">Memuat...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- History chart -->
+        <div class="history-chart-wrap">
+          <h3>Riwayat 24 Jam</h3>
+          <div style="display:flex;gap:.5rem;margin-bottom:1rem;">
+            <div class="segmented" id="hist-metric-tabs">
+              <button class="active" data-m="temperature">Suhu</button>
+              <button data-m="humidity">Kelembapan</button>
+              <button data-m="dust_index">Indeks Debu</button>
+            </div>
+            <div class="segmented" id="hist-range-tabs">
+              <button data-r="1h">1 Jam</button>
+              <button data-r="6h">6 Jam</button>
+              <button class="active" data-r="24h">24 Jam</button>
+            </div>
+          </div>
+          <div class="history-svg-wrap" id="detail-chart-wrap">
+            <div class="chart-loading">Memuat riwayat...</div>
+          </div>
+        </div>
+
+        <!-- Active Fuzzy Rules -->
+        <div class="panel-full">
+          <h3>Aturan Fuzzy Aktif dari Siklus Terakhir</h3>
+          <div id="rules-container">
+            <p style="color:var(--text-soft);font-size:.8rem;">Memuat aturan...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span>✓</span>
+    <div><strong id="toast-title">Info</strong>
+      <p id="toast-message"></p>
+    </div>
+  </div>
+
+  <script type="module" src="/src/node-detail.js?v=20261029-3"></script>
+</body>
+
+</html>
