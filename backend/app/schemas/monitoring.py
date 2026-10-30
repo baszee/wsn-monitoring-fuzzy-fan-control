@@ -22,6 +22,9 @@ class NodeMeasurementResponse(BaseModel):
     source_timestamp: Optional[datetime] = None
     status_valid: bool = False
     is_determining_node: bool = False           # Apakah node ini adalah i* penentu u_zona
+    data_age_seconds: Optional[float] = None
+    is_fresh: bool = False
+    data_status: str = "Tidak ada data"   # Valid | Data lama | Tidak valid | Tidak ada data
 
 
 class ZoneControlResponse(BaseModel):
@@ -30,6 +33,13 @@ class ZoneControlResponse(BaseModel):
     zone_control_level: Optional[float] = None  # u_zona
     determining_node_id: Optional[str] = None   # i*
     pwm_command_percent: float = 0.0            # Duty cycle PWM (0 - 100%)
+    candidate_pwm_percent: Optional[float] = None
+    previous_pwm_percent: Optional[float] = None
+    auto_pwm_percent: Optional[float] = None
+    hysteresis_held: bool = False
+    freshness_seconds: int = 10
+    last_evaluated_at: Optional[datetime] = None
+    worker_alive: bool = False
     control_status: str                         # Aktif / Mati / Kendali tidak tersedia
     fan_command_status: str                     # Aktif / Mati / Kendali tidak tersedia
     control_mode: str = "auto"                  # auto / manual

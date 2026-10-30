@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, BigInteger, Integer, String, Float, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -21,6 +21,12 @@ class ZoneControl(Base):
     zone_control_level = Column(Float, nullable=True)             # u_zona = max(u_i)
     pwm_command_percent = Column(Float, nullable=False)           # Duty cycle PWM (0 - 100%)
     
+    # Jejak keputusan otomatis (dipakai halaman Fan dan Riwayat)
+    candidate_pwm_percent = Column(Float, nullable=True)   # sebelum histeresis
+    previous_pwm_percent = Column(Float, nullable=True)    # PWM siklus sebelumnya
+    auto_pwm_percent = Column(Float, nullable=True)        # hasil otomatis setelah histeresis
+    hysteresis_held = Column(Boolean, nullable=False, default=False, server_default="0")
+
     control_status = Column(String(50), nullable=False)           # 'Aktif', 'Mati', 'Kendali tidak tersedia'
     fan_command_status = Column(String(50), nullable=False)       # 'Aktif', 'Mati', 'Kendali tidak tersedia'
     control_mode = Column(String(20), nullable=False, default="auto")  # 'auto' / 'manual'

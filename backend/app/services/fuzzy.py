@@ -17,10 +17,7 @@ Fitur:
 from typing import Dict, List, Any, Optional, Tuple, Union
 import numpy as np
 
-try:
-    from app.settings import CENTROID_STEP
-except ImportError:
-    CENTROID_STEP = 0.01
+from app.settings import CENTROID_STEP
 
 
 def normalize_dust(raw_val: float, c_0: float = 0.05, c_h: float = 3.50) -> float:

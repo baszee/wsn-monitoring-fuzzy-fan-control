@@ -40,9 +40,9 @@ async def lifespan(app: FastAPI):
     global worker_task, stop_event
     stop_event.clear()
     
-    # Jalankan background worker periodik (tiap 5 detik)
+    # Jalankan background worker periodik (tiap WORKER_INTERVAL_SECONDS detik)
     worker_task = asyncio.create_task(
-        background_worker_loop(interval_seconds=5, stop_event=stop_event)
+        background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)
     )
 
     yield

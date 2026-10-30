@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app import settings as ops
 from app.core.database import get_db
 from app.models import (
     ZoneNode,
@@ -35,9 +36,15 @@ from app.services.fuzzy import (
     DEFAULT_MEMBERSHIP_PARAMS,
     DEFAULT_RULE_BASE
 )
-from app.services.worker import global_fan_controller
+from app.services.freshness import age_seconds, is_fresh
+from app.services.worker import global_fan_controller, worker_status
 
 router = APIRouter()
+
+
+def _worker_alive() -> bool:
+    last = worker_status["last_cycle_at"]
+    return last is not None and age_seconds(last) <= 3 * ops.WORKER_INTERVAL_SECONDS
 
 
 @router.get(
@@ -50,7 +57,11 @@ def get_latest_nodes(db: Session = Depends(get_db)):
     active_nodes = db.query(ZoneNode).filter(ZoneNode.is_active == True).all()
 
     # Dapatkan node penentu terakhir dari tabel zone_controls
-    latest_control = db.query(ZoneControl).order_by(ZoneControl.created_at.desc()).first()
+    latest_control = (
+        db.query(ZoneControl)
+        .order_by(ZoneControl.created_at.desc(), ZoneControl.zone_control_id.desc())
+        .first()
+    )
     determining_node_id = latest_control.control_node_id if latest_control else None
 
     results = []
@@ -62,6 +73,20 @@ def get_latest_nodes(db: Session = Depends(get_db)):
             .order_by(MockReceiverValidData.timestamp.desc())
             .first()
         )
+
+        if not sensor_data:
+            data_status, age, fresh = "Tidak ada data", None, False
+        else:
+            age = age_seconds(sensor_data.timestamp)
+            fresh = is_fresh(sensor_data.timestamp)
+            if not sensor_data.status_valid:
+                data_status = "Tidak valid"
+            elif not fresh:
+                data_status = "Data lama"
+            else:
+                data_status = "Valid"
+
+        is_determining = bool(determining_node_id) and determining_node_id == node.node_id and fresh
 
         # Pasangkan hasil fuzzy dengan rekaman sensor yang sama. Jangan mencampur
         # pembacaan terbaru dengan hasil dari siklus yang berbeda.
@@ -77,8 +102,6 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 .first()
             )
 
-        is_determining = (determining_node_id == node.node_id) if determining_node_id else False
-
         item = NodeMeasurementResponse(
             node_id=node.node_id,
             zone_id=node.zone_id,
@@ -93,6 +116,9 @@ def get_latest_nodes(db: Session = Depends(get_db)):
             source_timestamp=sensor_data.timestamp if sensor_data else None,
             status_valid=sensor_data.status_valid if sensor_data else False,
             is_determining_node=is_determining,
+            data_age_seconds=age,
+            is_fresh=fresh,
+            data_status=data_status,
         )
         results.append(item)
 
@@ -152,7 +178,11 @@ def get_node_history(
 )
 def get_latest_control(db: Session = Depends(get_db)):
     """Mengambil rekaman kendali zona terakhir (u_zona, i*, duty cycle PWM, status fan)."""
-    latest_ctrl = db.query(ZoneControl).order_by(ZoneControl.created_at.desc()).first()
+    latest_ctrl = (
+        db.query(ZoneControl)
+        .order_by(ZoneControl.created_at.desc(), ZoneControl.zone_control_id.desc())
+        .first()
+    )
 
     if latest_ctrl:
         return ZoneControlResponse(
@@ -160,6 +190,13 @@ def get_latest_control(db: Session = Depends(get_db)):
             zone_control_level=latest_ctrl.zone_control_level,
             determining_node_id=latest_ctrl.control_node_id,
             pwm_command_percent=latest_ctrl.pwm_command_percent,
+            candidate_pwm_percent=latest_ctrl.candidate_pwm_percent,
+            previous_pwm_percent=latest_ctrl.previous_pwm_percent,
+            auto_pwm_percent=latest_ctrl.auto_pwm_percent,
+            hysteresis_held=latest_ctrl.hysteresis_held,
+            freshness_seconds=ops.FRESHNESS_SECONDS,
+            last_evaluated_at=worker_status["last_cycle_at"],
+            worker_alive=_worker_alive(),
             control_status=latest_ctrl.control_status,
             fan_command_status=latest_ctrl.fan_command_status,
             control_mode=latest_ctrl.control_mode,
@@ -174,6 +211,13 @@ def get_latest_control(db: Session = Depends(get_db)):
         zone_control_level=None,
         determining_node_id=None,
         pwm_command_percent=global_fan_controller.d_prev,
+        candidate_pwm_percent=0.0,
+        previous_pwm_percent=global_fan_controller.d_prev,
+        auto_pwm_percent=0.0,
+        hysteresis_held=False,
+        freshness_seconds=ops.FRESHNESS_SECONDS,
+        last_evaluated_at=worker_status["last_cycle_at"],
+        worker_alive=_worker_alive(),
         control_status="Kendali tidak tersedia",
         fan_command_status="Mati" if global_fan_controller.d_prev == 0.0 else "Aktif",
         control_mode="auto",
@@ -181,6 +225,58 @@ def get_latest_control(db: Session = Depends(get_db)):
         processing_cycle_id=None,
         created_at=None,
     )
+
+
+@router.get("/control/history", summary="Riwayat keputusan kendali zona dan u_i tiap node")
+def get_control_history(
+    range: str = Query(default="1h", pattern="^(1h|6h|24h)$"),
+    zone_id: str = "ZONA-1",
+    db: Session = Depends(get_db),
+):
+    hours = {"1h": 1, "6h": 6, "24h": 24}[range]
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+    zone_rows = (
+        db.query(ZoneControl)
+        .filter(ZoneControl.zone_id == zone_id, ZoneControl.created_at >= cutoff)
+        .order_by(ZoneControl.created_at.asc(), ZoneControl.zone_control_id.asc())
+        .all()
+    )
+    node_rows = (
+        db.query(FuzzyResult, ZoneNode.node_id)
+        .join(ZoneNode, ZoneNode.zone_node_id == FuzzyResult.zone_node_id)
+        .filter(ZoneNode.zone_id == zone_id, FuzzyResult.source_timestamp >= cutoff)
+        .order_by(FuzzyResult.source_timestamp.asc())
+        .all()
+    )
+
+    nodes: dict = {}
+    for fr, node_id in node_rows:
+        nodes.setdefault(node_id, []).append({
+            "timestamp": fr.source_timestamp,
+            "temperature": fr.temperature,
+            "humidity": fr.humidity,
+            "dust_index": fr.dust_index,
+            "condition_score": fr.condition_score,
+            "condition_class": fr.condition_class,
+            "control_level": fr.control_level,
+        })
+
+    return {
+        "range": range,
+        "zone": [
+            {
+                "timestamp": r.created_at,
+                "zone_control_level": r.zone_control_level,
+                "determining_node_id": r.control_node_id,
+                "pwm_command_percent": r.pwm_command_percent,
+                "fan_command_status": r.fan_command_status,
+                "control_mode": r.control_mode,
+            }
+            for r in zone_rows
+        ],
+        "nodes": nodes,
+    }
 
 
 @router.get(

@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 import numpy as np
 from sqlalchemy.orm import Session
 
+from app import settings as ops
+from app.services.freshness import is_fresh
 from app.core.database import SessionLocal
 from app.models import (
     ControlConfig,
@@ -43,20 +45,21 @@ global_fan_controller = FanPWMController(
     delta_d_update=5.0
 )
 
+# Detak worker. Tabel zone_controls hanya ditulis saat ada perubahan,
+# jadi waktu evaluasi terakhir disimpan di sini.
+worker_status: Dict[str, Any] = {"last_cycle_at": None}
+
 
 def run_processing_cycle(
     db: Session,
     controller: Optional[FanPWMController] = None,
     zone_id: str = "ZONA-1"
 ) -> Dict[str, Any]:
-    """
-    Mengeksekusi satu siklus pemrosesan lengkap:
-    Ambil Data -> Validasi -> Fuzzy -> Zona -> PWM -> Simpan DB.
-    """
+    """Ambil Data -> Validasi -> Kesegaran -> Fuzzy -> Zona -> PWM -> Simpan (hanya jika baru/berubah)."""
     fan_ctrl = controller or global_fan_controller
+    now = datetime.now(timezone.utc)
     cycle_id = f"CYC-{int(time.time())}-{uuid.uuid4().hex[:6]}"
 
-    # 1. Ambil konfigurasi aktif dari basis data
     config = (
         db.query(ControlConfig)
         .filter(ControlConfig.is_active == True)
@@ -65,11 +68,8 @@ def run_processing_cycle(
     )
 
     if not config:
-        # Fallback versi default jika database belum di-seed
         config_version = "v1.0.0-fallback"
-        dust_low_ref = 0.05
-        dust_high_ref = 3.50
-        u_off = 15.0
+        dust_low_ref, dust_high_ref, u_off = 0.05, 3.50, 15.0
         fuzzy_engine = FuzzyMamdaniEngine()
     else:
         config_version = config.config_version
@@ -80,144 +80,177 @@ def run_processing_cycle(
             membership_params=config.membership_params,
             rule_base=config.rule_base
         )
-        # Sinkronisasi parameter controller dengan config
         fan_ctrl.u_off = config.u_off
         fan_ctrl.u_max = config.u_max
         fan_ctrl.d_min = config.d_min
         fan_ctrl.delta_d_update = config.delta_d_update
 
-    # 2. Ambil seluruh node aktif di zona ini
     active_nodes = (
         db.query(ZoneNode)
         .filter(ZoneNode.zone_id == zone_id, ZoneNode.is_active == True)
         .all()
     )
 
-    valid_node_candidates: List[Dict[str, Any]] = []
+    candidates: List[Dict[str, Any]] = []
+    new_results = 0
 
-    # 3. Proses inferensi fuzzy per node
     for z_node in active_nodes:
-        # Ambil data sensor terbaru dari tabel penerima M2
-        latest_sensor_data = (
+        rec = (
             db.query(MockReceiverValidData)
             .filter(MockReceiverValidData.node_id == z_node.node_id)
             .order_by(MockReceiverValidData.timestamp.desc())
             .first()
         )
-
-        if not latest_sensor_data:
+        if not rec:
             continue
 
-        # Validasi status validitas & kelengkapan 3 parameter sensor
         is_complete = (
-            latest_sensor_data.status_valid is True
-            and latest_sensor_data.temperature is not None
-            and latest_sensor_data.humidity is not None
-            and latest_sensor_data.dust_raw_voltage is not None
-            and not np.isnan(latest_sensor_data.temperature)
-            and not np.isnan(latest_sensor_data.humidity)
-            and not np.isnan(latest_sensor_data.dust_raw_voltage)
+            rec.status_valid is True
+            and rec.temperature is not None
+            and rec.humidity is not None
+            and rec.dust_raw_voltage is not None
+            and not np.isnan(rec.temperature)
+            and not np.isnan(rec.humidity)
+            and not np.isnan(rec.dust_raw_voltage)
         )
-
         if not is_complete:
-            # Data tidak lengkap atau tidak valid -> abaikan sesuai FR-03
             continue
 
-        # Jalankan inferensi Fuzzy Mamdani
-        d_idx = normalize_dust(
-            latest_sensor_data.dust_raw_voltage,
-            c_0=dust_low_ref,
-            c_h=dust_high_ref
-        )
+        # Kebijakan kesegaran: sama dengan yang ditampilkan dashboard
+        if not is_fresh(rec.timestamp, now):
+            continue
 
-        fuzzy_eval = fuzzy_engine.evaluate(
-            temperature=latest_sensor_data.temperature,
-            humidity=latest_sensor_data.humidity,
-            dust_index=d_idx
-        )
-
-        outputs = fuzzy_eval["outputs"]
-        s_i = outputs["condition_score"]
-        k_i = outputs["condition_class"]
-        u_i = outputs["control_level"]
-
-        # Simpan hasil fuzzy per node ke basis data jika konfigurasi resmi tersedia
         fuzzy_res_obj = None
         if config:
-            fuzzy_res_obj = FuzzyResult(
-                zone_node_id=z_node.zone_node_id,
-                config_version=config_version,
-                processing_cycle_id=cycle_id,
-                source_record_id=latest_sensor_data.id,
-                source_timestamp=latest_sensor_data.timestamp,
-                dust_index=d_idx,
-                condition_score=s_i,
-                condition_class=k_i,
-                control_level=u_i
+            fuzzy_res_obj = (
+                db.query(FuzzyResult)
+                .filter(
+                    FuzzyResult.zone_node_id == z_node.zone_node_id,
+                    FuzzyResult.source_record_id == rec.id,
+                    FuzzyResult.config_version == config_version,
+                )
+                .first()
             )
-            db.add(fuzzy_res_obj)
 
-        valid_node_candidates.append({
+        if fuzzy_res_obj is not None:
+            # Rekaman ini sudah pernah diproses: pakai hasil tersimpan.
+            s_i = fuzzy_res_obj.condition_score
+            k_i = fuzzy_res_obj.condition_class
+            u_i = fuzzy_res_obj.control_level
+        else:
+            d_idx = normalize_dust(rec.dust_raw_voltage, c_0=dust_low_ref, c_h=dust_high_ref)
+            outputs = fuzzy_engine.evaluate(
+                temperature=rec.temperature,
+                humidity=rec.humidity,
+                dust_index=d_idx,
+            )["outputs"]
+            s_i = outputs["condition_score"]
+            k_i = outputs["condition_class"]
+            u_i = outputs["control_level"]
+
+            if config:
+                fuzzy_res_obj = FuzzyResult(
+                    zone_node_id=z_node.zone_node_id,
+                    config_version=config_version,
+                    processing_cycle_id=cycle_id,
+                    source_record_id=rec.id,
+                    source_timestamp=rec.timestamp,
+                    temperature=rec.temperature,
+                    humidity=rec.humidity,
+                    dust_raw_voltage=rec.dust_raw_voltage,
+                    dust_index=d_idx,
+                    condition_score=s_i,
+                    condition_class=k_i,
+                    control_level=u_i,
+                )
+                db.add(fuzzy_res_obj)
+                new_results += 1
+
+        candidates.append({
             "node_id": z_node.node_id,
             "zone_node_id": z_node.zone_node_id,
             "control_level": u_i,
             "condition_score": s_i,
             "condition_class": k_i,
-            "source_timestamp": latest_sensor_data.timestamp,
-            "source_record_id": latest_sensor_data.id,
-            "fuzzy_result_obj": fuzzy_res_obj
+            "source_timestamp": rec.timestamp,
+            "source_record_id": rec.id,
+            "fuzzy_result_obj": fuzzy_res_obj,
         })
 
-    # Flush session untuk mendapatkan ID dari fuzzy_results yang baru di-insert
     if config:
-        db.flush()
+        db.flush()  # dapatkan fuzzy_result_id untuk baris baru
 
-    # 4. Agregasi Tingkat Kendali Zona (u_zona = max u_i)
-    zone_decision = aggregate_zone(
-        node_results=valid_node_candidates,
-        zone_id=zone_id,
-        u_off=u_off
-    )
-
-    # 5. Pemetaan PWM & Histeresis
+    zone_decision = aggregate_zone(node_results=candidates, zone_id=zone_id, u_off=u_off)
     u_zona = zone_decision["zone_control_level"]
-    has_valid_data = zone_decision["has_valid_data"]
     pwm_decision = fan_ctrl.compute_and_apply(
         u_zona=u_zona,
-        has_valid_data=has_valid_data
+        has_valid_data=zone_decision["has_valid_data"],
     )
 
-    # Dapatkan FK control_fuzzy_result_id jika ada node penentu
     determining_fuzzy_id = None
     if zone_decision.get("determining_result"):
         det_obj = zone_decision["determining_result"].get("fuzzy_result_obj")
         if det_obj:
             determining_fuzzy_id = det_obj.fuzzy_result_id
 
-    # 6. Simpan hasil keputusan kendali zona ke zone_controls
-    zone_ctrl_record = None
+    # Tulis keputusan zona hanya bila ada pengukuran baru atau keputusan berubah
+    wrote_control = False
     if config:
-        zone_ctrl_record = ZoneControl(
-            config_version=config_version,
-            processing_cycle_id=cycle_id,
-            zone_id=zone_id,
-            control_fuzzy_result_id=determining_fuzzy_id,
-            control_node_id=zone_decision["determining_node_id"],
-            zone_control_level=u_zona,
-            pwm_command_percent=pwm_decision["final_pwm"],
-            control_status=zone_decision["control_status"],
-            fan_command_status=pwm_decision["fan_command_status"],
-            control_mode="auto"
+        signature = (
+            zone_decision["determining_node_id"],
+            None if u_zona is None else round(u_zona, 2),
+            pwm_decision["final_pwm"],
+            zone_decision["control_status"],
+            pwm_decision["fan_command_status"],
+            "auto",
         )
-        db.add(zone_ctrl_record)
+        last = (
+            db.query(ZoneControl)
+            .filter(ZoneControl.zone_id == zone_id)
+            .order_by(ZoneControl.created_at.desc(), ZoneControl.zone_control_id.desc())
+            .first()
+        )
+        last_sig = None
+        if last:
+            last_sig = (
+                last.control_node_id,
+                None if last.zone_control_level is None else round(last.zone_control_level, 2),
+                last.pwm_command_percent,
+                last.control_status,
+                last.fan_command_status,
+                last.control_mode,
+            )
+
+        if new_results > 0 or signature != last_sig:
+            db.add(ZoneControl(
+                config_version=config_version,
+                processing_cycle_id=cycle_id,
+                zone_id=zone_id,
+                control_fuzzy_result_id=determining_fuzzy_id,
+                control_node_id=zone_decision["determining_node_id"],
+                zone_control_level=u_zona,
+                pwm_command_percent=pwm_decision["final_pwm"],
+                candidate_pwm_percent=pwm_decision["candidate_pwm"],
+                previous_pwm_percent=pwm_decision["previous_pwm"],
+                auto_pwm_percent=pwm_decision["final_pwm"],
+                hysteresis_held=pwm_decision["final_pwm"] != pwm_decision["candidate_pwm"],
+                control_status=zone_decision["control_status"],
+                fan_command_status=pwm_decision["fan_command_status"],
+                control_mode="auto",
+            ))
+            wrote_control = True
         db.commit()
+
+    worker_status["last_cycle_at"] = now
 
     return {
         "processing_cycle_id": cycle_id,
         "config_version": config_version,
-        "nodes_evaluated": len(valid_node_candidates),
+        "nodes_evaluated": len(candidates),
+        "new_results": new_results,
+        "wrote_control": wrote_control,
         "zone_decision": zone_decision,
-        "pwm_decision": pwm_decision
+        "pwm_decision": pwm_decision,
     }
 
 

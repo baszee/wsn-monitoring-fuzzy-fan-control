@@ -49,11 +49,15 @@ CREATE TABLE fuzzy_results (
     processing_cycle_id VARCHAR(100) NOT NULL,
     source_record_id BIGINT NOT NULL,
     source_timestamp TIMESTAMPTZ NOT NULL,
+    temperature DOUBLE PRECISION,
+    humidity DOUBLE PRECISION,
+    dust_raw_voltage DOUBLE PRECISION,
     dust_index DOUBLE PRECISION NOT NULL,
     condition_score DOUBLE PRECISION NOT NULL,
     condition_class VARCHAR(50) NOT NULL,
     control_level DOUBLE PRECISION NOT NULL,
-    processed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    processed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_fuzzy_node_record_cfg UNIQUE (zone_node_id, source_record_id, config_version)
 );
 
 -- Tabel: zone_controls
@@ -67,6 +71,10 @@ CREATE TABLE zone_controls (
     control_node_id VARCHAR(50),
     zone_control_level DOUBLE PRECISION,
     pwm_command_percent DOUBLE PRECISION NOT NULL,
+    candidate_pwm_percent DOUBLE PRECISION,
+    previous_pwm_percent DOUBLE PRECISION,
+    auto_pwm_percent DOUBLE PRECISION,
+    hysteresis_held BOOLEAN NOT NULL DEFAULT FALSE,
     control_status VARCHAR(50) NOT NULL,
     fan_command_status VARCHAR(50) NOT NULL,
     control_mode VARCHAR(20) NOT NULL DEFAULT 'auto',

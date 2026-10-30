@@ -34,6 +34,7 @@ from app.services.fuzzy import (
 )
 from app.services.worker import run_processing_cycle
 from app.services.pwm import FanPWMController, MockPWMDriver
+from app import settings as ops
 from app.settings import CENTROID_STEP
 from app.main import app
 
@@ -59,6 +60,7 @@ class TestAPIAndWorker:
 
     def setup_method(self):
         """Buat skema tabel dan data awal sebelum setiap metode uji."""
+        ops.FRESHNESS_SECONDS = 360
         Base.metadata.create_all(bind=test_engine)
         self.db = TestingSessionLocal()
 
@@ -92,7 +94,7 @@ class TestAPIAndWorker:
                 temperature=24.0,
                 humidity=50.0,
                 dust_raw_voltage=0.10,
-                timestamp=now - timedelta(seconds=10),
+                timestamp=now - timedelta(seconds=2),
                 status_valid=True
             ),
             # NODE-02: Panas & Kering (T=34, RH=28, V=0.35)
@@ -101,7 +103,7 @@ class TestAPIAndWorker:
                 temperature=34.0,
                 humidity=28.0,
                 dust_raw_voltage=0.35,
-                timestamp=now - timedelta(seconds=8),
+                timestamp=now - timedelta(seconds=1),
                 status_valid=True
             ),
             # NODE-03: Sangat Pekat Debu (T=27, RH=55, V=3.20) -> Harus menjadi node penentu i*
@@ -110,7 +112,7 @@ class TestAPIAndWorker:
                 temperature=27.0,
                 humidity=55.0,
                 dust_raw_voltage=3.20,
-                timestamp=now - timedelta(seconds=5),
+                timestamp=now,
                 status_valid=True
             ),
         ]

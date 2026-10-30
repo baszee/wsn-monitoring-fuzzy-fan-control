@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, BigInteger, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, BigInteger, String, Float, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -13,12 +13,22 @@ class FuzzyResult(Base):
     source_record_id = Column(BigInteger, nullable=False)
     source_timestamp = Column(DateTime(timezone=True), nullable=False)
     
+    # Snapshot masukan saat dihitung (nullable agar baris lama tetap valid)
+    temperature = Column(Float, nullable=True)
+    humidity = Column(Float, nullable=True)
+    dust_raw_voltage = Column(Float, nullable=True)
+
     dust_index = Column(Float, nullable=False)
     condition_score = Column(Float, nullable=False)      # s_i (0 - 100)
     condition_class = Column(String(50), nullable=False)  # 'Baik', 'Perlu Perhatian', 'Buruk'
     control_level = Column(Float, nullable=False)        # u_i (0 - 100)
     
     processed_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("zone_node_id", "source_record_id", "config_version",
+                         name="uq_fuzzy_node_record_cfg"),
+    )
 
     # Relasi
     zone_node = relationship("ZoneNode", back_populates="fuzzy_results")
