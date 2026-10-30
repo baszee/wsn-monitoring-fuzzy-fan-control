@@ -59,6 +59,7 @@ from app.services.fuzzy import (
     evaluate_fuzzy,
     FuzzyMamdaniEngine
 )
+from app.settings import CENTROID_TEST_TOLERANCE, CENTROID_STEP
 
 
 class TestDustNormalization:
@@ -201,8 +202,8 @@ class TestFuzzyInferenceScenarios:
 
         assert outputs["condition_class"] == "Buruk"
         assert outputs["condition_score"] >= 65.0
-        # u_i berada di sekitar centroid 'Tinggi' (~88.33)
-        assert outputs["control_level"] >= 80.0
+        # u_i berada di sekitar centroid 'Tinggi' (~88.33) dengan toleransi
+        assert abs(outputs["control_level"] - 88.33) <= CENTROID_TEST_TOLERANCE
 
     def test_theoretical_bounds(self):
         """
@@ -218,7 +219,7 @@ class TestFuzzyInferenceScenarios:
         # Maksimum mungkin untuk s_i dan u_i
         res_max = evaluate_fuzzy(temperature=40.0, humidity=20.0, dust_index=1.0)
         assert res_max["outputs"]["condition_score"] <= 85.0
-        assert res_max["outputs"]["control_level"] <= 89.0
+        assert abs(res_max["outputs"]["control_level"] - 88.33) <= CENTROID_TEST_TOLERANCE
 
     def test_transparency_and_curves(self):
         """Uji kelengkapan data transparansi untuk dashboard (FR-12 & FR-13)."""
@@ -243,10 +244,11 @@ class TestFuzzyInferenceScenarios:
         for rule in res["active_rules"]:
             assert rule["alpha"] > 0.0
 
-        # Periksa kurva agregasi
-        assert len(res["curves"]["universe"]) == 1001
-        assert len(res["curves"]["condition_score_aggregated"]) == 1001
-        assert len(res["curves"]["control_level_aggregated"]) == 1001
+        # Periksa kurva agregasi semesta (sesuai resolusi CENTROID_STEP)
+        expected_points = int(round(100.0 / CENTROID_STEP)) + 1
+        assert len(res["curves"]["universe"]) == expected_points
+        assert len(res["curves"]["condition_score_aggregated"]) == expected_points
+        assert len(res["curves"]["control_level_aggregated"]) == expected_points
 
     def test_determinism(self):
         """Dua kali evaluasi dengan input yang sama harus menghasilkan output identik."""

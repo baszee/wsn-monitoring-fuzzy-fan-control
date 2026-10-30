@@ -17,6 +17,11 @@ Fitur:
 from typing import Dict, List, Any, Optional, Tuple, Union
 import numpy as np
 
+try:
+    from app.settings import CENTROID_STEP
+except ImportError:
+    CENTROID_STEP = 0.01
+
 
 def normalize_dust(raw_val: float, c_0: float = 0.05, c_h: float = 3.50) -> float:
     """
@@ -193,16 +198,14 @@ class FuzzyMamdaniEngine:
         self,
         membership_params: Optional[Dict[str, Any]] = None,
         rule_base: Optional[List[Dict[str, Any]]] = None,
-        universe_step: float = 0.1
+        universe_step: float = CENTROID_STEP
     ):
         self.membership_params = membership_params or DEFAULT_MEMBERSHIP_PARAMS
         self.rule_base = rule_base or DEFAULT_RULE_BASE
         self.step = universe_step
 
-        # Diskretisasi semesta output 0 - 100 dengan langkah 0.1 (total 1001 titik)
-        # Gunakan np.linspace untuk presisi titik floating point yang tepat
-        num_points = int(round(100.0 / universe_step)) + 1
-        self.universe = np.linspace(0.0, 100.0, num_points)
+        # Diskretisasi semesta output 0 - 100 dengan langkah CENTROID_STEP (0.01)
+        self.universe = np.arange(0.0, 100.0 + universe_step, universe_step)
 
         # Prekomputasi kurva fungsi keanggotaan output pada semesta diskret
         self._precompute_output_mfs()

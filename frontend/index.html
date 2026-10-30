@@ -35,7 +35,7 @@
             <a class="button button-quiet" href="#alur">Pelajari sistem</a>
           </div>
           <div class="hero-facts" aria-label="Ringkasan sistem">
-            <div><strong>3</strong><span>Node sensor</span></div>
+            <div><strong id="landing-node-count">-</strong><span>Node sensor</span></div>
             <div><strong>433 MHz</strong><span>Komunikasi LoRa</span></div>
             <div><strong>12 V</strong><span>Fan DC open-loop</span></div>
           </div>
@@ -106,5 +106,15 @@
       <a class="brand" href="/"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span><span><strong>WSN Monitor</strong><small>Environmental intelligence</small></span></a>
       <p>Prototipe penelitian · Teknik Komputer UNNES</p><p>© 2026 Abbas Abdurrahman</p>
     </footer>
+    <script>
+      fetch("/api/nodes/latest")
+        .then((r) => (r.ok ? r.json() : []))
+        .then((nodes) => {
+          const count = Array.isArray(nodes) ? nodes.length : (nodes.nodes?.length ?? 0);
+          const el = document.getElementById("landing-node-count");
+          if (el) el.textContent = String(count || 0);
+        })
+        .catch(() => {});
+    </script>
   </body>
 </html>

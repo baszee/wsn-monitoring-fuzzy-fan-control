@@ -184,9 +184,10 @@ class FanPWMController:
         )
 
         # 2. Terapkan histeresis
+        previous_pwm = self.d_prev          # simpan nilai lama SEBELUM diperbarui
         d_final, is_updated = apply_hysteresis(
             d_candidate=d_candidate,
-            d_prev=self.d_prev,
+            d_prev=previous_pwm,
             is_off_condition=is_off,
             delta_d_update=self.delta_d_update
         )
@@ -207,7 +208,7 @@ class FanPWMController:
             "u_zona": u_zona,
             "candidate_pwm": d_candidate,
             "final_pwm": d_final,
-            "previous_pwm": self.d_prev,
+            "previous_pwm": previous_pwm,
             "is_hysteresis_updated": is_updated,
             "fan_command_status": fan_status
         }

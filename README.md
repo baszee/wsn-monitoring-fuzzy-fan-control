@@ -55,9 +55,9 @@
 
 - **Multi-Node Environmental Monitoring**: Pemantauan real-time status node WSN terdistribusi (Suhu, Kelembapan Relatif, Tegangan Debu, dan Indeks Debu).
 - **Klasifikasi Kondisi Lingkungan**: Penilaian otomatis kondisi setiap node ke dalam 3 kelas:
-  - 🟢 **Baik** ($s_i < 30.0$)
-  - 🟡 **Perlu Perhatian** ($30.0 \le s_i \le 70.0$)
-  - 🔴 **Buruk** ($s_i > 70.0$)
+  - 🟢 **Baik** ($s_i < 35,0$)
+  - 🟡 **Perlu Perhatian** ($35,0 \le s_i \le 65,0$)
+  - 🔴 **Buruk** ($s_i > 65,0$)
 - **PWM Fan Control Berbasis Fuzzy Mamdani**:
   - Mesin inferensi murni matriks NumPy (bebas dependensi library fuzzy eksternal).
   - Agregasi zona berorientasi mitigasi risiko terburuk (*worst-case scenario*).

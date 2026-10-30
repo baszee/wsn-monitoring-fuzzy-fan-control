@@ -109,6 +109,8 @@ function renderMetrics() {
   $("#metric-rh").textContent = formatNumber(node?.humidity);
   $("#metric-dust").textContent = formatNumber(node?.dust_index, 2);
   $("#metric-nodes").textContent = String(state.nodes.length || 0);
+  const zoneNodeCountEl = $("#zone-node-count");
+  if (zoneNodeCountEl) zoneNodeCountEl.textContent = `${state.nodes.length} node terdaftar`;
   $("#metric-temp-node").textContent = node?.node_id || "Belum ada node";
   $("#metric-rh-node").textContent = node?.node_id || "Belum ada node";
   $("#metric-dust-node").textContent = node?.node_id || "Belum ada node";
@@ -345,10 +347,6 @@ function bindEvents() {
       renderMetrics();
       renderHistoryChart();
     });
-  });
-
-  $$('[data-next-phase]').forEach((button) => {
-    button.addEventListener("click", () => showToast(button.dataset.nextPhase, "Fondasi menunya sudah disiapkan. Isi halaman ini akan dibuat pada tahap berikutnya."));
   });
 
   const sidebar = $("#sidebar");

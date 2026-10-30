@@ -14,16 +14,14 @@ if str(backend_dir) not in sys.path:
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 
+from app import settings as ops
 from app.core.config import settings
-from app.core.database import get_db
 from app.api import api_router
 from app.services.worker import (
     background_worker_loop,
-    run_processing_cycle,
     global_fan_controller,
 )
 
@@ -80,10 +78,10 @@ from fastapi.responses import FileResponse
 # Konfigurasi Cross-Origin Resource Sharing (CORS) agar frontend dapat mengakses API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Memungkinkan akses dari Vite dev server (http://localhost:5173) & jaringan lokal
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ops.CORS_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # Daftarkan Router REST API dengan prefix /api
@@ -135,17 +133,4 @@ def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-
-@app.post("/api/worker/tick", tags=["Worker"], summary="Picukan satu siklus pengolahan data manual")
-def trigger_manual_tick(db: Session = Depends(get_db)):
-    """Menjalankan satu siklus pengolahan data secara instan tanpa menunggu timer background."""
-    result = run_processing_cycle(db=db)
-    return {
-        "status": "success",
-        "cycle_id": result["processing_cycle_id"],
-        "nodes_evaluated": result["nodes_evaluated"],
-        "u_zona": result["zone_decision"]["zone_control_level"],
-        "final_pwm": result["pwm_decision"]["final_pwm"]
     }

@@ -42,7 +42,9 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     const linksHTML = items
       .map(({ id, label, href, icon, badge }) => {
         const isActive = id === activeId;
-        const badgeHTML = badge != null ? `<em>${badge}</em>` : "";
+        const badgeHTML = id === "nodes"
+          ? `<em id="sidebar-node-badge" style="display:none;"></em>`
+          : (badge != null ? `<em>${badge}</em>` : "");
         return `<a class="${isActive ? "active" : ""}" href="${href}" aria-current="${isActive ? "page" : "false"}">${icon}<span>${label}</span>${badgeHTML}</a>`;
       })
       .join("");
@@ -60,7 +62,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     <div class="sidebar-zone">
       <span>Zona aktif</span>
       <strong><i></i> Zona 1</strong>
-      <small>3 node terdaftar</small>
+      <small id="sidebar-zone-count">Memuat...</small>
     </div>
 
     <nav class="side-nav" aria-label="Navigasi dashboard">
@@ -72,6 +74,21 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
       <small>Versi prototipe 0.1.0</small>
     </div>
   `;
+
+  // Update jumlah node dan badge secara dinamis dari API
+  apiFetch("/api/nodes/latest")
+    .then((nodes) => {
+      const list = Array.isArray(nodes) ? nodes : (nodes.nodes ?? []);
+      const count = list.length;
+      const zoneEl = root.querySelector("#sidebar-zone-count");
+      if (zoneEl) zoneEl.textContent = `${count} node terdaftar`;
+      const badgeEl = root.querySelector("#sidebar-node-badge");
+      if (badgeEl && count > 0) {
+        badgeEl.textContent = String(count);
+        badgeEl.style.display = "";
+      }
+    })
+    .catch(() => {});
 
   // Mobile sidebar toggle
   _initSidebarToggle();

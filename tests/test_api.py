@@ -34,6 +34,7 @@ from app.services.fuzzy import (
 )
 from app.services.worker import run_processing_cycle
 from app.services.pwm import FanPWMController, MockPWMDriver
+from app.settings import CENTROID_STEP
 from app.main import app
 
 # Siapkan database SQLite in-memory untuk pengujian independen
@@ -137,7 +138,7 @@ class TestAPIAndWorker:
         assert res.outputs["condition_class"] == "Buruk"
         assert res.outputs["control_level"] <= 15.0
         assert res.curves is not None
-        assert len(res.curves["universe"]) == 1001
+        assert len(res.curves["universe"]) == int(round(100.0 / CENTROID_STEP)) + 1
 
     def test_worker_processing_cycle(self):
         """Uji eksekusi penuh pipeline worker pemrosesan dan penyimpanan DB."""
