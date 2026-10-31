@@ -1,5 +1,7 @@
 import os
 
+from app.core import config as _env  # noqa: F401  (memuat berkas .env lebih dulu)
+
 
 def _float(name: str, default: float) -> float:
     try:

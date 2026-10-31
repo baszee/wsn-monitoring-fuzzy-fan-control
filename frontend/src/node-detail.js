@@ -3,7 +3,7 @@
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261029-3";
+         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261101-1";
 
 buildSidebar("nodes");
 

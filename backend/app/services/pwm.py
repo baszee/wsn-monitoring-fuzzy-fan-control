@@ -164,10 +164,15 @@ class FanPWMController:
         self.delta_d_update = delta_d_update
         self.d_prev = 0.0  # State awal saat aplikasi start = 0%
 
+    def reset_hysteresis(self) -> None:
+        """Mereset referensi histeresis: hasil otomatis berikutnya langsung diterapkan."""
+        self.d_prev = 0.0
+
     def compute_and_apply(
         self,
         u_zona: Optional[float],
-        has_valid_data: bool = True
+        has_valid_data: bool = True,
+        apply_output: bool = True
     ) -> Dict[str, Any]:
         """
         Memproses satu siklus pemetaan u_zona -> PWM, menerapkan histeresis,
@@ -192,8 +197,10 @@ class FanPWMController:
             delta_d_update=self.delta_d_update
         )
 
-        # 3. Update driver fisik / mock
-        self.driver.set_duty_cycle(d_final)
+        # 3. Update driver fisik / mock. Pada mode Manual jalur Otomatis tetap dihitung
+        #    (referensi histeresisnya sendiri) tanpa menyentuh keluaran fisik.
+        if apply_output:
+            self.driver.set_duty_cycle(d_final)
         self.d_prev = d_final
 
         # 4. Tentukan status perintah fan

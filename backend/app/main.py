@@ -14,7 +14,9 @@ if str(backend_dir) not in sys.path:
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import settings as ops
@@ -23,6 +25,7 @@ from app.api import api_router
 from app.services.worker import (
     background_worker_loop,
     global_fan_controller,
+    reset_control_state,
 )
 
 # Event untuk menghentikan background worker secara rapi saat server shutdown
@@ -39,7 +42,10 @@ async def lifespan(app: FastAPI):
     """
     global worker_task, stop_event
     stop_event.clear()
-    
+
+    # Selalu mulai Otomatis dengan PWM 0%; mode Manual tidak dipulihkan.
+    reset_control_state()
+
     # Jalankan background worker periodik (tiap WORKER_INTERVAL_SECONDS detik)
     worker_task = asyncio.create_task(
         background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)
@@ -85,6 +91,13 @@ app.add_middleware(
 )
 
 # Daftarkan Router REST API dengan prefix /api
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, exc: RequestValidationError):
+    """Jawaban 422 tanpa nilai masukan: nilai seperti NaN tidak dapat diubah ke JSON."""
+    errors = [{"loc": list(e.get("loc", [])), "msg": e.get("msg", ""), "type": e.get("type", "")} for e in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": errors})
+
+
 app.include_router(api_router, prefix="/api")
 
 # Sajikan landing page dan dashboard sebagai dua pengalaman yang terpisah.

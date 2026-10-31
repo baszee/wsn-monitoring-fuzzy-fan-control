@@ -66,10 +66,14 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </nav>
 
     <div class="sidebar-footer">
+      <a href="/dashboard/login/" id="admin-link" title="Masuk admin"><span class="ic">${icon("lock")}</span> <span class="lbl">Masuk admin</span></a>
       <a href="/" title="Kembali ke beranda"><span class="ic">${icon("arrow-left")}</span> <span class="lbl">Kembali ke beranda</span></a>
       <small>Prototipe penelitian</small>
     </div>
   `;
+
+  _initAdminLink();
+  _initModeBanner();
 
   // Update jumlah node dan badge secara dinamis dari API
   apiFetch("/api/nodes/latest")
@@ -142,6 +146,64 @@ function _initRail() {
     _applyRail(next);
     try { localStorage.setItem(RAIL_KEY, next ? "1" : "0"); } catch {}
   });
+}
+
+// ─── Sesi admin ────────────────────────────────────────────────────────────
+let _session = null;
+
+export async function getSession(force = false) {
+  if (_session && !force) return _session;
+  try { _session = await apiFetch("/api/auth/session"); }
+  catch { _session = { authenticated: false }; }
+  return _session;
+}
+
+/** POST ke endpoint admin dengan token CSRF dari sesi. */
+export async function adminPost(path, body) {
+  const s = await getSession();
+  return apiFetch(path, {
+    method: "POST",
+    headers: { "X-CSRF-Token": s.csrf_token ?? "" },
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
+export async function logoutAdmin() {
+  try { await adminPost("/api/auth/logout"); } catch { /* sesi sudah berakhir */ }
+  _session = null;
+  location.href = "/dashboard/";
+}
+
+async function _initAdminLink() {
+  const link = document.getElementById("admin-link");
+  if (!link) return;
+  const s = await getSession();
+  if (!s.authenticated) return;
+  link.title = `Keluar (${s.username})`;
+  link.href = "#";
+  link.innerHTML = `<span class="ic">${icon("log-out")}</span> <span class="lbl">Keluar</span>`;
+  link.addEventListener("click", (e) => { e.preventDefault(); logoutAdmin(); });
+}
+
+// ─── Banner MODE MANUAL (semua halaman dashboard) ──────────────────────────
+function _initModeBanner() {
+  const render = (c) => {
+    let el = document.getElementById("mode-banner");
+    if (c?.control_mode !== "manual") { el?.remove(); return; }
+    if (!el) {
+      const host = document.querySelector(".dashboard-main, .p2-main");
+      if (!host) return;
+      el = document.createElement("div");
+      el.id = "mode-banner";
+      el.className = "mode-banner";
+      el.setAttribute("role", "status");
+      host.insertBefore(el, host.firstChild);
+    }
+    el.innerHTML = `<strong>MODE MANUAL</strong><span>Perintah fan ditentukan admin. PWM otomatis saat ini ${fmtNumber(c.auto_pwm_percent, 1)}%.</span>`;
+  };
+  const tick = async () => { try { render(await apiFetch("/api/control/latest")); } catch { /* abaikan */ } };
+  tick();
+  setInterval(tick, 5000);
 }
 
 // ─── Toast ─────────────────────────────────────────────────────────────────
@@ -261,7 +323,8 @@ export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers: { "Content-Type": "application/json", ...(options.headers ?? {}) } });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? `HTTP ${res.status}`);
+    const d = err.detail;
+    throw new Error((Array.isArray(d) ? d.map((x) => x.msg).join("; ") : d) ?? `HTTP ${res.status}`);
   }
   return res.json();
 }

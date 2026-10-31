@@ -3,7 +3,7 @@
  * Visualisasi fungsi keanggotaan + 27 aturan
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261029-3";
+         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261101-1";
 
 buildSidebar("fuzzy");
 

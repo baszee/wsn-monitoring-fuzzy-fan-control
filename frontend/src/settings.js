@@ -12,7 +12,7 @@ import {
   fmtNumber,
   normalizeNode,
   dataQualityPill,
-} from "/src/shared.js?v=20261029-3";
+} from "/src/shared.js?v=20261101-1";
 
 buildSidebar("konfigurasi");
 

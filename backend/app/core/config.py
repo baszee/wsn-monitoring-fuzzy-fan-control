@@ -36,4 +36,10 @@ class Settings(BaseModel):
         f"sqlite:///{DEFAULT_SQLITE_PATH}"
     )
 
+    # Akun admin (satu akun). Kata sandi disimpan sebagai hash, dibuat dengan make_admin_hash.py.
+    ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
+    ADMIN_PASSWORD_HASH: str = os.getenv("ADMIN_PASSWORD_HASH", "")
+    # Isi true bila dashboard diakses lewat HTTPS. Di localhost (HTTP) harus false.
+    COOKIE_SECURE: bool = os.getenv("COOKIE_SECURE", "false").strip().lower() in ("1", "true", "yes")
+
 settings = Settings()

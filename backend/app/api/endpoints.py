@@ -11,6 +11,7 @@ Menyediakan endpoints:
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
 
 from app import settings as ops
@@ -37,8 +38,10 @@ from app.services.fuzzy import (
     DEFAULT_RULE_BASE
 )
 from app.services.pwm import calculate_candidate_pwm
+from app.core.ratelimit import rate_limit
+from app.core.security import require_admin
 from app.services.freshness import age_seconds, is_fresh
-from app.services.worker import global_fan_controller, worker_status
+from app.services.worker import apply_auto, apply_manual, global_fan_controller, worker_status
 
 router = APIRouter()
 
@@ -195,6 +198,28 @@ def get_node_history(
     ]
 
 
+def _control_response(latest_ctrl: ZoneControl) -> ZoneControlResponse:
+    return ZoneControlResponse(
+        zone_id=latest_ctrl.zone_id,
+        zone_control_level=latest_ctrl.zone_control_level,
+        determining_node_id=latest_ctrl.control_node_id,
+        pwm_command_percent=latest_ctrl.pwm_command_percent,
+        candidate_pwm_percent=latest_ctrl.candidate_pwm_percent,
+        previous_pwm_percent=latest_ctrl.previous_pwm_percent,
+        auto_pwm_percent=latest_ctrl.auto_pwm_percent,
+        hysteresis_held=latest_ctrl.hysteresis_held,
+        freshness_seconds=ops.FRESHNESS_SECONDS,
+        last_evaluated_at=worker_status["last_cycle_at"],
+        worker_alive=_worker_alive(),
+        control_status=latest_ctrl.control_status,
+        fan_command_status=latest_ctrl.fan_command_status,
+        control_mode=latest_ctrl.control_mode,
+        config_version=latest_ctrl.config_version,
+        processing_cycle_id=latest_ctrl.processing_cycle_id,
+        created_at=latest_ctrl.created_at,
+    )
+
+
 @router.get(
     "/control/latest",
     response_model=ZoneControlResponse,
@@ -209,25 +234,7 @@ def get_latest_control(db: Session = Depends(get_db)):
     )
 
     if latest_ctrl:
-        return ZoneControlResponse(
-            zone_id=latest_ctrl.zone_id,
-            zone_control_level=latest_ctrl.zone_control_level,
-            determining_node_id=latest_ctrl.control_node_id,
-            pwm_command_percent=latest_ctrl.pwm_command_percent,
-            candidate_pwm_percent=latest_ctrl.candidate_pwm_percent,
-            previous_pwm_percent=latest_ctrl.previous_pwm_percent,
-            auto_pwm_percent=latest_ctrl.auto_pwm_percent,
-            hysteresis_held=latest_ctrl.hysteresis_held,
-            freshness_seconds=ops.FRESHNESS_SECONDS,
-            last_evaluated_at=worker_status["last_cycle_at"],
-            worker_alive=_worker_alive(),
-            control_status=latest_ctrl.control_status,
-            fan_command_status=latest_ctrl.fan_command_status,
-            control_mode=latest_ctrl.control_mode,
-            config_version=latest_ctrl.config_version,
-            processing_cycle_id=latest_ctrl.processing_cycle_id,
-            created_at=latest_ctrl.created_at,
-        )
+        return _control_response(latest_ctrl)
 
     # Fallback jika belum ada siklus tersimpan di basis data
     return ZoneControlResponse(
@@ -251,7 +258,42 @@ def get_latest_control(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/control/history", summary="Riwayat keputusan kendali zona dan u_i tiap node")
+class ManualPwmRequest(BaseModel):
+    """PWM Manual harus angka pada rentang 0-100; selain itu ditolak."""
+    model_config = ConfigDict(strict=True)
+    pwm_percent: float = Field(ge=0, le=100, allow_inf_nan=False)
+
+
+@router.post("/control/manual", response_model=ZoneControlResponse,
+             summary="Memilih Manual dan menerapkan PWM 0-100% (khusus admin)")
+def set_manual_control(
+    req: ManualPwmRequest,
+    _admin: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    apply_manual(db, req.pwm_percent)
+    return get_latest_control(db)
+
+
+@router.post("/control/auto", response_model=ZoneControlResponse,
+             summary="Kembali ke mode Otomatis (khusus admin)")
+def set_auto_control(
+    _admin: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    apply_auto(db)
+    return get_latest_control(db)
+
+
+_limit_history = rate_limit(60)       # per menit per IP
+_limit_simulate = rate_limit(600)     # per menit per IP
+
+
+@router.get(
+    "/control/history",
+    summary="Riwayat keputusan kendali zona dan u_i tiap node",
+    dependencies=[Depends(_limit_history)],
+)
 def get_control_history(
     range: str = Query(default="1h", pattern="^(1h|6h|24h)$"),
     zone_id: str = "ZONA-1",
@@ -359,6 +401,7 @@ def get_fuzzy_node_detail(node_id: str, db: Session = Depends(get_db)):
 @router.post(
     "/fuzzy/simulate",
     response_model=FuzzySimulateResponse,
+    dependencies=[Depends(_limit_simulate)],
     summary="Simulasi What-If fuzzy hipotetis (tidak mempengaruhi fan motor fisik)"
 )
 def simulate_fuzzy(req: FuzzySimulateRequest, db: Session = Depends(get_db)):

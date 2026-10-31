@@ -1,4 +1,4 @@
-import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs } from "/src/shared.js?v=20261029-3";
+import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs } from "/src/shared.js?v=20261101-1";
 import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
 
 buildSidebar("riwayat");

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk admin — WSN Monitor</title>
+  <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+  <link rel="stylesheet" href="/src/ui.css?v=2" />
+</head>
+<body class="dashboard-body">
+  <main class="login-wrap">
+    <form class="panel login-card" id="login-form">
+      <a class="brand" href="/dashboard/">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span>
+        <span><strong>WSN Monitor</strong></span>
+      </a>
+      <h1>Masuk admin</h1>
+      <label>Nama pengguna<input id="username" name="username" autocomplete="username" required autofocus /></label>
+      <label>Kata sandi<input id="password" name="password" type="password" autocomplete="current-password" required /></label>
+      <p class="login-error" id="login-error" role="alert"></p>
+      <button class="button button-primary" type="submit" id="login-btn">Masuk</button>
+      <a class="login-back" href="/dashboard/">Kembali ke dashboard</a>
+    </form>
+  </main>
+  <script type="module" src="/src/login.js?v=1"></script>
+</body>
+</html>

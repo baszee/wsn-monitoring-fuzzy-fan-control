@@ -4,7 +4,7 @@
 import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtRelative, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261029-3";
+         normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261101-1";
 
 buildSidebar("nodes");
 

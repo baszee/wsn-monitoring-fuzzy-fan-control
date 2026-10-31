@@ -1,4 +1,4 @@
-import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock } from "/src/shared.js?v=20261029-3";
+import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock } from "/src/shared.js?v=20261101-1";
 import { icon } from "/src/icons.js";
 import { createFan } from "/src/fan-canvas.js";
 import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
@@ -72,7 +72,8 @@ function renderZoneBanner(unavailable) {
 
 function renderDecision() {
   const c = state.control;
-  const unavailable = !c || c.fan_command_status === "Kendali tidak tersedia" || !c.worker_alive;
+  const manual = c?.control_mode === "manual";
+  const unavailable = !c || (!manual && (c.fan_command_status === "Kendali tidak tersedia" || !c.worker_alive));
   $("#decision-card").classList.toggle("unavailable", unavailable);
 
   const pill = $("#fan-status");
@@ -94,7 +95,7 @@ function renderDecision() {
     if (c.fan_command_status === "Mati") pill.classList.add("off");
     fan.setTarget(c.pwm_command_percent, false);
     $("#pwm-value").textContent = `${fmtNumber(c.pwm_command_percent, 1)}%`;
-    note.textContent = c.hysteresis_held
+    note.textContent = manual ? `PWM otomatis ${fmtNumber(c.auto_pwm_percent, 1)}%.` : c.hysteresis_held
       ? `PWM hasil hitung ${fmtNumber(c.candidate_pwm_percent, 1)}%, ditahan karena perubahan kecil.`
       : "";
     $("#fact-need").textContent = needLabel(c.zone_control_level);

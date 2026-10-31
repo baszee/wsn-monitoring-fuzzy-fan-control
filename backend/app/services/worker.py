@@ -13,6 +13,7 @@ Menjalankan pipeline otomatis secara periodik:
 
 import asyncio
 import logging
+import threading
 import time
 import uuid
 from typing import Dict, Any, Optional, List
@@ -21,7 +22,7 @@ import numpy as np
 from sqlalchemy.orm import Session
 
 from app import settings as ops
-from app.services.freshness import is_fresh
+from app.services.freshness import age_seconds, is_fresh
 from app.core.database import SessionLocal
 from app.models import (
     ControlConfig,
@@ -49,8 +50,13 @@ global_fan_controller = FanPWMController(
 # jadi waktu evaluasi terakhir disimpan di sini.
 worker_status: Dict[str, Any] = {"last_cycle_at": None}
 
+# Mode kendali. Selalu mulai Otomatis dengan PWM 0%; tidak dipulihkan setelah restart.
+control_lock = threading.RLock()
+control_state: Dict[str, Any] = {"mode": "auto", "manual_pwm": 0.0, "applied_pwm": 0.0}
+last_auto: Dict[str, Any] = {}   # hasil jalur Otomatis terbaru (juga saat Manual)
 
-def run_processing_cycle(
+
+def _run_processing_cycle(
     db: Session,
     controller: Optional[FanPWMController] = None,
     zone_id: str = "ZONA-1"
@@ -182,10 +188,19 @@ def run_processing_cycle(
 
     zone_decision = aggregate_zone(node_results=candidates, zone_id=zone_id, u_off=u_off)
     u_zona = zone_decision["zone_control_level"]
+    mode = control_state["mode"]
     pwm_decision = fan_ctrl.compute_and_apply(
         u_zona=u_zona,
         has_valid_data=zone_decision["has_valid_data"],
+        apply_output=(mode == "auto"),
     )
+    if mode == "manual":
+        applied_pwm = control_state["manual_pwm"]
+        fan_status = "Aktif" if applied_pwm > 0 else "Mati"
+    else:
+        applied_pwm = pwm_decision["final_pwm"]
+        fan_status = pwm_decision["fan_command_status"]
+    control_state["applied_pwm"] = applied_pwm
 
     determining_fuzzy_id = None
     if zone_decision.get("determining_result"):
@@ -193,16 +208,28 @@ def run_processing_cycle(
         if det_obj:
             determining_fuzzy_id = det_obj.fuzzy_result_id
 
+    last_auto.update({
+        "at": now,
+        "zone_control_level": u_zona,
+        "determining_node_id": zone_decision["determining_node_id"],
+        "determining_fuzzy_id": determining_fuzzy_id,
+        "control_status": zone_decision["control_status"],
+        "has_valid_data": zone_decision["has_valid_data"],
+        "candidate": pwm_decision["candidate_pwm"],
+        "final": pwm_decision["final_pwm"],
+    })
+
     # Tulis keputusan zona hanya bila ada pengukuran baru atau keputusan berubah
     wrote_control = False
     if config:
         signature = (
             zone_decision["determining_node_id"],
             None if u_zona is None else round(u_zona, 2),
-            pwm_decision["final_pwm"],
+            applied_pwm,
             zone_decision["control_status"],
-            pwm_decision["fan_command_status"],
-            "auto",
+            fan_status,
+            mode,
+            pwm_decision["final_pwm"],
         )
         last = (
             db.query(ZoneControl)
@@ -219,6 +246,7 @@ def run_processing_cycle(
                 last.control_status,
                 last.fan_command_status,
                 last.control_mode,
+                last.auto_pwm_percent,
             )
 
         if new_results > 0 or signature != last_sig:
@@ -229,14 +257,14 @@ def run_processing_cycle(
                 control_fuzzy_result_id=determining_fuzzy_id,
                 control_node_id=zone_decision["determining_node_id"],
                 zone_control_level=u_zona,
-                pwm_command_percent=pwm_decision["final_pwm"],
+                pwm_command_percent=applied_pwm,
                 candidate_pwm_percent=pwm_decision["candidate_pwm"],
                 previous_pwm_percent=pwm_decision["previous_pwm"],
                 auto_pwm_percent=pwm_decision["final_pwm"],
                 hysteresis_held=pwm_decision["final_pwm"] != pwm_decision["candidate_pwm"],
                 control_status=zone_decision["control_status"],
-                fan_command_status=pwm_decision["fan_command_status"],
-                control_mode="auto",
+                fan_command_status=fan_status,
+                control_mode=mode,
             ))
             wrote_control = True
         db.commit()
@@ -251,7 +279,90 @@ def run_processing_cycle(
         "wrote_control": wrote_control,
         "zone_decision": zone_decision,
         "pwm_decision": pwm_decision,
+        "control_mode": mode,
+        "applied_pwm": applied_pwm,
     }
+
+
+def run_processing_cycle(
+    db: Session,
+    controller: Optional[FanPWMController] = None,
+    zone_id: str = "ZONA-1"
+) -> Dict[str, Any]:
+    """Satu siklus pemrosesan. Dikunci agar tidak berpapasan dengan perubahan mode dari admin."""
+    with control_lock:
+        return _run_processing_cycle(db, controller, zone_id)
+
+
+def reset_control_state(controller: Optional[FanPWMController] = None) -> None:
+    """Keadaan awal aplikasi: mode Otomatis, PWM 0%."""
+    fan_ctrl = controller or global_fan_controller
+    with control_lock:
+        control_state.update(mode="auto", manual_pwm=0.0, applied_pwm=0.0)
+        last_auto.clear()
+        fan_ctrl.reset_hysteresis()
+        fan_ctrl.driver.set_duty_cycle(0.0)
+
+
+def apply_manual(
+    db: Session,
+    pwm_percent: float,
+    controller: Optional[FanPWMController] = None,
+    zone_id: str = "ZONA-1",
+) -> Optional[ZoneControl]:
+    """Memilih mode Manual: PWM langsung diterapkan dan satu baris baru langsung disimpan."""
+    fan_ctrl = controller or global_fan_controller
+    pwm = float(pwm_percent)
+    with control_lock:
+        previous = control_state["applied_pwm"]
+        control_state.update(mode="manual", manual_pwm=pwm, applied_pwm=pwm)
+        fan_ctrl.driver.set_duty_cycle(pwm)
+
+        config = (
+            db.query(ControlConfig)
+            .filter(ControlConfig.is_active == True)
+            .order_by(ControlConfig.created_at.desc())
+            .first()
+        )
+        if not config:
+            return None
+
+        usable = bool(last_auto) and last_auto.get("has_valid_data") and (
+            age_seconds(last_auto["at"]) <= max(3 * ops.WORKER_INTERVAL_SECONDS, 5)
+        )
+        row = ZoneControl(
+            config_version=config.config_version,
+            processing_cycle_id=f"MAN-{int(time.time())}-{uuid.uuid4().hex[:6]}",
+            zone_id=zone_id,
+            control_fuzzy_result_id=last_auto["determining_fuzzy_id"] if usable else None,
+            control_node_id=last_auto["determining_node_id"] if usable else None,
+            zone_control_level=last_auto["zone_control_level"] if usable else None,
+            pwm_command_percent=pwm,
+            candidate_pwm_percent=last_auto["candidate"] if usable else None,
+            previous_pwm_percent=previous,
+            auto_pwm_percent=last_auto["final"] if usable else 0.0,
+            hysteresis_held=False,
+            control_status=last_auto["control_status"] if usable else "Kendali tidak tersedia",
+            fan_command_status="Aktif" if pwm > 0 else "Mati",
+            control_mode="manual",
+        )
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+        return row
+
+
+def apply_auto(
+    db: Session,
+    controller: Optional[FanPWMController] = None,
+    zone_id: str = "ZONA-1",
+) -> Dict[str, Any]:
+    """Kembali ke Otomatis: histeresis di-reset dan PWM langsung mengikuti hasil otomatis terbaru."""
+    fan_ctrl = controller or global_fan_controller
+    with control_lock:
+        control_state["mode"] = "auto"
+        fan_ctrl.reset_hysteresis()
+        return _run_processing_cycle(db, fan_ctrl, zone_id)
 
 
 async def background_worker_loop(

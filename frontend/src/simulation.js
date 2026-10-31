@@ -9,7 +9,7 @@ import {
   fmtNumber,
   conditionClass,
   conditionLabel,
-} from "/src/shared.js?v=20261029-3";
+} from "/src/shared.js?v=20261101-1";
 
 buildSidebar("simulasi");
 
@@ -37,7 +37,7 @@ let debounceTimer = null;
 
 function requestSimulation() {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(runSimulation, 80);
+  debounceTimer = setTimeout(runSimulation, 150);
 }
 
 async function runSimulation() {

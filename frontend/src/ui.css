@@ -146,3 +146,24 @@ td .ic { color: var(--blue); }
 .decision-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .rules-card, .panel-full, .settings-card { overflow-x: auto; }
 .p2-topbar-right { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+
+/* Admin: banner mode manual, kontrol manual, halaman login */
+[hidden] { display: none !important; }
+.sidebar-footer a + a { margin-top: 10px; }
+.mode-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 24px; background: #fff4d8; border-bottom: 1px solid #f1dfae; color: #7a5200; font-size: 12px; }
+.mode-banner strong { font: 800 12px "Manrope"; letter-spacing: .08em; }
+.admin-controls { margin-top: 12px; display: grid; gap: 10px; }
+.manual-label { display: flex; justify-content: space-between; font-size: .8rem; color: var(--text-soft); }
+.manual-label strong { color: var(--text); font-weight: 800; }
+#manual-slider { width: 100%; accent-color: var(--blue); }
+.manual-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.control-safety-card p.admin-hint { margin: .6rem 0 0; font-size: .78rem; }
+.admin-hint a { color: var(--blue); font-weight: 700; }
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.login-card { width: min(360px, 100%); padding: 24px; display: grid; gap: 14px; }
+.login-card h1 { margin: 0; font: 800 20px "Manrope"; letter-spacing: -.02em; }
+.login-card label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: #536880; }
+.login-card input { height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; color: var(--ink); background: #fff; }
+.login-card input:focus { outline: 2px solid #bcd6f2; border-color: var(--blue); }
+.login-error { min-height: 16px; margin: 0; color: #bd4054; font-size: 12px; }
+.login-back { text-align: center; color: var(--muted); font-size: 12px; font-weight: 700; }

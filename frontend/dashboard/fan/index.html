@@ -6,7 +6,7 @@
   <title>Fan &amp; Kendali — WSN Monitor</title>
   <link rel="stylesheet" href="/src/site.css?v=20261029-3"/>
   <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
-  <link rel="stylesheet" href="/src/ui.css?v=1" />
+  <link rel="stylesheet" href="/src/ui.css?v=2" />
 </head>
 <body class="dashboard-body">
 <div class="p2-shell">
@@ -54,13 +54,23 @@
               <div class="settings-row"><span>ID siklus</span><strong id="det-cycle">—</strong></div>
               <div class="settings-row"><span>Keputusan terakhir disimpan</span><strong id="det-time">—</strong></div>
               <div class="settings-row"><span>Terakhir dievaluasi</span><strong id="det-eval">—</strong></div>
+              <div class="settings-row" id="row-auto" hidden><span>PWM otomatis (pembanding)</span><strong id="det-auto">—</strong></div>
               <div class="settings-row"><span>Batas kesegaran data</span><strong id="det-fresh">—</strong></div>
             </div>
           </div>
 
-          <div class="panel-full control-safety-card">
+          <div class="panel-full control-safety-card" id="mode-card">
             <div class="control-safety-head"><div><h3>Mode kendali</h3></div><span class="pill-good" id="mode-pill">Otomatis</span></div>
-            <p>Perintah fan dihitung otomatis dari data node. Kendali manual belum tersedia.</p>
+            <p id="mode-text">Perintah fan dihitung otomatis dari data node.</p>
+            <div class="admin-controls" id="admin-controls" hidden>
+              <label class="manual-label" for="manual-slider"><span>PWM manual</span><strong id="manual-value">0%</strong></label>
+              <input type="range" id="manual-slider" min="0" max="100" step="1" value="0" />
+              <div class="manual-actions">
+                <button class="button button-small button-primary" type="button" id="manual-apply">Terapkan</button>
+                <button class="button button-small button-quiet" type="button" id="manual-auto" hidden>Kembali ke Otomatis</button>
+              </div>
+            </div>
+            <p class="admin-hint" id="admin-hint"><a href="/dashboard/login/">Masuk sebagai admin</a> untuk mengubah mode kendali.</p>
           </div>
         </div>
       </div>
