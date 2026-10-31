@@ -26,14 +26,22 @@ load_local_env()
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 DEFAULT_SQLITE_PATH = (ROOT_DIR / "wsn.db").as_posix()
 
+
+def normalize_database_url(url: str) -> str:
+    """Gunakan driver psycopg 3 untuk URL PostgreSQL generik dari penyedia hosting."""
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+psycopg://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
+
 class Settings(BaseModel):
     PROJECT_NAME: str = "WSN Fuzzy Fan Control & Monitoring"
     PROJECT_VERSION: str = "0.1.0"
     
     # URL Database (Default: SQLite absolut di root project, atau PostgreSQL jika dispesifikasikan)
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", 
-        f"sqlite:///{DEFAULT_SQLITE_PATH}"
+    DATABASE_URL: str = normalize_database_url(
+        os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
     )
 
     # Akun admin (satu akun). Kata sandi disimpan sebagai hash, dibuat dengan make_admin_hash.py.

@@ -15,7 +15,7 @@ Setiap node mengirim suhu, kelembapan relatif (RH), dan tegangan sensor debu. Ba
 
 Admin dapat memilih mode Manual dan menerapkan PWM 0 sampai 100% dari halaman Fan dan Kendali. Selama Manual, fuzzy, kendali zona, dan PWM otomatis tetap dihitung dan disimpan sebagai pembanding. Aplikasi selalu mulai di mode Otomatis dengan PWM 0%.
 
-Worker memeriksa rekaman baru tiap 5 detik dan hanya memproses rekaman yang belum pernah dihitung. Keputusan zona disimpan saat ada pengukuran baru atau keputusan berubah.
+Worker memeriksa rekaman baru tiap 1 detik dan hanya memproses rekaman yang belum pernah dihitung. Keputusan zona disimpan saat ada pengukuran baru atau keputusan berubah.
 
 ## Halaman
 
@@ -81,6 +81,20 @@ python backend/feed_dummy.py          # biarkan menyala agar data tetap segar
 
 Database SQLite default ada di `wsn.db` pada root proyek. Untuk PostgreSQL, isi `DATABASE_URL`.
 
+## Deployment Railway
+
+Proyek sudah menyiapkan `requirements.txt` dan `railpack.json` di root. Railway akan memasang dependensi, menyiapkan database, lalu menjalankan satu proses Uvicorn pada port yang diberikan Railway.
+
+1. Hubungkan repository GitHub ke satu service Railway.
+2. Tambahkan service PostgreSQL di project yang sama.
+3. Pada service web, isi `DATABASE_URL` dengan reference variable milik PostgreSQL.
+4. Isi `COOKIE_SECURE=true`. Isi juga `ADMIN_USERNAME` dan `ADMIN_PASSWORD_HASH` bila login admin akan digunakan.
+5. Untuk demo tanpa perangkat sensor, isi `DEMO_MODE=true`. Biarkan `false` bila data berasal dari penerima sensor sungguhan.
+6. Gunakan satu replica saja, lalu atur Healthcheck Path ke `/health`.
+7. Setelah deployment aktif, buat public domain dari menu Networking.
+
+Bootstrap database aman dijalankan ulang: tabel, konfigurasi awal, dan tiga node hanya dibuat bila belum tersedia. Data pengukuran tidak digandakan saat service restart.
+
 ## Pengaturan
 
 Dapat diubah lewat environment variable atau berkas `.env`.
@@ -88,13 +102,15 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 | Nama | Bawaan | Fungsi |
 | :--- | :--- | :--- |
 | `FRESHNESS_SECONDS` | 10 | Batas usia data yang masih dipakai |
-| `WORKER_INTERVAL_SECONDS` | 5 | Jeda pemeriksaan rekaman baru |
+| `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |
 | `CORS_ORIGINS` | `http://localhost:8000` | Asal yang diizinkan, dipisah koma |
 | `DATABASE_URL` | SQLite di root proyek | Koneksi database |
 | `ADMIN_USERNAME` | kosong | Nama pengguna admin. Kosong berarti login nonaktif |
 | `ADMIN_PASSWORD_HASH` | kosong | Hash kata sandi admin dari `make_admin_hash.py` |
 | `COOKIE_SECURE` | `false` | Isi `true` bila diakses lewat HTTPS. Di localhost (HTTP) harus `false` |
+| `DEMO_MODE` | `false` | Mengirim data tiruan berkala untuk deployment demo |
+| `DEMO_FEED_INTERVAL_SECONDS` | `3` | Jeda pengiriman data tiruan saat mode demo aktif |
 
 ## Akun admin
 

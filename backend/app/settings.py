@@ -17,11 +17,22 @@ def _int(name: str, default: int) -> int:
         return default
 
 
+def _bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
 # Kesegaran data (detik). Satu sumber kebenaran untuk dashboard dan worker.
 FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 10)
 
 # Interval worker memeriksa rekaman baru (detik).
 WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)
+
+# Generator data tiruan opsional untuk demo daring satu layanan.
+DEMO_MODE = _bool("DEMO_MODE", False)
+DEMO_FEED_INTERVAL_SECONDS = _float("DEMO_FEED_INTERVAL_SECONDS", 3.0)
 
 # Resolusi centroid (satuan skala 0-100). Lebih kecil = lebih halus.
 CENTROID_STEP = _float("CENTROID_STEP", 0.01)

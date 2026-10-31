@@ -4,8 +4,8 @@ import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
 buildSidebar("riwayat");
 
 const METRICS = {
-  control_level:   { label: "Tingkat kendali (u)", dec: 1, fixed: [0, 100] },
-  condition_score: { label: "Skor kondisi (s)",    dec: 1, fixed: [0, 100] },
+  control_level:   { label: "Tingkat kendali", dec: 1, fixed: [0, 100] },
+  condition_score: { label: "Skor kondisi",    dec: 1, fixed: [0, 100] },
   temperature:     { label: "Suhu (°C)",           dec: 1 },
   humidity:        { label: "Kelembapan (% RH)",   dec: 1, floor: 0 },
   dust_index:      { label: "Indeks debu",         dec: 2, floor: 0 },

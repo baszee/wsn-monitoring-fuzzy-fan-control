@@ -84,7 +84,7 @@ def get_default_rule_base():
         {"id": 27, "dust": "Tinggi", "rh": "Lembap", "temp": "Tinggi", "condition_class": "Buruk", "control_level": "Tinggi"},
     ]
 
-def seed_database():
+def seed_database(include_samples: bool = True):
     print("=== Memulai Inisialisasi & Seeding Data Dummy ===")
     
     # Buat seluruh tabel jika belum ada
@@ -128,10 +128,13 @@ def seed_database():
             else:
                 print(f"Node {node_id} pada {zone_id} sudah terdaftar.")
 
-        # 3. Seeding mock_receiver_valid_data
-        # Bersihkan mock data lama jika perlu atau tambahkan rekaman baru
-        now = datetime.now(timezone.utc)
-        sample_records = [
+        # 3. Data contoh hanya ditambahkan saat skrip seeder dijalankan manual.
+        # Bootstrap produksi memanggil fungsi ini tanpa data contoh agar setiap
+        # restart tidak menggandakan riwayat pengukuran.
+        sample_records = []
+        if include_samples:
+            now = datetime.now(timezone.utc)
+            sample_records = [
             # Kondisi Normal (NODE-01): Suhu nyaman, RH ideal, debu sangat rendah
             {
                 "node_id": "NODE-01",
@@ -184,12 +187,12 @@ def seed_database():
                 "timestamp": now - timedelta(minutes=5),
                 "status_valid": True
             }
-        ]
+            ]
 
-        print("Menyisipkan data sampel ke tabel mock_receiver_valid_data...")
-        for row in sample_records:
-            mock_entry = MockReceiverValidData(**row)
-            db.add(mock_entry)
+            print("Menyisipkan data sampel ke tabel mock_receiver_valid_data...")
+            for row in sample_records:
+                mock_entry = MockReceiverValidData(**row)
+                db.add(mock_entry)
 
         db.commit()
         print("=== Seeding Berhasil Diselesaikan! ===")

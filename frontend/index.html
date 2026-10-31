@@ -3,117 +3,307 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sistem monitoring lingkungan multi-node berbasis WSN dan kendali fan otomatis." />
-    <title data-brand-first>WSNova — Monitoring Lingkungan</title>
+    <meta name="description" content="WSNova adalah prototipe jaringan sensor nirkabel: dari node sensor, penerima data, dashboard web, hingga keputusan kendali kipas." />
+    <meta name="theme-color" content="#ffffff" />
+    <title data-brand-first>WSNova — Dari Node Sensor hingga Keputusan Kendali</title>
     <link rel="icon" type="image/svg+xml" href="/src/brand/favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/site.css?v=20261101-5" />
-      <link rel="stylesheet" href="/src/ui.css?v=5" />
+    <link rel="preload" href="/src/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/src/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/landing.css?v=20261101-1" />
+    <script>
+      /* Penanda untuk reveal saat scroll. Bila skrip utama gagal, konten tetap ditampilkan. */
+      document.documentElement.classList.add("js");
+      setTimeout(function () { document.documentElement.classList.add("js-late"); }, 3500);
+    </script>
+    <noscript><style>.reveal { opacity: 1 !important; transform: none !important; }</style></noscript>
   </head>
-  <body class="landing-body">
-    <header class="landing-header">
-      <a class="brand" href="/" aria-label="WSNova, kembali ke beranda">
-        <img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" />
-      </a>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="i-thermometer" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z"/></symbol>
+        <symbol id="i-radio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5.6 18.4a9 9 0 0 1 0-12.8m12.8 0a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7m7 0a5 5 0 0 1 0 7"/></symbol>
+        <symbol id="i-fan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-1-5 1-7 3-7 3 1 3 5-1 8m0 2c5-1 7 1 7 3-1 3-5 3-8-1m-2-1c1 5-1 7-3 7-3-1-3-5 1-8m1-2C5 12 3 10 3 8c1-3 5-3 8 1"/></symbol>
+        <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/></symbol>
+        <symbol id="i-bars" viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></symbol>
+        <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/></symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+        <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      </defs>
+    </svg>
 
-      <nav class="landing-nav" aria-label="Navigasi utama">
-        <a href="#tentang">Tentang</a><a href="#alur">Cara Kerja</a><a href="#tim">Tim</a>
-      </nav>
+    <a class="skip" href="#tentang">Lewati ke konten</a>
 
+    <header class="site-header">
+      <div class="wrap header-row">
+        <a class="brand" href="/" aria-label="WSNova, kembali ke beranda">
+          <img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" width="160" height="38" />
+        </a>
+        <nav class="site-nav" aria-label="Navigasi utama">
+          <a href="#tentang">Tentang</a>
+          <a href="#cara-kerja">Cara Kerja</a>
+          <a href="#dashboard">Dashboard</a>
+          <a href="#tim">Tim</a>
+        </nav>
+      </div>
     </header>
 
     <main>
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow"><i></i> Monitoring lingkungan multi-node</span>
-          <h1>Pantau kondisi lingkungan, <span>lihat alasan perintah fan.</span></h1>
-          <p>Sistem ini membaca suhu, kelembapan, dan debu dari beberapa node, menilai kondisinya dengan logika fuzzy, lalu menentukan PWM fan. Setiap keputusan dapat ditelusuri di dashboard.</p>
-          <div class="hero-actions">
-            <a class="button button-quiet" href="#alur">Pelajari sistem</a>
+      <!-- 1. HERO -->
+      <section class="hero" id="beranda">
+        <div class="wrap hero-inner">
+          <div class="hero-copy">
+            <span class="eyebrow reveal">Capstone Teknik Komputer · UNNES 2026</span>
+            <h1 class="reveal" style="--d:60ms">Dari node sensor hingga <span>keputusan kendali.</span></h1>
+            <p class="reveal" style="--d:120ms">WSNova adalah prototipe jaringan sensor nirkabel. Sensor membaca kondisi udara, datanya dikirim ke penerima dan tampil di dashboard web, lalu dinilai untuk menentukan perintah kipas.</p>
+            <div class="hero-actions reveal" style="--d:180ms">
+              <a class="btn btn-primary" href="#cara-kerja">Lihat Cara Kerja</a>
+            </div>
+            <dl class="hero-facts reveal" style="--d:240ms">
+              <div><dd>LoRa 433 MHz</dd><dt>Kirim data nirkabel</dt></div>
+              <div><dd>4</dd><dt>Parameter dibaca sensor</dt></div>
+              <div><dd>3</dd><dt>Kelas kondisi</dt></div>
+            </dl>
           </div>
-          <div class="hero-facts" aria-label="Ringkasan sistem">
-            <div><strong id="landing-node-count">-</strong><span>Node sensor</span></div>
-            <div><strong>433 MHz</strong><span>Komunikasi LoRa</span></div>
-            <div><strong>12 V</strong><span>Fan DC, kendali PWM</span></div>
+
+          <div class="stage reveal" style="--d:120ms">
+            <svg id="flow" viewBox="0 0 720 540" role="img" aria-labelledby="flow-t">
+              <title id="flow-t">Ilustrasi alur data: dua node sensor mengirim data ke penerima, lalu ke dashboard dan perintah kipas</title>
+              <defs>
+                <path id="rA" d="M178 170 C250 170 256 262 306 266" />
+                <path id="rB" d="M178 390 C250 390 256 298 306 294" />
+                <path id="rC" d="M414 270 C470 270 470 150 516 150" />
+                <path id="rD" d="M600 228 L600 344" />
+              </defs>
+
+              <use href="#rA" class="route" /><use href="#rB" class="route" /><use href="#rC" class="route" /><use href="#rD" class="route" />
+
+              <!-- Node sensor 1 -->
+              <g transform="translate(110 170)">
+                <circle r="62" class="halo" />
+                <path class="wave w1" d="M-15 -58a21 21 0 0 1 30 0" /><path class="wave w2" d="M-27 -68a37 37 0 0 1 54 0" />
+                <path class="ln" d="M0 -16V-44" /><circle cy="-47" r="4" class="solid" />
+                <rect x="-28" y="-16" width="56" height="46" rx="11" class="body" />
+                <path class="ln thin" d="M-14 -2h28M-14 10h16" /><circle cx="15" cy="12" r="3.2" class="led" />
+                <text y="88" text-anchor="middle" class="lbl">NODE SENSOR</text>
+              </g>
+              <!-- Node sensor 2 -->
+              <g transform="translate(110 390)">
+                <circle r="62" class="halo" />
+                <path class="wave w2" d="M-15 -58a21 21 0 0 1 30 0" /><path class="wave w1" d="M-27 -68a37 37 0 0 1 54 0" />
+                <path class="ln" d="M0 -16V-44" /><circle cy="-47" r="4" class="solid" />
+                <rect x="-28" y="-16" width="56" height="46" rx="11" class="body" />
+                <path class="ln thin" d="M-14 -2h28M-14 10h16" /><circle cx="15" cy="12" r="3.2" class="led l2" />
+                <text y="88" text-anchor="middle" class="lbl">NODE SENSOR</text>
+              </g>
+
+              <!-- Penerima -->
+              <g transform="translate(360 280)">
+                <circle r="66" class="ring" />
+                <path class="ln" d="M-34 -34v-24M34 -34v-24" /><circle cx="-34" cy="-61" r="4" class="solid" /><circle cx="34" cy="-61" r="4" class="solid" />
+                <rect x="-52" y="-34" width="104" height="68" rx="16" class="gw" />
+                <path class="ln white" d="M-30 -12h34M-30 4h22" /><circle cx="30" cy="8" r="5" class="gled" />
+                <text y="92" text-anchor="middle" class="lbl">PENERIMA</text>
+              </g>
+
+              <!-- Dashboard -->
+              <g transform="translate(600 150)">
+                <text y="-74" text-anchor="middle" class="lbl">DASHBOARD</text>
+                <rect x="-80" y="-54" width="160" height="108" rx="14" class="body" />
+                <path class="ln thin" d="M-80 -30H80" />
+                <circle cx="-62" cy="-42" r="3" class="dot a" /><circle cx="-50" cy="-42" r="3" class="dot b" /><circle cx="-38" cy="-42" r="3" class="dot c" />
+                <rect x="-62" y="12" width="16" height="30" rx="3" class="bar b1" /><rect x="-38" y="-4" width="16" height="46" rx="3" class="bar b2" />
+                <rect x="-14" y="6" width="16" height="36" rx="3" class="bar b3" /><rect x="10" y="-12" width="16" height="54" rx="3" class="bar b4" />
+                <rect x="34" y="2" width="16" height="40" rx="3" class="bar b5" />
+                <rect x="38" y="-40" width="34" height="14" rx="7" class="pill" /><circle cx="46" cy="-33" r="2.6" class="pdot" />
+              </g>
+
+              <!-- Kipas -->
+              <g transform="translate(600 400)">
+                <circle r="54" class="fan-out" /><circle r="44" class="fan-in" />
+                <g class="fan-rot">
+                  <ellipse cy="-21" rx="10" ry="20" class="blade" /><ellipse cy="-21" rx="10" ry="20" class="blade" transform="rotate(90)" />
+                  <ellipse cy="-21" rx="10" ry="20" class="blade" transform="rotate(180)" /><ellipse cy="-21" rx="10" ry="20" class="blade" transform="rotate(270)" />
+                </g>
+                <circle r="8" class="hub" />
+                <text y="92" text-anchor="middle" class="lbl">KIPAS</text>
+              </g>
+
+              <!-- Label data -->
+              <g transform="translate(172 106)"><g class="chip c1"><rect width="78" height="28" rx="14" /><text x="39" y="19" text-anchor="middle">Suhu</text></g></g>
+              <g transform="translate(286 150)"><g class="chip c2"><rect width="104" height="28" rx="14" /><text x="52" y="19" text-anchor="middle">Kelembapan</text></g></g>
+              <g transform="translate(176 436)"><g class="chip c3"><rect width="70" height="28" rx="14" /><text x="35" y="19" text-anchor="middle">Debu</text></g></g>
+
+              <!-- Paket data -->
+              <circle r="6" class="packet"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-0.4s"><mpath href="#rA" /></animateMotion></circle>
+              <circle r="6" class="packet"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-1.8s"><mpath href="#rB" /></animateMotion></circle>
+              <circle r="6" class="packet"><animateMotion dur="2.2s" repeatCount="indefinite" begin="-0.6s"><mpath href="#rC" /></animateMotion></circle>
+              <circle r="6" class="packet"><animateMotion dur="1.8s" repeatCount="indefinite" begin="-0.9s"><mpath href="#rD" /></animateMotion></circle>
+
+              <text x="28" y="518" class="cap">Ilustrasi alur data</text>
+            </svg>
           </div>
         </div>
+      </section>
 
-        <div class="network-stage" aria-label="Ilustrasi data node menuju gateway">
-          <div class="stage-glow"></div>
-          <div class="stage-label"><span class="live-dot"></span> Aliran data lingkungan</div>
-          <svg class="network-map" viewBox="0 0 680 430" role="img" aria-labelledby="network-title">
-            <title id="network-title">Node sensor mengirim data menuju gateway</title>
-            <defs>
-              <linearGradient id="route" x1="0" x2="1"><stop offset="0" stop-color="#7dd3fc" /><stop offset="1" stop-color="#2F80ED" /></linearGradient>
-              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-            </defs>
-            <path id="leftRoute" class="data-route" d="M118 254 C190 194 245 182 330 214" />
-            <path id="rightRoute" class="data-route" d="M562 254 C490 194 435 182 350 214" />
-            <g class="signal signal-left" opacity=".36"><path d="M82 217a51 51 0 0 1 72 0" /><path d="M96 231a31 31 0 0 1 44 0" /></g>
-            <g class="signal signal-right" opacity=".36"><path d="M526 217a51 51 0 0 1 72 0" /><path d="M540 231a31 31 0 0 1 44 0" /></g>
-            <g class="antenna antenna-left"><circle cx="118" cy="254" r="48" /><path d="M118 268v-42m-14 42h28M109 226a9 9 0 0 1 18 0" /><text x="118" y="330" text-anchor="middle">NODE 01</text></g>
-            <g class="antenna antenna-right"><circle cx="562" cy="254" r="48" /><path d="M562 268v-42m-14 42h28M553 226a9 9 0 0 1 18 0" /><text x="562" y="330" text-anchor="middle">NODE 02</text></g>
-            <g class="gateway"><circle cx="340" cy="214" r="72" /><rect x="306" y="185" width="68" height="58" rx="16" /><path d="M326 205h28m-28 12h20" /><circle cx="360" cy="225" r="5" /><text x="340" y="310" text-anchor="middle">GATEWAY</text></g>
-            <circle class="packet packet-one" r="7" filter="url(#softGlow)"><animateMotion dur="3.2s" repeatCount="indefinite" begin="-.4s"><mpath href="#leftRoute" /></animateMotion></circle>
-            <circle class="packet packet-two" r="7" filter="url(#softGlow)"><animateMotion dur="3.5s" repeatCount="indefinite" begin="-1.7s"><mpath href="#rightRoute" /></animateMotion></circle>
-            <g class="data-chip chip-temp"><rect width="92" height="34" rx="17" /><text x="46" y="22" text-anchor="middle">28.4 °C</text></g>
-            <g class="data-chip chip-rh"><rect width="92" height="34" rx="17" /><text x="46" y="22" text-anchor="middle">58.2% RH</text></g>
-            <g class="data-chip chip-dust"><rect width="108" height="34" rx="17" /><text x="54" y="22" text-anchor="middle">Indeks 0.46</text></g>
-          </svg>
-          <div class="stage-result"><span>Data diterima</span><strong>Siap dianalisis</strong></div>
+      <!-- TENTANG -->
+      <section class="section" id="tentang">
+        <div class="wrap about">
+          <div class="reveal">
+            <span class="eyebrow eyebrow-dark">Tentang</span>
+            <h2>Satu sistem, dari sensor sampai kipas.</h2>
+          </div>
+          <div class="reveal" style="--d:80ms">
+            <p class="lead">WSNova adalah prototipe jaringan sensor nirkabel. Beberapa perangkat sensor, yang disebut node, membaca suhu, kelembapan, tekanan udara, dan debu di satu area. Hasil bacaannya dikirim lewat sinyal radio, ditampilkan di dashboard web, lalu dinilai menjadi tiga kondisi sederhana.</p>
+            <p class="lead">Dari penilaian itu, sistem menentukan perintah untuk kipas. Semua tahap dapat dilihat dan ditelusuri di dashboard.</p>
+          </div>
         </div>
       </section>
 
-      <section class="trust-strip" aria-label="Komponen sistem"><span>BME280</span><i></i><span>GP2Y1010AU0F</span><i></i><span>LoRa SX1278</span><i></i><span>Fuzzy Mamdani</span><i></i><span>FastAPI</span></section>
-
-      <section class="section intro-section" id="tentang">
-        <div class="section-heading"><span class="eyebrow">Tentang sistem</span><h2>Dari data sensor ke keputusan fan.</h2></div>
-        <p class="section-lead">Dashboard menampilkan kondisi tiap node, node mana yang menentukan perintah fan, dan berapa PWM yang dikirim. Rincian perhitungan ada di halaman Analisis Fuzzy.</p>
-        <div class="feature-grid">
-          <article class="feature-card feature-wide"><div class="feature-icon"><i data-icon="radio"></i></div><span class="feature-number">01</span><h3>Monitoring multi-node</h3><p>Nilai terbaru, status data, dan perbandingan antar-node tersaji dalam satu tampilan.</p><div class="mini-node-row"><span>Node 01</span><span>Node 02</span><span>Node 03</span></div></article>
-          <article class="feature-card"><div class="feature-icon"><i data-icon="target"></i></div><span class="feature-number">02</span><h3>Keputusan transparan</h3><p>Pengguna dapat melihat node penentu, tingkat kendali, dan perintah fan secara ringkas.</p></article>
-          <article class="feature-card"><div class="feature-icon"><i data-icon="flask"></i></div><span class="feature-number">03</span><h3>Simulasi aman</h3><p>Skenario hipotetis dapat diuji terpisah tanpa mengubah perintah ke perangkat.</p></article>
+      <!-- CARA KERJA -->
+      <section class="section section-soft" id="cara-kerja">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow eyebrow-dark">Cara kerja</span>
+            <h2>Empat tahap sederhana.</h2>
+            <p>Dari bacaan sensor sampai perintah untuk kipas.</p>
+          </div>
+          <div class="steps">
+            <article class="card step reveal">
+              <span class="step-no">1</span>
+              <span class="ico"><svg class="ic"><use href="#i-thermometer"/></svg></span>
+              <h3>Ukur</h3>
+              <p>Node membaca suhu, kelembapan, tekanan udara, dan debu di tempatnya berada.</p>
+            </article>
+            <article class="card step reveal" style="--d:80ms">
+              <span class="step-no">2</span>
+              <span class="ico"><svg class="ic"><use href="#i-radio"/></svg></span>
+              <h3>Kirim dan terima</h3>
+              <p>Data dikirim lewat sinyal radio LoRa ke perangkat penerima, yang memeriksa dan menyimpannya.</p>
+            </article>
+            <article class="card step reveal" style="--d:160ms">
+              <span class="step-no">3</span>
+              <span class="ico"><svg class="ic"><use href="#i-gauge"/></svg></span>
+              <h3>Pantau dan nilai</h3>
+              <p>Dashboard menampilkan data tiap node, lalu menilai kondisinya: Baik, Perlu Perhatian, atau Buruk.</p>
+            </article>
+            <article class="card step reveal" style="--d:240ms">
+              <span class="step-no">4</span>
+              <span class="ico"><svg class="ic"><use href="#i-fan"/></svg></span>
+              <h3>Beri perintah</h3>
+              <p>Node yang paling perlu ditangani menentukan seberapa kuat perintah untuk kipas.</p>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section class="section flow-section" id="alur">
-        <div class="section-heading centered"><span class="eyebrow">Cara kerja</span><h2>Alur dari sensor ke fan</h2><p>Setiap tahap dapat dilihat di dashboard.</p></div>
-        <div class="flow-grid">
-          <article><span>1</span><div class="flow-icon"><i data-icon="thermometer"></i></div><h3>Sensor membaca</h3><p>Suhu, kelembapan, dan debu dibaca pada setiap node.</p></article>
-          <article><span>2</span><div class="flow-icon"><i data-icon="radio"></i></div><h3>Data dikirim</h3><p>Data valid diteruskan melalui jaringan LoRa ke gateway.</p></article>
-          <article><span>3</span><div class="flow-icon"><i data-icon="gauge"></i></div><h3>Kondisi dinilai</h3><p>Sistem mengubah data menjadi kondisi dan kebutuhan kendali.</p></article>
-          <article><span>4</span><div class="flow-icon"><i data-icon="fan"></i></div><h3>Fan diperintah</h3><p>Node dengan kebutuhan tertinggi menentukan perintah fan zona.</p></article>
+      <!-- DATA MENJADI KEPUTUSAN -->
+      <section class="section" id="keputusan">
+        <div class="wrap decision">
+          <div class="reveal">
+            <span class="eyebrow eyebrow-dark">Data menjadi keputusan</span>
+            <h2>Bagaimana sistem mengambil keputusan.</h2>
+            <p class="lead">Setiap node dinilai sendiri. Hasilnya digabung menjadi satu perintah untuk kipas.</p>
+          </div>
+          <ol class="timeline">
+            <li class="reveal"><b>Bacaan masuk</b><span>Suhu, kelembapan, dan debu dari tiap node.</span></li>
+            <li class="reveal" style="--d:70ms"><b>Dinilai per node</b><span>Setiap node mendapat skor, satu dari tiga kondisi, dan tingkat kendali.</span></li>
+            <li class="reveal" style="--d:140ms"><b>Yang tertinggi menentukan</b><span>Tingkat kendali tertinggi menjadi kendali untuk satu zona.</span></li>
+            <li class="reveal" style="--d:210ms"><b>Menjadi perintah kipas</b><span>Kendali zona diubah menjadi daya kipas (PWM).</span></li>
+          </ol>
+        </div>
+
+        <div class="wrap">
+          <ul class="legend reveal">
+            <li><b><i class="d good"></i>Baik</b><span>Pembacaan tidak memerlukan perhatian khusus menurut penilaian sistem.</span></li>
+            <li><b><i class="d warn"></i>Perlu Perhatian</b><span>Ada pembacaan yang mulai perlu diperhatikan.</span></li>
+            <li><b><i class="d bad"></i>Buruk</b><span>Pembacaan paling perlu ditangani menurut penilaian sistem.</span></li>
+          </ul>
+          <p class="notes reveal">Klasifikasi merupakan hasil pengolahan internal prototipe dan bukan penilaian baku kualitas udara. Sistem memberi perintah kepada kipas, tetapi tidak menjanjikan perubahan pada suhu atau debu.</p>
         </div>
       </section>
 
-      <section class="section team-section" id="tim">
-        <div class="team-copy"><span class="eyebrow">Tim penelitian</span><h2>Dikembangkan sebagai prototipe tugas akhir.</h2><p>Penelitian Teknik Komputer Universitas Negeri Semarang yang berfokus pada monitoring lingkungan, keterlacakan keputusan, dan kendali fan.</p></div>
-        <div class="people-grid">
-          <article class="person-card"><div class="avatar">AL</div><div><span>Tim Peneliti</span><h3>Arief Muhammad Luthfi Yanuar</h3><p>Teknik Komputer · UNNES</p></div></article>
-          <article class="person-card"><div class="avatar">FN</div><div><span>Tim Peneliti</span><h3>Fatahillah Nabil Fawwaz</h3><p>Teknik Komputer · UNNES</p></div></article>
-          <article class="person-card"><div class="avatar">AA</div><div><span>Peneliti &amp; Pengembang</span><h3>Abbas Abdurrahman</h3><p>Teknik Komputer · UNNES</p></div></article>
-          <article class="person-card"><div class="avatar avatar-soft">VN</div><div><span>Dosen pembimbing</span><h3>Vera Noviana Sulistyawan, S.T., M.T.</h3><p>Universitas Negeri Semarang</p></div></article>
+      <!-- FITUR DASHBOARD -->
+      <section class="section section-soft" id="dashboard">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow eyebrow-dark">Dashboard</span>
+            <h2>Apa yang bisa dilihat dan dilakukan.</h2>
+          </div>
+          <div class="features">
+            <article class="card feature reveal"><span class="ico"><svg class="ic"><use href="#i-bars"/></svg></span><h3>Monitoring beberapa node</h3><p>Nilai terbaru tiap node dan perbandingannya tampil dalam satu halaman.</p></article>
+            <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-gauge"/></svg></span><h3>Klasifikasi kondisi</h3><p>Setiap node dinilai Baik, Perlu Perhatian, atau Buruk.</p></article>
+            <article class="card feature reveal" style="--d:140ms"><span class="ico"><svg class="ic"><use href="#i-clock"/></svg></span><h3>Riwayat data dan keputusan</h3><p>Telusuri bacaan sensor dan keputusan kendali dari waktu ke waktu.</p></article>
+            <article class="card feature reveal"><span class="ico"><svg class="ic"><use href="#i-repeat"/></svg></span><h3>Kendali Otomatis dan Manual</h3><p>Mode Otomatis mengikuti penilaian sistem. Mode Manual hanya tersedia bagi pengguna berwenang, dan penilaian tetap dihitung.</p></article>
+            <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-target"/></svg></span><h3>Analisis fuzzy</h3><p>Lihat bagaimana sebuah bacaan diubah menjadi kondisi dan tingkat kendali.</p></article>
+            <article class="card feature reveal" style="--d:140ms"><span class="ico"><svg class="ic"><use href="#i-flask"/></svg></span><h3>Simulasi</h3><p>Coba nilai bayangan untuk melihat hasil penilaian. Simulasi tidak menjalankan kipas.</p></article>
+          </div>
         </div>
       </section>
 
-      <section class="cta-section"><div><span class="eyebrow eyebrow-light">Dashboard monitoring</span><h2>Lihat kondisi lingkungan secara langsung.</h2><p>Ringkasan setiap node dan status kendali tersedia dalam satu dashboard yang bersih.</p></div><a class="button button-white" href="/dashboard/">Masuk ke Dashboard <span><i data-icon="arrow-right"></i></span></a></section>
+      <!-- TEKNOLOGI -->
+      <section class="section" id="teknologi">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow eyebrow-dark">Teknologi</span>
+            <h2>Dibangun dari komponen berikut.</h2>
+          </div>
+          <ul class="tech">
+            <li class="reveal"><b>BME280</b><span>Sensor suhu, kelembapan, dan tekanan udara</span></li>
+            <li class="reveal" style="--d:50ms"><b>GP2Y1010AU0F</b><span>Sensor debu</span></li>
+            <li class="reveal" style="--d:100ms"><b>LoRa SX1278 433 MHz</b><span>Pengiriman data nirkabel</span></li>
+            <li class="reveal" style="--d:150ms"><b>Orange Pi</b><span>Komputer papan tunggal</span></li>
+            <li class="reveal"><b>Fuzzy Mamdani</b><span>Metode penilaian kondisi</span></li>
+            <li class="reveal" style="--d:50ms"><b>FastAPI</b><span>Layanan data untuk dashboard</span></li>
+            <li class="reveal" style="--d:100ms"><b>PostgreSQL</b><span>Penyimpanan data</span></li>
+            <li class="reveal" style="--d:150ms"><b>Fan DC 12 V</b><span>Kipas yang menerima perintah</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TIM -->
+      <section class="section section-soft" id="tim">
+        <div class="wrap">
+          <div class="section-head reveal">
+            <span class="eyebrow eyebrow-dark">Tim</span>
+            <h2>Orang-orang di balik WSNova.</h2>
+            <p>Tiga mahasiswa Teknik Komputer Universitas Negeri Semarang, masing-masing memegang satu subsistem.</p>
+          </div>
+
+          <!-- Foto opsional dan kecil: letakkan berkas di /src/team/ lalu tambahkan
+               <img src="/src/team/nama.jpg" alt="Nama"> di dalam .avatar. Foto menutupi inisial. -->
+          <ul class="people">
+            <li class="person reveal"><span class="avatar" aria-hidden="true">AL</span><div><h3>Arief Muhammad Luthfi Yanuar</h3><p class="role">Subsistem Node Sensor</p><p>Teknik Komputer · UNNES</p></div></li>
+            <li class="person reveal" style="--d:70ms"><span class="avatar" aria-hidden="true">FN</span><div><h3>Fatahillah Nabil Fawwaz</h3><p class="role">Subsistem Penerima</p><p>Teknik Komputer · UNNES</p></div></li>
+            <li class="person reveal" style="--d:140ms"><span class="avatar" aria-hidden="true">AA</span><div><h3>Abbas Abdurrahman</h3><p class="role">Subsistem Monitoring dan Klasifikasi</p><p>Teknik Komputer · UNNES</p></div></li>
+          </ul>
+
+          <p class="advisor reveal"><small>Dosen pembimbing</small><b>Vera Noviana Sulistyawan, S.T., M.T.</b><span>Universitas Negeri Semarang</span></p>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="cta">
+        <div class="wrap cta-row">
+          <div class="reveal">
+            <h2>Lihat kondisi terkini di dashboard.</h2>
+            <p>Data tiap node dan status perintah kipas tersedia dalam satu halaman.</p>
+          </div>
+          <a class="btn btn-light reveal" style="--d:80ms" href="/dashboard/">Buka Dashboard <svg class="ic"><use href="#i-arrow"/></svg></a>
+        </div>
+      </section>
     </main>
 
-    <footer class="landing-footer">
-      <a class="brand" href="/"><img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" /></a>
-      <p>Teknik Komputer · Universitas Negeri Semarang</p><p>© 2026 Abbas Abdurrahman</p>
+    <footer class="site-footer">
+      <div class="wrap footer-row">
+        <a class="brand" href="/" aria-label="WSNova"><img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" width="132" height="31" /></a>
+        <p>Teknik Komputer · Universitas Negeri Semarang</p>
+        <p>© 2026 Tim WSNova</p>
+      </div>
     </footer>
-    <script>
-      fetch("/api/nodes/latest")
-        .then((r) => (r.ok ? r.json() : []))
-        .then((nodes) => {
-          const count = Array.isArray(nodes) ? nodes.length : (nodes.nodes?.length ?? 0);
-          const el = document.getElementById("landing-node-count");
-          if (el) el.textContent = String(count || 0);
-        })
-        .catch(() => {});
-    </script>
-      <script type="module">import { hydrateIcons } from "/src/icons.js"; hydrateIcons();</script>
-    <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
-</body>
+
+    <script type="module" src="/src/landing.js?v=20261101-1"></script>
+  </body>
 </html>

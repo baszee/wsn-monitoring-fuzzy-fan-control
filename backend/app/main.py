@@ -27,10 +27,12 @@ from app.services.worker import (
     global_fan_controller,
     reset_control_state,
 )
+from app.services.demo_feed import demo_feed_loop
 
 # Event untuk menghentikan background worker secara rapi saat server shutdown
 stop_event = asyncio.Event()
 worker_task = None
+demo_feed_task = None
 
 
 @asynccontextmanager
@@ -40,7 +42,7 @@ async def lifespan(app: FastAPI):
     - Startup: Memulai task background worker loop pemrosesan data sensor.
     - Shutdown: Menghentikan worker secara aman dan mereset driver PWM fan.
     """
-    global worker_task, stop_event
+    global worker_task, demo_feed_task, stop_event
     stop_event.clear()
 
     # Selalu mulai Otomatis dengan PWM 0%; mode Manual tidak dipulihkan.
@@ -51,6 +53,14 @@ async def lifespan(app: FastAPI):
         background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)
     )
 
+    if ops.DEMO_MODE:
+        demo_feed_task = asyncio.create_task(
+            demo_feed_loop(
+                interval_seconds=ops.DEMO_FEED_INTERVAL_SECONDS,
+                stop_event=stop_event,
+            )
+        )
+
     yield
 
     # Shutdown: Set stop event dan tunggu worker selesai
@@ -59,6 +69,13 @@ async def lifespan(app: FastAPI):
         worker_task.cancel()
         try:
             await worker_task
+        except asyncio.CancelledError:
+            pass
+
+    if demo_feed_task:
+        demo_feed_task.cancel()
+        try:
+            await demo_feed_task
         except asyncio.CancelledError:
             pass
 
