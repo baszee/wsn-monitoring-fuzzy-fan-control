@@ -57,7 +57,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
 
     <div class="sidebar-zone">
       <span>Zona aktif</span>
-      <strong><i></i> Zona 1</strong>
+      <strong id="sidebar-zone-name"><i></i> Zona</strong>
       <small id="sidebar-zone-count">Memuat...</small>
     </div>
 
@@ -78,6 +78,10 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
       const count = list.length;
       const zoneEl = root.querySelector("#sidebar-zone-count");
       if (zoneEl) zoneEl.textContent = `${count} node terdaftar`;
+      const zoneNameEl = root.querySelector("#sidebar-zone-name");
+      if (zoneNameEl && list[0]?.zone_id) {
+        zoneNameEl.innerHTML = `<i></i> ${list[0].zone_id}`;
+      }
       const badgeEl = root.querySelector("#sidebar-node-badge");
       if (badgeEl && count > 0) {
         badgeEl.textContent = String(count);
@@ -163,16 +167,29 @@ export function showToast(title, message, type = "info", duration = 3500) {
 }
 
 // ─── Format Helpers ────────────────────────────────────────────────────────
+// SQLite mengirim waktu tanpa zona; anggap UTC supaya tidak bergeser 7 jam.
+export function parseTs(v) {
+  if (!v) return NaN;
+  const s = String(v);
+  return Date.parse(/(Z|[+-]\d{2}:?\d{2})$/.test(s) ? s : `${s}Z`);
+}
+
+export function fmtClock(ms, withSeconds = true) {
+  if (!Number.isFinite(ms)) return "—";
+  const d = new Date(ms), p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}${withSeconds ? `:${p(d.getSeconds())}` : ""}`;
+}
+
 export function fmtTime(isoStr) {
-  if (!isoStr) return "—";
-  const d = new Date(isoStr);
-  if (isNaN(d)) return "—";
-  return d.toLocaleString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "short" });
+  const ms = parseTs(isoStr);
+  if (!Number.isFinite(ms)) return "—";
+  return new Date(ms).toLocaleString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "short" });
 }
 
 export function fmtRelative(isoStr) {
-  if (!isoStr) return "—";
-  const diff = Date.now() - new Date(isoStr).getTime();
+  const ms = parseTs(isoStr);
+  if (!Number.isFinite(ms)) return "—";
+  const diff = Date.now() - ms;
   if (diff < 0) return "baru saja";
   if (diff < 60_000) return `${Math.floor(diff / 1000)} dtk lalu`;
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} mnt lalu`;
@@ -208,7 +225,8 @@ export function normalizeNode(node = {}) {
   return {
     ...node,
     timestamp: node.source_timestamp ?? node.timestamp ?? null,
-    is_valid: node.status_valid ?? node.is_valid ?? false,
+    // "valid" berarti lolos validasi M2 dan masih segar menurut backend
+    is_valid: node.data_status ? node.data_status === "Valid" : (node.status_valid ?? false),
   };
 }
 

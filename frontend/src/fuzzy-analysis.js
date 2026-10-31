@@ -7,41 +7,26 @@ import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
 
 buildSidebar("fuzzy");
 
-// ── MF Definitions (mirrored from backend) ─────────────────────────────────
-const MF_DEFS = {
-  temp: {
-    universe: [0, 50],
-    terms: [
-      { name: "Rendah",  color: "#3b82f6", fn: (x) => trapmf(x, 0,  0,  16, 18) },
-      { name: "Normal",  color: "#10b981", fn: (x) => trapmf(x, 16, 18, 30, 32) },
-      { name: "Tinggi",  color: "#ef4444", fn: (x) => trapmf(x, 30, 32, 50, 50) },
-    ],
-  },
-  rh: {
-    universe: [0, 100],
-    terms: [
-      { name: "Kering",  color: "#f59e0b", fn: (x) => trapmf(x,  0,  0, 35, 40) },
-      { name: "Normal",  color: "#10b981", fn: (x) => trapmf(x, 35, 40, 60, 65) },
-      { name: "Lembap",  color: "#06b6d4", fn: (x) => trapmf(x, 60, 65,100,100) },
-    ],
-  },
-  dust: {
-    universe: [0, 1],
-    terms: [
-      { name: "Rendah",  color: "#3b82f6", fn: (x) => trapmf(x, 0,   0,  0.2, 0.4) },
-      { name: "Sedang",  color: "#f59e0b", fn: (x) => trimf (x, 0.2, 0.5, 0.8)     },
-      { name: "Tinggi",  color: "#ef4444", fn: (x) => trapmf(x, 0.6, 0.8, 1,   1)  },
-    ],
-  },
-  score: {
-    universe: [0, 100],
-    terms: [
-      { name: "Baik",           color: "#16a34a", fn: (x) => trapmf(x,  0,  0, 20, 40) },
-      { name: "Perlu Perhatian",color: "#d97706", fn: (x) => trimf (x, 30, 50, 70)      },
-      { name: "Buruk",          color: "#dc2626", fn: (x) => trapmf(x, 60, 80,100,100)  },
-    ],
-  },
+// ── MF Definitions (diambil dari konfigurasi aktif, bukan disalin manual) ─
+const MF_STYLE = {
+  temp:  { universe: [0, 50],  colors: { Rendah: "#3b82f6", Normal: "#10b981", Tinggi: "#ef4444" } },
+  rh:    { universe: [0, 100], colors: { Kering: "#f59e0b", Normal: "#10b981", Lembap: "#06b6d4" } },
+  dust:  { universe: [0, 1],   colors: { Rendah: "#3b82f6", Sedang: "#f59e0b", Tinggi: "#ef4444" } },
+  score: { universe: [0, 100], colors: { Baik: "#16a34a", "Perlu Perhatian": "#d97706", Buruk: "#dc2626" } },
 };
+const SRC_KEY = { temp: "temp", rh: "rh", dust: "dust", score: "condition_score" };
+
+let membership = {};
+try { membership = (await apiFetch("/api/config/active")).membership_params ?? {}; }
+catch (e) { showToast("Gagal memuat konfigurasi", e.message, "error"); }
+
+const MF_DEFS = Object.fromEntries(Object.entries(MF_STYLE).map(([key, style]) => [key, {
+  universe: style.universe,
+  terms: Object.entries(membership[SRC_KEY[key]] ?? {}).map(([name, spec]) => {
+    const p = spec.params;
+    return { name, color: style.colors[name] ?? "#64748b", fn: spec.type === "trimf" ? (x) => trimf(x, ...p) : (x) => trapmf(x, ...p) };
+  }),
+}]));
 
 function trapmf(x, a, b, c, d) {
   if (x <= a || x >= d) return 0;

@@ -85,7 +85,8 @@ function renderKPIs() {
   const valid  = nodesData.filter(n => dataQuality(n).key === "valid").length;
   document.getElementById("kpi-active").textContent = active;
   document.getElementById("kpi-valid").textContent  = valid;
-  document.getElementById("kpi-determining").textContent = controlData?.control_node_id ?? "—";
+  document.getElementById("kpi-determining").textContent =
+    controlData && controlData.fan_command_status !== "Kendali tidak tersedia" ? (controlData.control_node_id ?? "—") : "—";
 
   // Worst condition across valid nodes
   const scores = nodesData.filter(n => n.is_valid && n.condition_score != null).map(n => n.condition_score);

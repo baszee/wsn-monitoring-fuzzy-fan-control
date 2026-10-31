@@ -16,7 +16,7 @@ if (!NODE_ID) {
 }
 
 document.getElementById("page-title").textContent = `Detail ${NODE_ID}`;
-document.getElementById("page-sub").textContent   = `Zona 1 · ${NODE_ID}`;
+document.getElementById("page-sub").textContent   = NODE_ID;
 
 // ── Chart State ────────────────────────────────────────────────────────────
 let currentMetric = "temperature";
@@ -47,6 +47,8 @@ async function fetchLatest() {
       document.getElementById("info-score2").textContent = fmtNumber(node.condition_score);
       document.getElementById("info-ctrl").textContent   = fmtNumber(node.control_level);
       document.getElementById("info-valid").innerHTML    = dataQualityPill(node);
+      document.getElementById("info-zone").textContent = node.zone_id ?? "—";
+      document.getElementById("page-sub").textContent = `${node.zone_id ?? "—"} · ${NODE_ID}`;
       document.getElementById("info-time").textContent  = fmtTime(node.timestamp);
       setUpdatedAt(node.timestamp);
     }

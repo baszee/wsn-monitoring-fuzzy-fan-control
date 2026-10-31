@@ -32,17 +32,6 @@ const rulesListEl= document.getElementById("sim-rules-list");
 const rulesCountEl=document.getElementById("active-rules-count");
 const resetBtn   = document.getElementById("reset-btn");
 
-// ── Parameter PWM Model ────────────────────────────────────────────────────
-const U_OFF = 15.0;
-const U_MAX = 88.33;
-const D_MIN = 30.0;
-
-function computeCandidatePWM(u) {
-  if (u == null || u <= U_OFF) return 0.0;
-  const ratio = Math.min(1.0, Math.max(0.0, (u - U_OFF) / (U_MAX - U_OFF)));
-  return D_MIN + ratio * (100.0 - D_MIN);
-}
-
 // ── Debounced Simulation API Call ──────────────────────────────────────────
 let debounceTimer = null;
 
@@ -90,7 +79,7 @@ function renderResults(res) {
   resClass.innerHTML = `<span class="pill-${condCls}">${cls || conditionLabel(condCls)}</span>`;
 
   // PWM Calculation
-  const candPWM = computeCandidatePWM(ctrl);
+  const candPWM = Number(res.candidate_pwm_percent ?? 0);
   if (candPWM === 0.0) {
     resPwm.innerHTML = `0.0% <span style="font-size:0.75rem;font-weight:400;color:var(--text-soft);">(Fan Mati)</span>`;
   } else {

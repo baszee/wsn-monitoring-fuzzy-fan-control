@@ -29,6 +29,19 @@ const cfgRulesEl   = document.getElementById("cfg-rules");
 const nodesTableEl = document.getElementById("registered-nodes-table");
 const refreshBtnEl = document.getElementById("refresh-btn");
 
+const MF_TITLES = { temp: "Suhu (°C)", rh: "Kelembapan (% RH)", dust: "Indeks debu (0–1)", condition_score: "Skor kondisi (0–100)", control_level: "Tingkat kendali (0–100)" };
+const MF_SHAPE = { trapmf: "trapesium", trimf: "segitiga" };
+
+function renderMfSummary(params = {}) {
+  const el = document.getElementById("mf-summary");
+  if (!el) return;
+  el.innerHTML = Object.entries(MF_TITLES).map(([key, title]) => `
+    <div class="mf-box"><strong>${title}</strong><ul>
+      ${Object.entries(params[key] ?? {}).map(([name, s]) =>
+        `<li><b>${name}:</b> ${MF_SHAPE[s.type] ?? s.type} [${s.params.map((x) => fmtNumber(x, Number.isInteger(x) ? 0 : 2)).join(", ")}]</li>`).join("")}
+    </ul></div>`).join("");
+}
+
 // ── Fetch & Render ─────────────────────────────────────────────────────────
 async function fetchConfigAndNodes() {
   try {
@@ -41,7 +54,7 @@ async function fetchConfigAndNodes() {
 
     // Render Config
     if (cfg) {
-      cfgVersionEl.textContent = cfg.config_version ?? "v1.0.0-initial";
+      cfgVersionEl.textContent = cfg.config_version ?? "—";
       cfgStatusEl.innerHTML    = cfg.is_active
         ? `<span class="active-pill">Aktif</span>`
         : `<span class="inactive-pill">Nonaktif</span>`;
@@ -51,7 +64,8 @@ async function fetchConfigAndNodes() {
       cfgUmaxEl.textContent    = fmtNumber(cfg.u_max, 2);
       cfgDminEl.textContent    = `${fmtNumber(cfg.d_min, 1)} %`;
       cfgDeltaEl.textContent   = `${fmtNumber(cfg.delta_d_update, 1)} %`;
-      cfgRulesEl.textContent   = `${cfg.rule_base_count || 27} Aturan`;
+      cfgRulesEl.textContent   = `${cfg.rule_base_count ?? "—"} aturan`;
+      renderMfSummary(cfg.membership_params);
     }
 
     // Render Registered Nodes Table
@@ -67,7 +81,7 @@ async function fetchConfigAndNodes() {
         return `
           <tr>
             <td><strong>${node.node_id}</strong></td>
-            <td>Zona 1</td>
+            <td>${node.zone_id ?? "—"}</td>
             <td>
               <span class="${isActiveReg ? "active-pill" : "inactive-pill"}">
                 ${isActiveReg ? "Terdaftar & Aktif" : "Nonaktif"}

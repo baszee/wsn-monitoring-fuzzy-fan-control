@@ -73,7 +73,7 @@
             </div>
             <div class="settings-row">
               <span>Jumlah Aturan Basis</span>
-              <strong id="cfg-rules">27 Aturan</strong>
+              <strong id="cfg-rules">—</strong>
             </div>
           </div>
         </div>
@@ -146,41 +146,7 @@
         <p style="font-size:0.78rem;color:var(--text-soft);margin:0 0 1rem;">
           Kategori ini membantu menjelaskan hasil sistem dengan bahasa sederhana. Peralihan antarkategori dibuat bertahap agar tidak berubah secara mendadak.
         </p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1rem;">
-          <div style="background:var(--surface);padding:1rem;border-radius:10px;">
-            <strong style="display:block;font-size:0.85rem;margin-bottom:0.5rem;color:var(--blue);">Suhu (0–50 °C)</strong>
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.75rem;line-height:1.6;color:var(--text);">
-              <li><strong>Rendah:</strong> dominan hingga sekitar 18 °C</li>
-              <li><strong>Normal:</strong> sekitar 16–32 °C</li>
-              <li><strong>Tinggi:</strong> mulai sekitar 30 °C</li>
-            </ul>
-          </div>
-          <div style="background:var(--surface);padding:1rem;border-radius:10px;">
-            <strong style="display:block;font-size:0.85rem;margin-bottom:0.5rem;color:var(--blue);">Kelembapan (0–100%)</strong>
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.75rem;line-height:1.6;color:var(--text);">
-              <li><strong>Kering:</strong> dominan hingga sekitar 40%</li>
-              <li><strong>Normal:</strong> sekitar 35–65%</li>
-              <li><strong>Lembap:</strong> mulai sekitar 60%</li>
-            </ul>
-          </div>
-          <div style="background:var(--surface);padding:1rem;border-radius:10px;">
-            <strong style="display:block;font-size:0.85rem;margin-bottom:0.5rem;color:var(--blue);">Indeks Debu (0–1)</strong>
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.75rem;line-height:1.6;color:var(--text);">
-              <li><strong>Rendah:</strong> dominan hingga sekitar 0,4</li>
-              <li><strong>Sedang:</strong> berpusat di sekitar 0,5</li>
-              <li><strong>Tinggi:</strong> mulai sekitar 0,6</li>
-            </ul>
-          </div>
-          <div style="background:var(--surface);padding:1rem;border-radius:10px;">
-            <strong style="display:block;font-size:0.85rem;margin-bottom:0.5rem;color:var(--blue);">Tingkat Kendali Fan (0–100)</strong>
-            <ul style="margin:0;padding-left:1.2rem;font-size:0.75rem;line-height:1.6;color:var(--text);">
-              <li><strong>Mati:</strong> kebutuhan kendali sangat rendah</li>
-              <li><strong>Rendah:</strong> kebutuhan ventilasi ringan</li>
-              <li><strong>Sedang:</strong> kebutuhan ventilasi menengah</li>
-              <li><strong>Tinggi:</strong> kebutuhan ventilasi kuat</li>
-            </ul>
-          </div>
-        </div>
+        <div id="mf-summary" class="mf-summary"></div>
       </div>
     </div>
   </div>

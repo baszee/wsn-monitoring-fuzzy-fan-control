@@ -80,3 +80,20 @@ def test_previous_pwm_is_old_value():
     second = run_processing_cycle(db, controller=ctrl)["pwm_decision"]
     assert first["previous_pwm"] == 0.0
     assert second["previous_pwm"] == first["final_pwm"]
+
+
+def test_simulate_uses_active_config_and_returns_pwm():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.core.database import get_db
+    db = _db()
+    app.dependency_overrides[get_db] = lambda: db
+    try:
+        r = TestClient(app).post("/api/fuzzy/simulate", json={"temperature": 40, "humidity": 20, "dust_index": 1.0})
+    finally:
+        app.dependency_overrides.clear()
+    body = r.json()
+    assert r.status_code == 200
+    assert body["config_version"] == "t1"
+    assert body["candidate_pwm_percent"] > 90.0
+

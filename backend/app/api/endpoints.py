@@ -36,6 +36,7 @@ from app.services.fuzzy import (
     DEFAULT_MEMBERSHIP_PARAMS,
     DEFAULT_RULE_BASE
 )
+from app.services.pwm import calculate_candidate_pwm
 from app.services.freshness import age_seconds, is_fresh
 from app.services.worker import global_fan_controller, worker_status
 
@@ -337,17 +338,39 @@ def get_fuzzy_node_detail(node_id: str, db: Session = Depends(get_db)):
     response_model=FuzzySimulateResponse,
     summary="Simulasi What-If fuzzy hipotetis (tidak mempengaruhi fan motor fisik)"
 )
-def simulate_fuzzy(req: FuzzySimulateRequest):
-    """
-    Menghitung inferensi fuzzy untuk masukan suhu, RH, dan debu yang ditentukan pengguna.
-    Hanya mengembalikan hasil perhitungan dan tidak menyentuh aktuator fan maupun basis data.
-    """
-    eval_result = evaluate_fuzzy(
+def simulate_fuzzy(req: FuzzySimulateRequest, db: Session = Depends(get_db)):
+    """Memakai konfigurasi aktif yang sama dengan worker. Tidak menyentuh fan maupun basis data."""
+    config = (
+        db.query(ControlConfig)
+        .filter(ControlConfig.is_active == True)
+        .order_by(ControlConfig.created_at.desc())
+        .first()
+    )
+    if config:
+        engine = FuzzyMamdaniEngine(membership_params=config.membership_params, rule_base=config.rule_base)
+        c_0, c_h = config.dust_low_reference, config.dust_high_reference
+        u_off, u_max, d_min = config.u_off, config.u_max, config.d_min
+        version = config.config_version
+    else:
+        engine = FuzzyMamdaniEngine()
+        c_0, c_h, u_off, u_max, d_min, version = 0.05, 3.50, 15.0, 88.33, 30.0, None
+
+    if req.dust_index is not None:
+        d_idx = req.dust_index
+    elif req.dust_raw is not None:
+        d_idx = normalize_dust(req.dust_raw, c_0=c_0, c_h=c_h)
+    else:
+        raise HTTPException(status_code=422, detail="Isi dust_index atau dust_raw.")
+
+    eval_result = engine.evaluate(
         temperature=req.temperature,
         humidity=req.humidity,
-        dust_raw=req.dust_raw,
-        dust_index=req.dust_index,
-        include_curves=req.include_curves
+        dust_index=d_idx,
+        include_curves=req.include_curves,
+    )
+    u_i = eval_result["outputs"]["control_level"]
+    candidate = calculate_candidate_pwm(
+        u_zona=u_i if u_i > u_off else None, u_off=u_off, u_max=u_max, d_min=d_min
     )
 
     return FuzzySimulateResponse(
@@ -355,7 +378,9 @@ def simulate_fuzzy(req: FuzzySimulateRequest):
         memberships=eval_result["memberships"],
         active_rules=eval_result["active_rules"],
         outputs=eval_result["outputs"],
-        curves=eval_result.get("curves")
+        curves=eval_result.get("curves"),
+        candidate_pwm_percent=candidate,
+        config_version=version,
     )
 
 

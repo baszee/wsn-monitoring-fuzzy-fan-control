@@ -75,3 +75,18 @@ td .ic { color: var(--blue); }
 .toast.toast-success > span { color: #16866f; background: #e5f8f2; }
 .toast.toast-warn > span { color: #956500; background: #fff5dc; }
 .toast.toast-error > span { color: #bd4054; background: #ffedf0; }
+
+.fan-stage { display: grid; place-items: center; }
+.fan-stage canvas { width: 176px; height: 176px; max-width: 100%; }
+.pwm-readout { text-align: center; }
+.pwm-readout span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+.pwm-readout strong { display: block; margin-top: 4px; font: 800 44px/1 "Manrope"; letter-spacing: -.05em; }
+.fan-visual-card.unavailable .pwm-readout strong, .decision-card.unavailable .pwm-readout strong { color: #94a3b8; }
+.decision-note { min-height: 16px; margin: 0; text-align: center; color: #956500; font-size: 11px; line-height: 1.4; }
+.chain-values { font-size: .8rem; color: var(--text-soft); margin-top: 2px; display: block; }
+
+.mf-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.mf-box { background: var(--surface); padding: 1rem; border-radius: 10px; }
+.mf-box strong { display: block; font-size: .85rem; margin-bottom: .5rem; color: var(--blue); }
+.mf-box ul { margin: 0; padding-left: 1.2rem; font-size: .75rem; line-height: 1.6; }
+

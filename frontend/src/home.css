@@ -4,13 +4,6 @@
 .decision-card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
 .decision-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .decision-head h2 { margin: 0; font: 800 14px "Manrope"; letter-spacing: -.02em; }
-.fan-stage { display: grid; place-items: center; }
-.fan-stage canvas { width: 176px; height: 176px; max-width: 100%; }
-.pwm-readout { text-align: center; }
-.pwm-readout span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
-.pwm-readout strong { display: block; margin-top: 4px; font: 800 44px/1 "Manrope"; letter-spacing: -.05em; }
-.decision-card.unavailable .pwm-readout strong { color: #94a3b8; }
-.decision-note { min-height: 16px; margin: 0; text-align: center; color: #956500; font-size: 11px; line-height: 1.4; }
 .decision-facts { margin: 0; }
 .decision-facts div { padding: 9px 0; display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #edf2f7; }
 .decision-facts dt { color: var(--muted); font-size: 11px; }

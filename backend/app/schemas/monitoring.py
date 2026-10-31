@@ -85,3 +85,5 @@ class FuzzySimulateResponse(BaseModel):
     active_rules: List[ActiveRuleItem]
     outputs: Dict[str, Any]
     curves: Optional[Dict[str, List[float]]] = None
+    candidate_pwm_percent: Optional[float] = None   # sebelum histeresis
+    config_version: Optional[str] = None

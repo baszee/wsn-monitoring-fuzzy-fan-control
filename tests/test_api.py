@@ -136,7 +136,7 @@ class TestAPIAndWorker:
             dust_raw=0.08,
             include_curves=True
         )
-        res = simulate_fuzzy(req)
+        res = simulate_fuzzy(req, db=self.db)
         assert res.outputs["condition_class"] == "Buruk"
         assert res.outputs["control_level"] <= 15.0
         assert res.curves is not None

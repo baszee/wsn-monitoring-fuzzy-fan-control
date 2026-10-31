@@ -27,8 +27,8 @@
       <section class="hero">
         <div class="hero-copy">
           <span class="eyebrow"><i></i> Prototipe penelitian Teknik Komputer</span>
-          <h1>Lingkungan lebih mudah dipahami, <span>keputusan lebih transparan.</span></h1>
-          <p>Platform monitoring multi-node yang menyatukan data suhu, kelembapan, dan debu menjadi informasi yang mudah dibaca serta perintah fan yang dapat ditelusuri.</p>
+          <h1>Pantau kondisi lingkungan, <span>lihat alasan perintah fan.</span></h1>
+          <p>Sistem ini membaca suhu, kelembapan, dan debu dari beberapa node, menilai kondisinya dengan logika fuzzy, lalu menentukan PWM fan. Setiap keputusan dapat ditelusuri di dashboard.</p>
           <div class="hero-actions">
             <a class="button button-quiet" href="#alur">Pelajari sistem</a>
           </div>
@@ -68,8 +68,8 @@
       <section class="trust-strip" aria-label="Komponen sistem"><span>BME280</span><i></i><span>GP2Y1010AU0F</span><i></i><span>LoRa SX1278</span><i></i><span>Fuzzy Mamdani</span><i></i><span>FastAPI</span></section>
 
       <section class="section intro-section" id="tentang">
-        <div class="section-heading"><span class="eyebrow">Tentang sistem</span><h2>Dari angka sensor menjadi gambaran kondisi yang jelas.</h2></div>
-        <p class="section-lead">Sistem ini membantu pengguna memantau beberapa node sekaligus, memahami kondisi lingkungan, serta mengetahui alasan di balik perintah fan—tanpa perlu membaca rumus teknis di layar utama.</p>
+        <div class="section-heading"><span class="eyebrow">Tentang sistem</span><h2>Dari data sensor ke keputusan fan.</h2></div>
+        <p class="section-lead">Dashboard menampilkan kondisi tiap node, node mana yang menentukan perintah fan, dan berapa PWM yang dikirim. Rincian perhitungan ada di halaman Analisis Fuzzy.</p>
         <div class="feature-grid">
           <article class="feature-card feature-wide"><div class="feature-icon"><i data-icon="radio"></i></div><span class="feature-number">01</span><h3>Monitoring multi-node</h3><p>Nilai terbaru, status data, dan perbandingan antar-node tersaji dalam satu tampilan.</p><div class="mini-node-row"><span>Node 01</span><span>Node 02</span><span>Node 03</span></div></article>
           <article class="feature-card"><div class="feature-icon"><i data-icon="target"></i></div><span class="feature-number">02</span><h3>Keputusan transparan</h3><p>Pengguna dapat melihat node penentu, tingkat kendali, dan perintah fan secara ringkas.</p></article>
@@ -78,7 +78,7 @@
       </section>
 
       <section class="section flow-section" id="alur">
-        <div class="section-heading centered"><span class="eyebrow">Cara kerja</span><h2>Satu alur yang mudah diikuti.</h2><p>Setiap tahap dibuat terlihat agar keputusan sistem tidak terasa seperti kotak hitam.</p></div>
+        <div class="section-heading centered"><span class="eyebrow">Cara kerja</span><h2>Alur dari sensor ke fan</h2><p>Setiap tahap dapat dilihat di dashboard.</p></div>
         <div class="flow-grid">
           <article><span>1</span><div class="flow-icon"><i data-icon="thermometer"></i></div><h3>Sensor membaca</h3><p>Suhu, kelembapan, dan debu dibaca pada setiap node.</p></article>
           <article><span>2</span><div class="flow-icon"><i data-icon="radio"></i></div><h3>Data dikirim</h3><p>Data valid diteruskan melalui jaringan LoRa ke gateway.</p></article>
