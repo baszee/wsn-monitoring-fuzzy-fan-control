@@ -3,7 +3,7 @@
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261101-1";
+         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261101-3";
 
 buildSidebar("nodes");
 
@@ -82,7 +82,7 @@ function renderMFList(mfMap) {
           <span style="color:var(--text-soft);">${key.replace(/_/g," ")}</span>
           <strong style="color:var(--text);">${pct}%</strong>
         </div>
-        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${val > 0.5 ? "#2563EB" : "#94a3b8"};"></div></div>
+        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${val > 0.5 ? "#2F80ED" : "#94a3b8"};"></div></div>
       </div>`;
   }).join("");
 }
@@ -164,8 +164,8 @@ function drawHistoryChart() {
   wrap.innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">
       ${gridLines}
-      <polyline points="${points}" fill="none" stroke="#2563EB" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      ${histData.map((d, i) => `<circle cx="${toX(times[i])}" cy="${toY(d[currentMetric] ?? minV)}" r="3" fill="#2563EB"/>`).join("")}
+      <polyline points="${points}" fill="none" stroke="#2F80ED" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${histData.map((d, i) => `<circle cx="${toX(times[i])}" cy="${toY(d[currentMetric] ?? minV)}" r="3" fill="#2F80ED"/>`).join("")}
       ${timeLabels}
     </svg>`;
 }

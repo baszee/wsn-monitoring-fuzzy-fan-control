@@ -19,7 +19,7 @@
 
 .node-tile { padding: 16px; display: flex; flex-direction: column; gap: 12px; color: inherit; transition: border-color .15s, box-shadow .15s; }
 .node-tile:hover { border-color: #bcd6f2; box-shadow: 0 8px 22px rgba(70, 107, 146, .09); }
-.node-tile.determining { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .1); }
+.node-tile.determining { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(47,128,237, .1); }
 .node-tile.inactive { background: #f8fafc; }
 .tile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .tile-id { font: 800 13px "Manrope"; }

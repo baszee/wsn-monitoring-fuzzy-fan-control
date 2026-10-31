@@ -1,4 +1,4 @@
-import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock } from "/src/shared.js?v=20261101-1";
+import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock } from "/src/shared.js?v=20261101-3";
 import { icon } from "/src/icons.js";
 import { createFan } from "/src/fan-canvas.js";
 import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
@@ -35,7 +35,7 @@ function renderStatus() {
   const c = state.control;
   $("#zone-label").textContent = c?.zone_id ? `Kondisi ${c.zone_id}` : "Kondisi zona";
   $("#updated-at").textContent = !c ? "—"
-    : !c.worker_alive ? "Pemroses data tidak berjalan"
+    : !c.worker_alive ? "Pengolahan data sedang terhenti"
     : `Diperbarui ${clock(parseTs(c.last_evaluated_at))}`;
 }
 
@@ -84,7 +84,7 @@ function renderDecision() {
     pill.textContent = "Kendali tidak tersedia";
     pill.classList.add("unavailable");
     note.textContent = !c ? "Data kendali belum dapat dimuat."
-      : !c.worker_alive ? "Pemroses data tidak berjalan."
+      : !c.worker_alive ? "Pengolahan data sedang terhenti."
       : `Tidak ada node dengan data valid dalam ${c.freshness_seconds} detik terakhir.`;
     fan.setTarget(0, true);
     $("#pwm-value").textContent = "—";
@@ -151,7 +151,7 @@ const RANGE_MS = { "1h": 3600e3, "6h": 21600e3, "24h": 86400e3 };
 const RANGE_TEXT = { "1h": "1 jam", "6h": "6 jam", "24h": "24 jam" };
 const ZONE_COLOR = "#10213c";
 const TABS = {
-  control:     { label: "Tingkat kendali", key: "control_level", fixed: [0, 100], dec: 0, note: "u zona = nilai u tertinggi dari semua node" },
+  control:     { label: "Tingkat kendali", key: "control_level", fixed: [0, 100], dec: 0, note: "Tingkat kendali zona mengikuti node dengan kebutuhan tertinggi" },
   temperature: { label: "Suhu (°C)", key: "temperature", dec: 1, note: "Data sensor aktual, tanpa nilai perkiraan" },
   humidity:    { label: "Kelembapan (% RH)", key: "humidity", dec: 1, floor: 0, note: "Data sensor aktual, tanpa nilai perkiraan" },
   dust_index:  { label: "Indeks debu", key: "dust_index", dec: 2, floor: 0, note: "Data sensor aktual, tanpa nilai perkiraan" },

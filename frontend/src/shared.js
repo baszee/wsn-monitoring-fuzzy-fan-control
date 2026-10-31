@@ -3,6 +3,8 @@
  * Sidebar dinamis, toast, format helper, polling helper
  */
 
+
+import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
 // ─── Konfigurasi Sidebar ───────────────────────────────────────────────────
@@ -46,13 +48,8 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
 
   root.innerHTML = `
     <div class="sidebar-head">
+      <a class="brand sidebar-brand" href="/" aria-label="${BRAND.name}, kembali ke beranda">${brandLogoHTML("full", "brand-logo brand-logo-sidebar")}${brandLogoHTML("mark", "brand-logo brand-logo-mark")}</a>
       <button class="rail-toggle" id="sidebar-toggle" type="button" aria-label="Ciutkan atau perluas navigasi" aria-expanded="true"><span class="ic">${icon("menu")}</span></button>
-      <a class="brand sidebar-brand" href="/">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0"/><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0"/></svg>
-        </span>
-        <span><strong>WSN Monitor</strong><small>Monitoring dan kendali fan</small></span>
-      </a>
     </div>
 
     <div class="sidebar-zone">
@@ -66,9 +63,8 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </nav>
 
     <div class="sidebar-footer">
-      <a href="/dashboard/login/" id="admin-link" title="Masuk admin"><span class="ic">${icon("lock")}</span> <span class="lbl">Masuk admin</span></a>
-      <a href="/" title="Kembali ke beranda"><span class="ic">${icon("arrow-left")}</span> <span class="lbl">Kembali ke beranda</span></a>
-      <small>Prototipe penelitian</small>
+      <a href="/dashboard/login/" id="admin-link" class="side-admin" title="Masuk admin"><span class="ic">${icon("lock")}</span><span class="lbl">Masuk admin</span></a>
+      <a href="/" class="side-home" title="Kembali ke beranda"><span class="ic">${icon("arrow-left")}</span><span class="lbl">Kembali ke beranda</span></a>
     </div>
   `;
 
@@ -181,7 +177,7 @@ async function _initAdminLink() {
   if (!s.authenticated) return;
   link.title = `Keluar (${s.username})`;
   link.href = "#";
-  link.innerHTML = `<span class="ic">${icon("log-out")}</span> <span class="lbl">Keluar</span>`;
+  link.innerHTML = `<span class="ic">${icon("log-out")}</span><span class="lbl">Keluar</span>`;
   link.addEventListener("click", (e) => { e.preventDefault(); logoutAdmin(); });
 }
 
@@ -350,7 +346,7 @@ export function startPolling(fetchFn, intervalMs = 8000) {
 }
 
 // ─── Mini Sparkline SVG ────────────────────────────────────────────────────
-export function drawSparkline(svgEl, values, color = "#2563EB") {
+export function drawSparkline(svgEl, values, color = "#2F80ED") {
   if (!svgEl || !values?.length) return;
   const W = 100, H = 28, PAD = 2;
   const min = Math.min(...values), max = Math.max(...values);

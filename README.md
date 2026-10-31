@@ -1,4 +1,4 @@
-# WSN Monitor
+# WSNova
 
 Sistem pemantauan lingkungan multi-node berbasis Wireless Sensor Network (WSN) dengan kendali fan DC 12 V otomatis memakai logika fuzzy Mamdani. Proyek tugas akhir Teknik Komputer, Universitas Negeri Semarang.
 
@@ -52,9 +52,12 @@ backend/
   feed_dummy.py     pengirim data uji tiap 10 detik, menyambung dengan riwayat
 frontend/
   index.html    beranda
+  src/brand.js  nama dan logo aplikasi (satu-satunya tempat yang diubah saat ganti brand)
+  src/brand/    berkas logo SVG, favicon, ikon
   dashboard/    halaman dashboard
   src/          JavaScript, CSS, ikon, font
 tests/          pengujian otomatis
+docs/brand/     logo penuh, lambang, versi putih, PNG untuk media sosial
 ```
 
 ## Menjalankan

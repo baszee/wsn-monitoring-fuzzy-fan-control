@@ -29,7 +29,7 @@ export function createFan(canvas) {
       ctx.save();
       ctx.rotate((i * Math.PI) / 2);
       const g = ctx.createLinearGradient(0, 0, 60, -30);
-      g.addColorStop(0, disabled ? "#94a3b8" : "#2563eb");
+      g.addColorStop(0, disabled ? "#94a3b8" : "#2F80ED");
       g.addColorStop(1, disabled ? "#cbd5e1" : "#60a5fa");
       ctx.beginPath();
       ctx.moveTo(8, 0);

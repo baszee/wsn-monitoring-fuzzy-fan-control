@@ -1,4 +1,4 @@
-import { fmtNumber, fmtClock } from "/src/shared.js?v=20261101-1";
+import { fmtNumber, fmtClock } from "/src/shared.js?v=20261101-3";
 
 export const PALETTE = ["#2f7df0", "#13a8aa", "#e7a21a", "#8b5cf6"];
 const L = 46, R = 16, T = 12, B = 30;

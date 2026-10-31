@@ -1,7 +1,7 @@
 import { icon } from "/src/icons.js";
 import { createFan } from "/src/fan-canvas.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
-         startPolling, getSession, adminPost } from "/src/shared.js?v=20261101-1";
+         startPolling, getSession, adminPost } from "/src/shared.js?v=20261101-3";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);
@@ -34,7 +34,7 @@ function renderChain(ctrl, nodes, unavailable, manual) {
 
   $("chain-steps").innerHTML = [
     chainStep("hash", "u tiap node", perNode),
-    chainStep("bars", "u zona (nilai u tertinggi)", hasAuto ? fmtNumber(ctrl.zone_control_level, 1) : "—", hasAuto ? `Node penentu: ${esc(ctrl.determining_node_id ?? "tidak ada")}` : ""),
+    chainStep("bars", "Tingkat kendali zona", hasAuto ? fmtNumber(ctrl.zone_control_level, 1) : "—", hasAuto ? `Node penentu: ${esc(ctrl.determining_node_id ?? "tidak ada")}` : ""),
     chainStep("gauge", "PWM hasil hitung", cand),
     chainStep("repeat", "Penyaring perubahan kecil", filter, prev),
     chainStep("check", "Perintah PWM", unavailable ? "—" : `${fmtNumber(ctrl.pwm_command_percent, 1)}%`, manual ? "Manual, mengabaikan hasil otomatis" : ""),
@@ -117,7 +117,7 @@ async function fetchAll() {
     if (unavailable) {
       pill.textContent = "Kendali tidak tersedia";
       pill.classList.add("unavailable");
-      note.textContent = !ctrl.worker_alive ? "Pemroses data tidak berjalan." : `Tidak ada node valid dalam ${ctrl.freshness_seconds} detik terakhir.`;
+      note.textContent = !ctrl.worker_alive ? "Pengolahan data sedang terhenti." : `Tidak ada node valid dalam ${ctrl.freshness_seconds} detik terakhir.`;
       fan.setTarget(0, true);
       $("pwm-value").textContent = "—";
     } else {

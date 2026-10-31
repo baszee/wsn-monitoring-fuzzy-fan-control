@@ -4,17 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Sistem monitoring lingkungan multi-node berbasis WSN dan kendali fan otomatis." />
-    <title>WSN Monitor — Monitoring Lingkungan</title>
-    <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
-      <link rel="stylesheet" href="/src/ui.css?v=2" />
+    <title data-brand-first>WSNova — Monitoring Lingkungan</title>
+    <link rel="icon" type="image/svg+xml" href="/src/brand/favicon.svg" />
+    <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/src/site.css?v=20261101-5" />
+      <link rel="stylesheet" href="/src/ui.css?v=5" />
   </head>
   <body class="landing-body">
     <header class="landing-header">
-      <a class="brand" href="/" aria-label="WSN Monitor, kembali ke beranda">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg>
-        </span>
-        <span><strong>WSN Monitor</strong><small>Pemantauan lingkungan</small></span>
+      <a class="brand" href="/" aria-label="WSNova, kembali ke beranda">
+        <img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" />
       </a>
 
       <nav class="landing-nav" aria-label="Navigasi utama">
@@ -26,7 +25,7 @@
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <span class="eyebrow"><i></i> Prototipe penelitian Teknik Komputer</span>
+          <span class="eyebrow"><i></i> Monitoring lingkungan multi-node</span>
           <h1>Pantau kondisi lingkungan, <span>lihat alasan perintah fan.</span></h1>
           <p>Sistem ini membaca suhu, kelembapan, dan debu dari beberapa node, menilai kondisinya dengan logika fuzzy, lalu menentukan PWM fan. Setiap keputusan dapat ditelusuri di dashboard.</p>
           <div class="hero-actions">
@@ -35,7 +34,7 @@
           <div class="hero-facts" aria-label="Ringkasan sistem">
             <div><strong id="landing-node-count">-</strong><span>Node sensor</span></div>
             <div><strong>433 MHz</strong><span>Komunikasi LoRa</span></div>
-            <div><strong>12 V</strong><span>Fan DC open-loop</span></div>
+            <div><strong>12 V</strong><span>Fan DC, kendali PWM</span></div>
           </div>
         </div>
 
@@ -45,7 +44,7 @@
           <svg class="network-map" viewBox="0 0 680 430" role="img" aria-labelledby="network-title">
             <title id="network-title">Node sensor mengirim data menuju gateway</title>
             <defs>
-              <linearGradient id="route" x1="0" x2="1"><stop offset="0" stop-color="#7dd3fc" /><stop offset="1" stop-color="#2563eb" /></linearGradient>
+              <linearGradient id="route" x1="0" x2="1"><stop offset="0" stop-color="#7dd3fc" /><stop offset="1" stop-color="#2F80ED" /></linearGradient>
               <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
             </defs>
             <path id="leftRoute" class="data-route" d="M118 254 C190 194 245 182 330 214" />
@@ -101,8 +100,8 @@
     </main>
 
     <footer class="landing-footer">
-      <a class="brand" href="/"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span><span><strong>WSN Monitor</strong><small>Pemantauan lingkungan</small></span></a>
-      <p>Prototipe penelitian · Teknik Komputer UNNES</p><p>© 2026 Abbas Abdurrahman</p>
+      <a class="brand" href="/"><img class="brand-logo" data-brand-logo="full" src="/src/brand/logo-full.svg" alt="WSNova" /></a>
+      <p>Teknik Komputer · Universitas Negeri Semarang</p><p>© 2026 Abbas Abdurrahman</p>
     </footer>
     <script>
       fetch("/api/nodes/latest")
@@ -115,5 +114,6 @@
         .catch(() => {});
     </script>
       <script type="module">import { hydrateIcons } from "/src/icons.js"; hydrateIcons();</script>
-  </body>
+    <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
+</body>
 </html>

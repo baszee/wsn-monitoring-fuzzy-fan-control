@@ -3,7 +3,7 @@
  * Visualisasi fungsi keanggotaan + 27 aturan
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261101-1";
+         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261101-3";
 
 buildSidebar("fuzzy");
 
@@ -81,8 +81,8 @@ function drawMFChart(svgId, legendId, defKey, currentVal, activeMF) {
   let markerHTML = "";
   if (currentVal != null) {
     const mx = toX(currentVal);
-    markerHTML = `<line x1="${mx}" y1="${PT}" x2="${mx}" y2="${H - PB}" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="3 3"/>
-                  <text x="${mx}" y="${PT - 1}" text-anchor="middle" font-size="8" fill="#2563EB">${Number(currentVal.toFixed(2))}</text>`;
+    markerHTML = `<line x1="${mx}" y1="${PT}" x2="${mx}" y2="${H - PB}" stroke="#2F80ED" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <text x="${mx}" y="${PT - 1}" text-anchor="middle" font-size="8" fill="#2F80ED">${Number(currentVal.toFixed(2))}</text>`;
   }
 
   svg.innerHTML = gridHTML + pathsHTML + markerHTML + axisHTML;

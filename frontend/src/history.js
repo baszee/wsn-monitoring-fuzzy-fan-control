@@ -1,4 +1,4 @@
-import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs } from "/src/shared.js?v=20261101-1";
+import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs } from "/src/shared.js?v=20261101-3";
 import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
 
 buildSidebar("riwayat");
@@ -42,7 +42,7 @@ function renderTable() {
     return;
   }
   el.innerHTML = state.nodes.map((n) => `
-    <tr style="${n.node_id === state.node ? "background:rgba(37,99,235,.05);" : ""}">
+    <tr style="${n.node_id === state.node ? "background:rgba(47,128,237,.05);" : ""}">
       <td><strong>${esc(n.node_id)}</strong></td>
       <td>${fmtNumber(n.temperature, 1)}</td>
       <td>${fmtNumber(n.humidity, 1)}</td>

@@ -1,0 +1,72 @@
+<svg role="img" aria-label="WSNova" xmlns="http://www.w3.org/2000/svg" viewBox="211 122 618 466">
+  <defs>
+    <!-- Path Gelombang Utama -->
+    <path id="main-wave" d="
+      M 242 285
+      L 354 285
+      C 402 285, 432 304, 462 335
+      C 488 361, 514 371, 558 371
+      C 612 371, 648 352, 688 308
+      C 725 268, 756 240, 804 240
+      L 809 240
+      C 815 240, 819 244, 819 250
+      L 819 272
+      C 819 278, 815 282, 809 282
+      L 804 282
+      C 770 282, 745 305, 712 341
+      C 666 391, 622 413, 558 413
+      C 514 413, 488 423, 462 449
+      C 432 480, 402 495, 354 495
+      L 242 495
+      A 21 21 0 0 1 242 453
+      L 354 453
+      C 388 453, 410 441, 435 415
+      C 448 402, 459 394, 471 390
+      C 459 386, 448 378, 435 365
+      C 410 339, 388 327, 354 327
+      L 242 327
+      A 21 21 0 0 1 242 285
+      Z" />
+
+    <!-- Masking Pemisah Konsisten + Pembersih Area Tengah Bingkai Kiri -->
+    <mask id="frame-cutout">
+      <rect x="0" y="0" width="1000" height="1000" fill="white" />
+      <use href="#main-wave" fill="black" stroke="black" stroke-width="36" stroke-linejoin="round" />
+      <rect x="350" y="300" width="130" height="180" fill="black" />
+    </mask>
+  </defs>
+
+  <!-- Rangka Utuh dengan Pemotongan Celah Otomatis yang Bersih -->
+  <path fill="#10213C" mask="url(#frame-cutout)" fill-rule="evenodd" d="
+    M 384 182
+    C 384 140, 412 122, 452 137
+    L 626 202
+    C 643 209, 650 222, 650 242
+    L 650 468
+    C 650 488, 643 501, 626 508
+    L 452 573
+    C 412 588, 384 570, 384 528
+    Z
+    M 430 195
+    C 430 183, 436 178, 448 182
+    L 590 235
+    C 599 239, 604 244, 604 254
+    L 604 459
+    C 604 469, 599 474, 590 478
+    L 448 531
+    C 436 535, 430 530, 430 518
+    Z" />
+
+  <!-- Garis Tengah Berujung Lancip -->
+  <path fill="#2F80ED" d="
+    M 242 369
+    L 366 369
+    C 394 369, 418 379, 439 390
+    C 418 401, 394 411, 366 411
+    L 242 411
+    A 21 21 0 0 1 242 369
+    Z" />
+
+  <!-- Gelombang Cabang Utama Biru (#2F80ED) -->
+  <use href="#main-wave" fill="#2F80ED" />
+</svg>
