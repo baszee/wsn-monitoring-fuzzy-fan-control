@@ -76,7 +76,7 @@ async function fetchAll() {
       if (ctrl.fan_command_status === "Mati") pill.classList.add("off");
       note.textContent = ctrl.hysteresis_held ? `Hasil hitung ${fmtNumber(ctrl.candidate_pwm_percent, 1)}%, perintah ditahan.` : "";
       fan.setTarget(ctrl.pwm_command_percent, false);
-      $("pwm-value").textContent = `${fmtNumber(ctrl.pwm_command_percent, 0)}%`;
+      $("pwm-value").textContent = `${fmtNumber(ctrl.pwm_command_percent, 1)}%`;
     }
 
     $("stat-uzona").textContent = unavailable ? "—" : fmtNumber(ctrl.zone_control_level, 1);

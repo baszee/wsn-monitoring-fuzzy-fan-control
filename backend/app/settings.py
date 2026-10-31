@@ -19,7 +19,7 @@ def _int(name: str, default: int) -> int:
 FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 10)
 
 # Interval worker memeriksa rekaman baru (detik).
-WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 5)
+WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)
 
 # Resolusi centroid (satuan skala 0-100). Lebih kecil = lebih halus.
 CENTROID_STEP = _float("CENTROID_STEP", 0.01)
@@ -36,3 +36,4 @@ CORS_ORIGINS = [
     for o in os.getenv("CORS_ORIGINS", "http://localhost:8000").split(",")
     if o.strip()
 ]
+

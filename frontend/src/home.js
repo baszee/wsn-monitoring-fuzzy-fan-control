@@ -62,7 +62,7 @@ function renderDecision() {
     pill.textContent = c.fan_command_status;
     if (c.fan_command_status === "Mati") pill.classList.add("off");
     fan.setTarget(c.pwm_command_percent, false);
-    $("#pwm-value").textContent = `${fmtNumber(c.pwm_command_percent, 0)}%`;
+    $("#pwm-value").textContent = `${fmtNumber(c.pwm_command_percent, 1)}%`;
     note.textContent = c.hysteresis_held
       ? `PWM hasil hitung ${fmtNumber(c.candidate_pwm_percent, 1)}%, ditahan karena perubahan kecil.`
       : "";
@@ -76,25 +76,34 @@ function renderDecision() {
 // ── Kartu node ─────────────────────────────────────────────────────────────
 function tileHtml(n) {
   const ok = n.data_status === "Valid";
+  const scored = n.condition_score != null;
   const det = ok && n.is_determining_node;
   const href = `/dashboard/nodes/detail.html?node=${encodeURIComponent(n.node_id)}`;
   const reason = n.data_status === "Data lama" ? `Data lama, ${ageText(n.data_age_seconds)} yang lalu` : (n.data_status || "Tidak ada data");
   const u = Math.max(0, Math.min(100, Number(n.control_level) || 0));
+
+  let body;
+  if (!ok) body = `<p class="tile-reason">${esc(reason)}</p>`;
+  else if (!scored) body = `<p class="tile-wait">Data baru masuk, hasil fuzzy sedang dihitung.</p>`;
+  else body = `<div class="tile-scores">
+      <div><span>Skor kondisi (s)</span><strong>${fmtNumber(n.condition_score, 1)}</strong></div>
+      <div><span>Tingkat kendali (u)</span><strong>${fmtNumber(n.control_level, 1)}</strong></div>
+    </div>
+    <div class="tile-bar" aria-hidden="true"><i style="width:${u}%"></i></div>`;
+
   return `
     <a class="panel node-tile${ok ? "" : " inactive"}${det ? " determining" : ""}" href="${href}">
       <div class="tile-top">
         <span class="tile-id">${esc(n.node_id)}</span>
         ${det ? `<span class="tag-determining">${icon("target")} Penentu</span>` : ""}
       </div>
-      <div class="tile-class ${ok ? classKey(n.condition_class) : ""}">${ok ? `<i class="dot"></i>${esc(n.condition_class ?? "Belum dinilai")}` : "Tidak dipakai"}</div>
-      ${ok
-        ? `<div class="tile-scores">
-             <div><span>Skor kondisi (s)</span><strong>${fmtNumber(n.condition_score, 1)}</strong></div>
-             <div><span>Tingkat kendali (u)</span><strong>${fmtNumber(n.control_level, 1)}</strong></div>
-           </div>
-           <div class="tile-bar" aria-hidden="true"><i style="width:${u}%"></i></div>`
-        : `<p class="tile-reason">${esc(reason)}</p>`}
-      <div class="tile-readings"><span>${fmtNumber(n.temperature, 1)} °C</span><span>${fmtNumber(n.humidity, 0)}% RH</span><span>Debu ${fmtNumber(n.dust_index, 2)}</span></div>
+      <div class="tile-class ${ok && scored ? classKey(n.condition_class) : ""}">${ok ? (scored ? `<i class="dot"></i>${esc(n.condition_class)}` : "Menghitung...") : "Tidak dipakai"}</div>
+      ${body}
+      <div class="tile-readings">
+        <div><span>Suhu</span><strong>${fmtNumber(n.temperature, 1)} °C</strong></div>
+        <div><span>RH</span><strong>${fmtNumber(n.humidity, 0)}%</strong></div>
+        <div><span>Debu</span><strong>${fmtNumber(n.dust_index, 2)}</strong></div>
+      </div>
     </a>`;
 }
 

@@ -15,7 +15,7 @@
 
 /* Ikon */
 .ic { display: inline-flex; width: 1.15em; height: 1.15em; vertical-align: -.2em; flex: 0 0 auto; }
-.ic-svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ic-svg { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -.2em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .metric-icon .ic { width: 16px; height: 16px; }
 .icon-button .ic, .menu-button .ic { width: 18px; height: 18px; }
 .text-button .ic, .sidebar-footer .ic, .sidebar-footer svg, .sidebar-footer .ic-svg, .node-determining-tag .ic, td .ic { width: 14px; height: 14px; flex: 0 0 14px; }
@@ -136,3 +136,13 @@ td .ic { color: var(--blue); }
 .mf-box strong { display: block; font-size: .85rem; margin-bottom: .5rem; color: var(--blue); }
 .mf-box ul { margin: 0; padding-left: 1.2rem; font-size: .75rem; line-height: 1.6; }
 
+
+
+.ic > .ic-svg { width: 100%; height: 100%; vertical-align: top; }
+.chain-step-icon { flex: 0 0 auto; display: inline-flex; }
+.chain-step-icon .ic-svg { width: 20px; height: 20px; color: var(--blue); }
+.chain-step-body { min-width: 0; }
+.chain-step-body strong, .chain-values { overflow-wrap: anywhere; }
+.decision-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rules-card, .panel-full, .settings-card { overflow-x: auto; }
+.p2-topbar-right { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }

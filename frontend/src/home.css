@@ -14,7 +14,7 @@
 .board { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .board-head h2 { margin: 0; font: 800 14px "Manrope"; letter-spacing: -.02em; }
 .board-head p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
-.node-board { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.node-board { flex: 1; align-content: start; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
 .board-empty { grid-column: 1 / -1; display: grid; place-items: center; min-height: 160px; color: var(--muted); font-size: 12px; }
 
 .node-tile { padding: 16px; display: flex; flex-direction: column; gap: 12px; color: inherit; transition: border-color .15s, box-shadow .15s; }
@@ -35,8 +35,10 @@
 .tile-bar { height: 5px; border-radius: 3px; background: #e8eef5; overflow: hidden; }
 .tile-bar i { display: block; height: 100%; border-radius: 3px; background: var(--blue); transition: width .4s ease; }
 .tile-reason { margin: 0; color: #b45309; font-size: 12px; font-weight: 700; }
-.tile-readings { margin-top: auto; display: flex; flex-wrap: wrap; gap: 4px 12px; color: #425872; font-size: 12px; }
-.node-tile.inactive .tile-readings { color: #94a3b8; }
+.tile-readings { margin-top: auto; padding-top: 10px; border-top: 1px solid #edf2f7; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; color: #425872; }
+.tile-readings span { display: block; color: var(--muted); font-size: 10px; }
+.tile-readings strong { font-size: 12px; font-weight: 800; color: inherit; }
+.tile-wait { margin: 0; color: var(--muted); font-size: 12px; }
 
 /* Grafik */
 .history-panel { margin-top: 14px; }
