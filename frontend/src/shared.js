@@ -38,19 +38,22 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
         const badgeHTML = id === "nodes"
           ? `<em id="sidebar-node-badge" style="display:none;"></em>`
           : "";
-        return `<a class="${isActive ? "active" : ""}" href="${href}" aria-current="${isActive ? "page" : "false"}">${icon(iconName)}<span>${label}</span>${badgeHTML}</a>`;
+        return `<a class="${isActive ? "active" : ""}" href="${href}" title="${label}" aria-label="${label}" aria-current="${isActive ? "page" : "false"}">${icon(iconName)}<span>${label}</span>${badgeHTML}</a>`;
       })
       .join("");
     return `<span class="nav-label">${group}</span>${linksHTML}`;
   }).join("");
 
   root.innerHTML = `
-    <a class="brand sidebar-brand" href="/">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0"/><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0"/></svg>
-      </span>
-      <span><strong>WSN Monitor</strong><small>Monitoring dan kendali fan</small></span>
-    </a>
+    <div class="sidebar-head">
+      <button class="rail-toggle" id="sidebar-toggle" type="button" aria-label="Ciutkan atau perluas navigasi" aria-expanded="true">${icon("menu")}</button>
+      <a class="brand sidebar-brand" href="/">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0"/><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0"/></svg>
+        </span>
+        <span><strong>WSN Monitor</strong><small>Monitoring dan kendali fan</small></span>
+      </a>
+    </div>
 
     <div class="sidebar-zone">
       <span>Zona aktif</span>
@@ -63,7 +66,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </nav>
 
     <div class="sidebar-footer">
-      <a href="/">${icon("arrow-left")} Kembali ke beranda</a>
+      <a href="/" title="Kembali ke beranda">${icon("arrow-left")} <span class="lbl">Kembali ke beranda</span></a>
       <small>Prototipe penelitian</small>
     </div>
   `;
@@ -83,7 +86,8 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     })
     .catch(() => {});
 
-  // Mobile sidebar toggle
+  // Mobile sidebar toggle & collapsible rail
+  _initRail();
   _initSidebarToggle();
 }
 
@@ -105,6 +109,35 @@ function _initSidebarToggle() {
   menuBtn.addEventListener("click", open);
   backdrop.addEventListener("click", close);
   sidebar.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+}
+
+const RAIL_KEY = "wsn.sidebar.collapsed";
+
+function _applyRail(collapsed) {
+  document.body.classList.toggle("sidebar-collapsed", collapsed);
+  const btn = document.getElementById("sidebar-toggle");
+  if (btn) {
+    btn.setAttribute("aria-expanded", String(!collapsed));
+    btn.title = collapsed ? "Perluas navigasi" : "Ciutkan navigasi";
+  }
+}
+
+function _initRail() {
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(RAIL_KEY) === "1"; } catch {}
+  _applyRail(collapsed);
+
+  document.getElementById("sidebar-toggle")?.addEventListener("click", () => {
+    // Di layar kecil, tombol ini menutup laci navigasi.
+    if (window.matchMedia("(max-width: 980px)").matches) {
+      document.getElementById("sidebar-root")?.classList.remove("open");
+      document.getElementById("sidebar-backdrop")?.classList.remove("visible");
+      return;
+    }
+    const next = !document.body.classList.contains("sidebar-collapsed");
+    _applyRail(next);
+    try { localStorage.setItem(RAIL_KEY, next ? "1" : "0"); } catch {}
+  });
 }
 
 // ─── Toast ─────────────────────────────────────────────────────────────────
@@ -150,7 +183,7 @@ export function fmtRelative(isoStr) {
 export function fmtNumber(v, digits = 1) {
   if (v == null || v === "") return "—";
   const n = parseFloat(v);
-  return isNaN(n) ? "—" : n.toFixed(digits);
+  return Number.isNaN(n) ? "—" : n.toFixed(digits).replace(".", ",");
 }
 
 export function conditionClass(score) {

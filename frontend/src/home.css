@@ -1,0 +1,57 @@
+.home-grid { display: grid; grid-template-columns: minmax(270px, 320px) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+
+/* Kartu keputusan */
+.decision-card { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.decision-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.decision-head h2 { margin: 0; font: 800 14px "Manrope"; letter-spacing: -.02em; }
+.fan-stage { display: grid; place-items: center; }
+.fan-stage canvas { width: 176px; height: 176px; max-width: 100%; }
+.pwm-readout { text-align: center; }
+.pwm-readout span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+.pwm-readout strong { display: block; margin-top: 4px; font: 800 44px/1 "Manrope"; letter-spacing: -.05em; }
+.decision-card.unavailable .pwm-readout strong { color: #94a3b8; }
+.decision-note { min-height: 16px; margin: 0; text-align: center; color: #956500; font-size: 11px; line-height: 1.4; }
+.decision-facts { margin: 0; }
+.decision-facts div { padding: 9px 0; display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #edf2f7; }
+.decision-facts dt { color: var(--muted); font-size: 11px; }
+.decision-facts dd { margin: 0; font-size: 12px; font-weight: 800; text-align: right; }
+.decision-caption { margin: auto 0 0; color: #93a2b5; font-size: 10px; text-align: center; }
+
+/* Papan node */
+.board { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.board-head h2 { margin: 0; font: 800 14px "Manrope"; letter-spacing: -.02em; }
+.board-head p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.node-board { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.board-empty { grid-column: 1 / -1; display: grid; place-items: center; min-height: 160px; color: var(--muted); font-size: 12px; }
+
+.node-tile { padding: 16px; display: flex; flex-direction: column; gap: 12px; color: inherit; transition: border-color .15s, box-shadow .15s; }
+.node-tile:hover { border-color: #bcd6f2; box-shadow: 0 8px 22px rgba(70, 107, 146, .09); }
+.node-tile.determining { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, .1); }
+.node-tile.inactive { background: #f8fafc; }
+.tile-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tile-id { font: 800 13px "Manrope"; }
+.tag-determining { padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; color: var(--blue); background: #e8f1ff; font-size: 10px; font-weight: 800; }
+.tile-class { display: flex; align-items: center; gap: 8px; font: 800 20px/1.15 "Manrope"; letter-spacing: -.02em; color: #94a3b8; }
+.tile-class.good { color: #16866f; }
+.tile-class.attention { color: #a16a00; }
+.tile-class.bad { color: #c8485c; }
+.tile-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile-scores div { padding: 8px 10px; border-radius: 10px; background: var(--surface); }
+.tile-scores span { display: block; color: var(--muted); font-size: 10px; }
+.tile-scores strong { font: 800 19px "Manrope"; letter-spacing: -.03em; }
+.tile-bar { height: 5px; border-radius: 3px; background: #e8eef5; overflow: hidden; }
+.tile-bar i { display: block; height: 100%; border-radius: 3px; background: var(--blue); transition: width .4s ease; }
+.tile-reason { margin: 0; color: #b45309; font-size: 12px; font-weight: 700; }
+.tile-readings { margin-top: auto; display: flex; flex-wrap: wrap; gap: 4px 12px; color: #425872; font-size: 12px; }
+.node-tile.inactive .tile-readings { color: #94a3b8; }
+
+/* Grafik */
+.history-panel { margin-top: 14px; }
+.legend-items { display: flex; flex-wrap: wrap; gap: 14px; }
+.legend-items span { display: inline-flex; align-items: center; gap: 6px; }
+.chart-tip { position: absolute; top: 12px; z-index: 2; min-width: 120px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; box-shadow: 0 8px 22px rgba(70, 107, 146, .14); font-size: 11px; line-height: 1.6; pointer-events: none; display: none; white-space: nowrap; }
+.chart-tip b { font-weight: 800; }
+.chart-tip .tip-time { color: var(--muted); font-size: 10px; }
+
+@media (max-width: 1180px) { .home-grid { grid-template-columns: 1fr; } .decision-card { flex-direction: row; flex-wrap: wrap; align-items: center; } .decision-card > * { flex: 1 1 200px; } }
+@media (max-width: 720px) { .decision-card { flex-direction: column; } .node-board { grid-template-columns: 1fr; } }
