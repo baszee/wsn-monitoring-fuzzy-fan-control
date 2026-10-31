@@ -1,0 +1,52 @@
+/* Font lokal */
+@font-face { font-family: "Manrope"; src: url("/src/fonts/manrope-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "DM Sans"; src: url("/src/fonts/dm-sans-latin-wght-normal.woff2") format("woff2"); font-weight: 100 1000; font-style: normal; font-display: swap; }
+
+:root {
+  font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Alias agar pages.css memakai token yang sama dengan site.css */
+  --text: var(--ink);
+  --text-soft: var(--muted);
+  --border: var(--line);
+  --blue-pale: #e8f1ff;
+  --page-bg: #f3f7fb;
+  --surface: #f3f7fb;   /* dipakai pages.css sebagai latar abu muda di dalam kartu */
+}
+
+/* Ikon */
+.ic { display: inline-flex; width: 1.15em; height: 1.15em; vertical-align: -.2em; flex: 0 0 auto; }
+.ic-svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.metric-icon .ic { width: 16px; height: 16px; }
+.icon-button .ic, .menu-button .ic { width: 18px; height: 18px; }
+.text-button .ic, .sidebar-footer .ic, .node-determining-tag .ic, td .ic { width: 13px; height: 13px; }
+td .ic { color: var(--blue); }
+.chain-step-icon .ic { width: 18px; height: 18px; color: var(--blue); }
+.feature-icon .ic, .flow-icon .ic { width: 24px; height: 24px; }
+.menu-button { display: none; place-items: center; }
+
+/* Satu gaya kartu untuk semua halaman */
+.panel, .panel-full, .metric-card, .node-card, .reading-card, .mf-card, .rules-card,
+.settings-card, .fan-visual-card, .fan-chain-card, .sim-inputs, .sim-results, .history-chart-wrap {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(70, 107, 146, .04);
+}
+
+/* Sidebar dan konten: satu lebar, satu titik pindah (980 px) */
+.sidebar { width: 252px; }
+.p2-main { margin-left: 252px; }
+@media (max-width: 980px) {
+  .p2-main { margin-left: 0; }
+  .menu-button { display: grid; }
+  .sidebar-backdrop.visible { display: block; position: fixed; inset: 0; z-index: 25; background: rgba(15, 34, 57, .3); }
+}
+
+/* Penanda status berupa titik berwarna, bukan simbol */
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* Toast per jenis */
+.toast > span .ic { width: 18px; height: 18px; }
+.toast.toast-success > span { color: #16866f; background: #e5f8f2; }
+.toast.toast-warn > span { color: #956500; background: #fff5dc; }
+.toast.toast-error > span { color: #bd4054; background: #ffedf0; }

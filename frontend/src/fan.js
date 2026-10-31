@@ -2,6 +2,7 @@
  * fan.js — Halaman Fan & Kendali
  * Animasi baling-baling menggunakan Canvas + requestAnimationFrame
  */
+import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, startPolling, normalizeControl } from "/src/shared.js?v=20261029-3";
 
@@ -140,16 +141,16 @@ async function fetchAll() {
 // ── Chain Steps ────────────────────────────────────────────────────────────
 function renderChain(ctrl) {
   const steps = [
-    { icon: "📡", label: "Node Penentu", value: ctrl.control_node_id ?? "Tidak ada" },
-    { icon: "🔢", label: "Kebutuhan kendali tertinggi", value: fmtNumber(ctrl.zone_control_level) },
-    { icon: "📊", label: "Tingkat kendali zona", value: fmtNumber(ctrl.zone_control_level) },
-    { icon: "⚡", label: "Perintah awal fan", value: `${fmtNumber(ctrl.pwm_command_percent, 1)} %` },
-    { icon: "🔁", label: "Penyaring perubahan kecil", value: "Diterapkan" },
-    { icon: "✅", label: "Perintah akhir fan", value: `${fmtNumber(ctrl.pwm_command_percent, 1)} %` },
+    { icon: icon("radio"),  label: "Node Penentu", value: ctrl.control_node_id ?? "Tidak ada" },
+    { icon: icon("hash"),   label: "Kebutuhan kendali tertinggi", value: fmtNumber(ctrl.zone_control_level) },
+    { icon: icon("bars"),   label: "Tingkat kendali zona", value: fmtNumber(ctrl.zone_control_level) },
+    { icon: icon("gauge"),  label: "Perintah awal fan", value: `${fmtNumber(ctrl.pwm_command_percent, 1)} %` },
+    { icon: icon("repeat"), label: "Penyaring perubahan kecil", value: "Diterapkan" },
+    { icon: icon("check"),  label: "Perintah akhir fan", value: `${fmtNumber(ctrl.pwm_command_percent, 1)} %` },
   ];
 
   document.getElementById("chain-steps").innerHTML = steps.map((s, i) => `
-    ${i > 0 ? `<div class="chain-arrow">↓</div>` : ""}
+    ${i > 0 ? `<div class="chain-arrow">${icon("arrow-down")}</div>` : ""}
     <div class="chain-step">
       <span class="chain-step-icon">${s.icon}</span>
       <div class="chain-step-body">
@@ -176,7 +177,7 @@ function renderDeterminingRules(rules) {
         return `
           <div class="sim-rule-row ${alpha > 0 ? "active" : ""}">
             <span class="sim-rule-alpha">${pct}%</span>
-            <span class="sim-rule-text">Suhu ${r.temp ?? "—"}, kelembapan ${r.rh ?? "—"}, debu ${r.dust ?? "—"} → ${r.condition_class ?? "—"}, kendali ${r.control_level ?? "—"}</span>
+            <span class="sim-rule-text">Suhu ${r.temp ?? "—"}, kelembapan ${r.rh ?? "—"}, debu ${r.dust ?? "—"}, kondisi ${r.condition_class ?? "—"}, kendali ${r.control_level ?? "—"}</span>
             <div class="sim-alpha-bar-wrap"><div class="sim-alpha-bar" style="width:${pct}%"></div></div>
           </div>`;
       }).join("")}

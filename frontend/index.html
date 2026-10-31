@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Sistem monitoring lingkungan multi-node berbasis WSN dan kendali fan otomatis." />
     <title>WSN Monitor — Monitoring Lingkungan</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+      <link rel="stylesheet" href="/src/ui.css?v=1" />
   </head>
   <body class="landing-body">
     <header class="landing-header">
@@ -16,7 +14,7 @@
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg>
         </span>
-        <span><strong>WSN Monitor</strong><small>Environmental intelligence</small></span>
+        <span><strong>WSN Monitor</strong><small>Pemantauan lingkungan</small></span>
       </a>
 
       <nav class="landing-nav" aria-label="Navigasi utama">
@@ -41,11 +39,11 @@
           </div>
         </div>
 
-        <div class="network-stage" aria-label="Ilustrasi data dua node menuju gateway">
+        <div class="network-stage" aria-label="Ilustrasi data node menuju gateway">
           <div class="stage-glow"></div>
           <div class="stage-label"><span class="live-dot"></span> Aliran data lingkungan</div>
           <svg class="network-map" viewBox="0 0 680 430" role="img" aria-labelledby="network-title">
-            <title id="network-title">Dua node sensor mengirim data menuju gateway</title>
+            <title id="network-title">Node sensor mengirim data menuju gateway</title>
             <defs>
               <linearGradient id="route" x1="0" x2="1"><stop offset="0" stop-color="#7dd3fc" /><stop offset="1" stop-color="#2563eb" /></linearGradient>
               <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
@@ -73,19 +71,19 @@
         <div class="section-heading"><span class="eyebrow">Tentang sistem</span><h2>Dari angka sensor menjadi gambaran kondisi yang jelas.</h2></div>
         <p class="section-lead">Sistem ini membantu pengguna memantau beberapa node sekaligus, memahami kondisi lingkungan, serta mengetahui alasan di balik perintah fan—tanpa perlu membaca rumus teknis di layar utama.</p>
         <div class="feature-grid">
-          <article class="feature-card feature-wide"><div class="feature-icon">⌁</div><span class="feature-number">01</span><h3>Monitoring multi-node</h3><p>Nilai terbaru, status data, dan perbandingan antar-node tersaji dalam satu tampilan.</p><div class="mini-node-row"><span>Node 01</span><span>Node 02</span><span>Node 03</span></div></article>
-          <article class="feature-card"><div class="feature-icon">◎</div><span class="feature-number">02</span><h3>Keputusan transparan</h3><p>Pengguna dapat melihat node penentu, tingkat kendali, dan perintah fan secara ringkas.</p></article>
-          <article class="feature-card"><div class="feature-icon">↗</div><span class="feature-number">03</span><h3>Simulasi aman</h3><p>Skenario hipotetis dapat diuji terpisah tanpa mengubah perintah ke perangkat.</p></article>
+          <article class="feature-card feature-wide"><div class="feature-icon"><i data-icon="radio"></i></div><span class="feature-number">01</span><h3>Monitoring multi-node</h3><p>Nilai terbaru, status data, dan perbandingan antar-node tersaji dalam satu tampilan.</p><div class="mini-node-row"><span>Node 01</span><span>Node 02</span><span>Node 03</span></div></article>
+          <article class="feature-card"><div class="feature-icon"><i data-icon="target"></i></div><span class="feature-number">02</span><h3>Keputusan transparan</h3><p>Pengguna dapat melihat node penentu, tingkat kendali, dan perintah fan secara ringkas.</p></article>
+          <article class="feature-card"><div class="feature-icon"><i data-icon="flask"></i></div><span class="feature-number">03</span><h3>Simulasi aman</h3><p>Skenario hipotetis dapat diuji terpisah tanpa mengubah perintah ke perangkat.</p></article>
         </div>
       </section>
 
       <section class="section flow-section" id="alur">
         <div class="section-heading centered"><span class="eyebrow">Cara kerja</span><h2>Satu alur yang mudah diikuti.</h2><p>Setiap tahap dibuat terlihat agar keputusan sistem tidak terasa seperti kotak hitam.</p></div>
         <div class="flow-grid">
-          <article><span>1</span><div class="flow-icon">⌁</div><h3>Sensor membaca</h3><p>Suhu, kelembapan, dan debu dibaca pada setiap node.</p></article>
-          <article><span>2</span><div class="flow-icon">⌁⌁</div><h3>Data dikirim</h3><p>Data valid diteruskan melalui jaringan LoRa ke gateway.</p></article>
-          <article><span>3</span><div class="flow-icon">◌</div><h3>Kondisi dinilai</h3><p>Sistem mengubah data menjadi kondisi dan kebutuhan kendali.</p></article>
-          <article><span>4</span><div class="flow-icon">✣</div><h3>Fan diperintah</h3><p>Node dengan kebutuhan tertinggi menentukan perintah fan zona.</p></article>
+          <article><span>1</span><div class="flow-icon"><i data-icon="thermometer"></i></div><h3>Sensor membaca</h3><p>Suhu, kelembapan, dan debu dibaca pada setiap node.</p></article>
+          <article><span>2</span><div class="flow-icon"><i data-icon="radio"></i></div><h3>Data dikirim</h3><p>Data valid diteruskan melalui jaringan LoRa ke gateway.</p></article>
+          <article><span>3</span><div class="flow-icon"><i data-icon="gauge"></i></div><h3>Kondisi dinilai</h3><p>Sistem mengubah data menjadi kondisi dan kebutuhan kendali.</p></article>
+          <article><span>4</span><div class="flow-icon"><i data-icon="fan"></i></div><h3>Fan diperintah</h3><p>Node dengan kebutuhan tertinggi menentukan perintah fan zona.</p></article>
         </div>
       </section>
 
@@ -99,11 +97,11 @@
         </div>
       </section>
 
-      <section class="cta-section"><div><span class="eyebrow eyebrow-light">Dashboard monitoring</span><h2>Lihat kondisi lingkungan secara langsung.</h2><p>Ringkasan setiap node dan status kendali tersedia dalam satu dashboard yang bersih.</p></div><a class="button button-white" href="/dashboard/">Masuk ke Dashboard <span>→</span></a></section>
+      <section class="cta-section"><div><span class="eyebrow eyebrow-light">Dashboard monitoring</span><h2>Lihat kondisi lingkungan secara langsung.</h2><p>Ringkasan setiap node dan status kendali tersedia dalam satu dashboard yang bersih.</p></div><a class="button button-white" href="/dashboard/">Masuk ke Dashboard <span><i data-icon="arrow-right"></i></span></a></section>
     </main>
 
     <footer class="landing-footer">
-      <a class="brand" href="/"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span><span><strong>WSN Monitor</strong><small>Environmental intelligence</small></span></a>
+      <a class="brand" href="/"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span><span><strong>WSN Monitor</strong><small>Pemantauan lingkungan</small></span></a>
       <p>Prototipe penelitian · Teknik Komputer UNNES</p><p>© 2026 Abbas Abdurrahman</p>
     </footer>
     <script>
@@ -116,5 +114,6 @@
         })
         .catch(() => {});
     </script>
+      <script type="module">import { hydrateIcons } from "/src/icons.js"; hydrateIcons();</script>
   </body>
 </html>

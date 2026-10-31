@@ -3,30 +3,23 @@
  * Sidebar dinamis, toast, format helper, polling helper
  */
 
+import { icon, hydrateIcons } from "./icons.js";
+
 // ─── Konfigurasi Sidebar ───────────────────────────────────────────────────
 const NAV_ITEMS = [
-  {
-    group: "Monitoring",
-    items: [
-      { id: "ringkasan",  label: "Ringkasan",       href: "/dashboard/",              icon: `<svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg>` },
-      { id: "nodes",      label: "Node Sensor",     href: "/dashboard/nodes/",        icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5.6 18.4a9 9 0 0 1 0-12.8m12.8 0a9 9 0 0 1 0 12.8M8.5 15.5a5 5 0 0 1 0-7m7 0a5 5 0 0 1 0 7"/></svg>`, badge: null },
-      { id: "fan",        label: "Fan & Kendali",   href: "/dashboard/fan/",          icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 10c-1-5 1-7 3-7 3 1 3 5-1 8m0 2c5-1 7 1 7 3-1 3-5 3-8-1m-2-1c1 5-1 7-3 7-3-1-3-5 1-8m1-2C5 12 3 10 3 8c1-3 5-3 8 1"/></svg>` },
-      { id: "riwayat",    label: "Riwayat",         href: "/dashboard/history/",      icon: `<svg viewBox="0 0 24 24"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg>` },
-    ],
-  },
-  {
-    group: "Analisis",
-    items: [
-      { id: "fuzzy",      label: "Analisis Fuzzy",  href: "/dashboard/fuzzy/",        icon: `<svg viewBox="0 0 24 24"><path d="M4 16c3-7 5-9 8-9s5 2 8 9M4 12h16M8 5v14m8-14v14"/></svg>` },
-      { id: "simulasi",   label: "Simulasi What-If",href: "/dashboard/simulation/",   icon: `<svg viewBox="0 0 24 24"><path d="M9 3h6m-5 0v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M8 15h8"/></svg>` },
-    ],
-  },
-  {
-    group: "Sistem",
-    items: [
-      { id: "konfigurasi",label: "Konfigurasi",     href: "/dashboard/settings/",     icon: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a2 2 0 0 0 .4 2.2l.1.1-2.6 2.6-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8V21h-3.6v-.2A2 2 0 0 0 9 19a2 2 0 0 0-2.2.4l-.1.1-2.6-2.6.1-.1A2 2 0 0 0 4.6 15a2 2 0 0 0-1.8-1.2H3v-3.6h.2A2 2 0 0 0 5 9a2 2 0 0 0-.4-2.2l-.1-.1 2.6-2.6.1.1A2 2 0 0 0 9 4.6a2 2 0 0 0 1.2-1.8V3h3.6v.2A2 2 0 0 0 15 5a2 2 0 0 0 2.2-.4l.1-.1 2.6 2.6-.1.1a2 2 0 0 0-.4 2.2 2 2 0 0 0 1.8 1.2h.2v3.6h-.2A2 2 0 0 0 19.4 15Z"/></svg>` },
-    ],
-  },
+  { group: "Monitoring", items: [
+    { id: "ringkasan",   label: "Ringkasan",        href: "/dashboard/",            icon: "grid" },
+    { id: "nodes",       label: "Node Sensor",      href: "/dashboard/nodes/",      icon: "radio" },
+    { id: "fan",         label: "Fan & Kendali",    href: "/dashboard/fan/",        icon: "fan" },
+    { id: "riwayat",     label: "Riwayat",          href: "/dashboard/history/",    icon: "bars" },
+  ]},
+  { group: "Analisis", items: [
+    { id: "fuzzy",       label: "Analisis Fuzzy",   href: "/dashboard/fuzzy/",      icon: "activity" },
+    { id: "simulasi",    label: "Simulasi What-If", href: "/dashboard/simulation/", icon: "flask" },
+  ]},
+  { group: "Sistem", items: [
+    { id: "konfigurasi", label: "Konfigurasi",      href: "/dashboard/settings/",   icon: "settings" },
+  ]},
 ];
 
 /**
@@ -40,12 +33,12 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
 
   const navHTML = NAV_ITEMS.map(({ group, items }) => {
     const linksHTML = items
-      .map(({ id, label, href, icon, badge }) => {
+      .map(({ id, label, href, icon: iconName }) => {
         const isActive = id === activeId;
         const badgeHTML = id === "nodes"
           ? `<em id="sidebar-node-badge" style="display:none;"></em>`
-          : (badge != null ? `<em>${badge}</em>` : "");
-        return `<a class="${isActive ? "active" : ""}" href="${href}" aria-current="${isActive ? "page" : "false"}">${icon}<span>${label}</span>${badgeHTML}</a>`;
+          : "";
+        return `<a class="${isActive ? "active" : ""}" href="${href}" aria-current="${isActive ? "page" : "false"}">${icon(iconName)}<span>${label}</span>${badgeHTML}</a>`;
       })
       .join("");
     return `<span class="nav-label">${group}</span>${linksHTML}`;
@@ -56,7 +49,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0"/><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0"/></svg>
       </span>
-      <span><strong>WSN Monitor</strong><small>Control center</small></span>
+      <span><strong>WSN Monitor</strong><small>Monitoring dan kendali fan</small></span>
     </a>
 
     <div class="sidebar-zone">
@@ -70,8 +63,8 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </nav>
 
     <div class="sidebar-footer">
-      <a href="/"><span>←</span> Kembali ke beranda</a>
-      <small>Versi prototipe 0.1.0</small>
+      <a href="/">${icon("arrow-left")} Kembali ke beranda</a>
+      <small>Prototipe penelitian</small>
     </div>
   `;
 
@@ -127,8 +120,8 @@ let _toastTimer = null;
 export function showToast(title, message, type = "info", duration = 3500) {
   const el = document.getElementById("toast");
   if (!el) return;
-  const iconMap = { info: "ℹ", success: "✓", warn: "⚠", error: "✕" };
-  el.querySelector("span").textContent = iconMap[type] ?? "ℹ";
+  const iconMap = { info: "info", success: "check", warn: "alert", error: "x" };
+  el.querySelector("span").innerHTML = icon(iconMap[type] ?? "info");
   el.querySelector("#toast-title").textContent = title;
   el.querySelector("#toast-message").textContent = message;
   el.className = `toast toast-${type} show`;
@@ -178,9 +171,6 @@ export function conditionColor(classStr) {
 }
 
 // ─── Normalisasi respons API & kualitas data ───────────────────────────────
-// Satu sumber kebenaran untuk nama field backend agar semua halaman konsisten.
-export const STALE_AFTER_MS = 10 * 60 * 1000;
-
 export function normalizeNode(node = {}) {
   return {
     ...node,
@@ -196,17 +186,16 @@ export function normalizeControl(control = {}) {
   };
 }
 
-export function dataQuality(node = {}, staleAfterMs = STALE_AFTER_MS) {
-  const item = normalizeNode(node);
-  const required = [item.temperature, item.humidity, item.dust_index];
-  const incomplete = required.some((value) => value == null || !Number.isFinite(Number(value)));
-  const time = item.timestamp ? new Date(item.timestamp).getTime() : NaN;
-  const stale = Number.isFinite(time) && Date.now() - time > staleAfterMs;
-
-  if (!item.is_valid) return { key: "invalid", label: "Tidak valid", className: "pill-bad" };
-  if (incomplete) return { key: "incomplete", label: "Belum lengkap", className: "pill-warn" };
-  if (!Number.isFinite(time) || stale) return { key: "stale", label: "Data lama", className: "pill-warn" };
-  return { key: "valid", label: "Valid", className: "pill-good" };
+// Status data dihitung backend (FRESHNESS_SECONDS). Frontend hanya menampilkan.
+export function dataQuality(node = {}) {
+  const table = {
+    "Valid":          { key: "valid",   className: "pill-good" },
+    "Data lama":      { key: "stale",   className: "pill-warn" },
+    "Tidak valid":    { key: "invalid", className: "pill-bad" },
+    "Tidak ada data": { key: "none",    className: "pill-unknown" },
+  };
+  const label = node.data_status ?? "Tidak ada data";
+  return { ...(table[label] ?? table["Tidak ada data"]), label };
 }
 
 export function dataQualityPill(node) {
@@ -229,8 +218,7 @@ export async function apiFetch(path, options = {}) {
 // ─── Connection Badge ──────────────────────────────────────────────────────
 export function setConnectionBadge(ok, badgeEl) {
   if (!badgeEl) return;
-  badgeEl.className = `data-badge ${ok ? "badge-ok" : "badge-err"}`;
-  badgeEl.querySelector("i").textContent = ok ? "●" : "●";
+  badgeEl.classList.toggle("offline", !ok);
   badgeEl.querySelector("span").textContent = ok ? "Terhubung" : "Tidak terhubung";
 }
 
@@ -265,4 +253,10 @@ export function drawSparkline(svgEl, values, color = "#2563EB") {
 export function setUpdatedAt(isoStr) {
   const el = document.getElementById("updated-at");
   if (el) el.textContent = isoStr ? `Diperbarui ${fmtRelative(isoStr)}` : "—";
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => hydrateIcons());
+} else {
+  hydrateIcons();
 }

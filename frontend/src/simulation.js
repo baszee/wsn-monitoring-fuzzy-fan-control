@@ -144,8 +144,7 @@ function renderResults(res) {
         <div class="sim-rule-row active">
           <span class="sim-rule-alpha">${alphaPct}%</span>
           <div class="sim-rule-text">
-            <strong>Aturan ${r.id}:</strong> Suhu ${r.temp}, kelembapan ${r.rh}, debu ${r.dust}
-            → kondisi <strong>${r.condition_class}</strong>, kendali <strong>${r.control_level}</strong>
+            <strong>Aturan ${r.id}:</strong> Suhu ${r.temp}, kelembapan ${r.rh}, debu ${r.dust}, Hasil: kondisi <strong>${r.condition_class}</strong>, kendali <strong>${r.control_level}</strong>
           </div>
           <div class="sim-alpha-bar-wrap">
             <div class="sim-alpha-bar" style="width: ${alphaPct}%;"></div>

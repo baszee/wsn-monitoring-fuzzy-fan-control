@@ -5,17 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Dashboard monitoring lingkungan WSN." />
     <title>Ringkasan — WSN Monitor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
+      <link rel="stylesheet" href="/src/ui.css?v=1" />
   </head>
   <body class="dashboard-body">
     <div class="dashboard-shell">
       <aside class="sidebar" id="sidebar">
         <a class="brand sidebar-brand" href="/">
           <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0" /><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0" /></svg></span>
-          <span><strong>WSN Monitor</strong><small>Control center</small></span>
+          <span><strong>WSN Monitor</strong><small>Monitoring dan kendali fan</small></span>
         </a>
 
         <div class="sidebar-zone"><span>Zona aktif</span><strong><i></i> Zona 1</strong><small id="zone-node-count">Memuat...</small></div>
@@ -33,14 +31,14 @@
           <a href="/dashboard/settings/"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a2 2 0 0 0 .4 2.2l.1.1-2.6 2.6-.1-.1a2 2 0 0 0-2.2-.4 2 2 0 0 0-1.2 1.8V21h-3.6v-.2A2 2 0 0 0 9 19a2 2 0 0 0-2.2.4l-.1.1-2.6-2.6.1-.1A2 2 0 0 0 4.6 15a2 2 0 0 0-1.8-1.2H3v-3.6h.2A2 2 0 0 0 5 9a2 2 0 0 0-.4-2.2l-.1-.1 2.6-2.6.1.1A2 2 0 0 0 9 4.6a2 2 0 0 0 1.2-1.8V3h3.6v.2A2 2 0 0 0 15 5a2 2 0 0 0 2.2-.4l.1-.1 2.6 2.6-.1.1a2 2 0 0 0-.4 2.2 2 2 0 0 0 1.8 1.2h.2v3.6h-.2A2 2 0 0 0 19.4 15Z" /></svg><span>Konfigurasi</span></a>
         </nav>
 
-        <div class="sidebar-footer"><a href="/"><span>←</span> Kembali ke beranda</a><small>Versi prototipe 0.1.0</small></div>
+        <div class="sidebar-footer"><a href="/"><span><i data-icon="arrow-left"></i></span> Kembali ke beranda</a><small>Versi prototipe 0.1.0</small></div>
       </aside>
 
       <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
       <main class="dashboard-main">
         <header class="dashboard-topbar">
-          <div class="topbar-title"><button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button><div><h1>Monitoring Lingkungan</h1><p>Ringkasan kondisi Zona 1</p></div></div>
+          <div class="topbar-title"><button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button><div><h1>Monitoring Lingkungan</h1><p>Ringkasan kondisi Zona 1</p></div></div>
           <div class="topbar-actions">
             <label class="compact-select"><span>Zona</span><select aria-label="Pilih zona"><option>Zona 1</option></select></label>
             <label class="compact-select"><span>Node</span><select id="node-select" aria-label="Pilih node"><option value="">Memuat...</option></select></label>
@@ -52,10 +50,10 @@
 
         <div class="dashboard-content">
           <section class="metric-grid" aria-label="Parameter utama">
-            <article class="metric-card"><div class="metric-head"><span>Suhu</span><span class="metric-icon metric-blue">°</span></div><div class="metric-value"><strong id="metric-temp">—</strong><span>°C</span></div><div class="metric-foot"><span id="metric-temp-node">—</span><svg id="spark-temp" viewBox="0 0 100 28"></svg></div></article>
-            <article class="metric-card"><div class="metric-head"><span>Kelembapan</span><span class="metric-icon metric-cyan">◌</span></div><div class="metric-value"><strong id="metric-rh">—</strong><span>% RH</span></div><div class="metric-foot"><span id="metric-rh-node">—</span><svg id="spark-rh" viewBox="0 0 100 28"></svg></div></article>
-            <article class="metric-card"><div class="metric-head"><span>Indeks Debu</span><span class="metric-icon metric-sky">✦</span></div><div class="metric-value"><strong id="metric-dust">—</strong><span>indeks</span></div><div class="metric-foot"><span id="metric-dust-node">—</span><svg id="spark-dust" viewBox="0 0 100 28"></svg></div></article>
-            <article class="metric-card"><div class="metric-head"><span>Node Aktif</span><span class="metric-icon metric-green">⌁</span></div><div class="metric-value"><strong id="metric-nodes">—</strong><span>node</span></div><div class="metric-foot"><span id="metric-valid">Menunggu data</span><div class="mini-status-dots" id="node-dots"></div></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Suhu</span><span class="metric-icon metric-blue"><i data-icon="thermometer"></i></span></div><div class="metric-value"><strong id="metric-temp">—</strong><span>°C</span></div><div class="metric-foot"><span id="metric-temp-node">—</span><svg id="spark-temp" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Kelembapan</span><span class="metric-icon metric-cyan"><i data-icon="droplet"></i></span></div><div class="metric-value"><strong id="metric-rh">—</strong><span>% RH</span></div><div class="metric-foot"><span id="metric-rh-node">—</span><svg id="spark-rh" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Indeks Debu</span><span class="metric-icon metric-sky"><i data-icon="dust"></i></span></div><div class="metric-value"><strong id="metric-dust">—</strong><span>indeks</span></div><div class="metric-foot"><span id="metric-dust-node">—</span><svg id="spark-dust" viewBox="0 0 100 28"></svg></div></article>
+            <article class="metric-card"><div class="metric-head"><span>Node Aktif</span><span class="metric-icon metric-green"><i data-icon="radio"></i></span></div><div class="metric-value"><strong id="metric-nodes">—</strong><span>node</span></div><div class="metric-foot"><span id="metric-valid">Menunggu data</span><div class="mini-status-dots" id="node-dots"></div></div></article>
           </section>
 
           <section class="overview-grid">
@@ -75,7 +73,7 @@
             </article>
 
             <article class="panel nodes-panel">
-              <div class="panel-header"><div><h2>Hasil Per Node</h2><p>Ringkasan kondisi dan kendali otomatis</p></div><a class="text-button" href="/dashboard/nodes/">Lihat detail <span>→</span></a></div>
+              <div class="panel-header"><div><h2>Hasil Per Node</h2><p>Ringkasan kondisi dan kendali otomatis</p></div><a class="text-button" href="/dashboard/nodes/">Lihat detail <span><i data-icon="arrow-right"></i></span></a></div>
               <div class="table-wrap"><table><thead><tr><th>Node</th><th>Suhu</th><th>Kelembapan</th><th>Indeks Debu</th><th>Kondisi</th><th>Tingkat Kendali</th><th>Status</th></tr></thead><tbody id="nodes-table"><tr><td colspan="7" class="table-loading">Memuat data node...</td></tr></tbody></table></div>
             </article>
 
@@ -89,7 +87,7 @@
       </main>
     </div>
 
-    <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><div><strong id="toast-title">Info</strong><p id="toast-message"></p></div></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"><span></span><div><strong id="toast-title">Info</strong><p id="toast-message"></p></div></div>
     <script type="module" src="/src/dashboard.js?v=20261029-3"></script>
   </body>
 </html>

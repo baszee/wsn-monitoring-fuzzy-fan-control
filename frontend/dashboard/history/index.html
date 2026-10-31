@@ -4,12 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Riwayat — WSN Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/src/site.css?v=20261029-3"/>
   <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
-</head>
+    <link rel="stylesheet" href="/src/ui.css?v=1" />
+  </head>
 <body class="dashboard-body">
 <div class="p2-shell">
   <aside class="sidebar" id="sidebar-root"></aside>
@@ -18,14 +16,14 @@
   <div class="p2-main">
     <header class="p2-topbar">
       <div class="p2-topbar-title">
-        <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+        <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
         <div>
           <h1>Riwayat Data</h1>
           <p>Tren pengukuran sensor &amp; kendali zona</p>
         </div>
       </div>
       <div class="p2-topbar-right">
-        <div class="data-badge" id="connection-badge"><i>●</i><span>Memeriksa</span></div>
+        <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa</span></div>
         <span class="updated-at" id="updated-at">—</span>
         <button class="icon-button" id="refresh-btn" title="Muat ulang">
           <svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15"/></svg>
@@ -101,7 +99,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
-  <span>✓</span>
+  <span></span>
   <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
 </div>
 

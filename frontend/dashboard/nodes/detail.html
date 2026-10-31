@@ -5,14 +5,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Detail Node — WSN Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="/src/site.css?v=20261029-3" />
   <link rel="stylesheet" href="/src/pages.css?v=20261029-3" />
-</head>
+    <link rel="stylesheet" href="/src/ui.css?v=1" />
+  </head>
 
 <body class="dashboard-body">
   <div class="p2-shell">
@@ -22,15 +20,15 @@
     <div class="p2-main">
       <header class="p2-topbar">
         <div class="p2-topbar-title">
-          <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+          <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
           <div>
             <h1 id="page-title">Detail Node</h1>
             <p id="page-sub">Memuat...</p>
           </div>
         </div>
         <div class="p2-topbar-right">
-          <a href="/dashboard/nodes/" style="font-size:.82rem;color:var(--blue);">← Semua Node</a>
-          <div class="data-badge" id="connection-badge"><i>●</i><span>Memeriksa</span></div>
+          <a href="/dashboard/nodes/" style="font-size:.82rem;color:var(--blue);"><i data-icon="arrow-left"></i> Semua Node</a>
+          <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa</span></div>
           <span class="updated-at" id="updated-at">—</span>
         </div>
       </header>
@@ -126,7 +124,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite">
-    <span>✓</span>
+    <span></span>
     <div><strong id="toast-title">Info</strong>
       <p id="toast-message"></p>
     </div>

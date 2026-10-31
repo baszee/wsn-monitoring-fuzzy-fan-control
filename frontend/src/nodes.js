@@ -1,6 +1,7 @@
 /**
  * nodes.js — Halaman Node Sensor
  */
+import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtRelative, fmtNumber, conditionClass, conditionLabel, startPolling,
          normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261029-3";
@@ -27,7 +28,7 @@ function renderNodeCard(node) {
     <div class="node-card ${isDetermining ? "determining" : ""}" data-node="${node.node_id}">
       <div class="node-card-head">
         <span class="node-id-badge">${node.node_id}</span>
-        ${isDetermining ? `<span class="node-determining-tag">Penentu ★</span>` : ""}
+        ${isDetermining ? `<span class="node-determining-tag">${icon("target")} Penentu</span>` : ""}
         <span style="margin-left:auto;font-size:.72rem;color:var(--text-soft);">${fmtRelative(node.timestamp)}</span>
       </div>
       <div class="node-params">
@@ -56,7 +57,7 @@ function renderNodeCard(node) {
       </div>` : ""}
       <div class="node-footer">
         <span class="node-quality quality-${quality.key}">${quality.label}</span>
-        <a href="/dashboard/nodes/detail.html?node=${encodeURIComponent(node.node_id)}" style="color:var(--blue);font-weight:600;">Detail →</a>
+        <a href="/dashboard/nodes/detail.html?node=${encodeURIComponent(node.node_id)}" style="color:var(--blue);font-weight:600;">Detail ${icon("arrow-right")}</a>
       </div>
     </div>`;
 }
@@ -66,7 +67,7 @@ function renderNodeRow(node) {
   const cls = conditionClass(node.condition_score);
   return `
     <tr ${isDetermining ? 'style="background:rgba(37,99,235,.05);"' : ""}>
-      <td><strong>${node.node_id}</strong>${isDetermining ? " ★" : ""}</td>
+      <td><strong>${node.node_id}</strong>${isDetermining ? ` ${icon("target")}` : ""}</td>
       <td>${fmtNumber(node.temperature)}</td>
       <td>${fmtNumber(node.humidity)}</td>
       <td>${node.dust_index != null ? fmtNumber(node.dust_index, 3) : "—"}</td>
@@ -75,7 +76,7 @@ function renderNodeRow(node) {
       <td>${node.control_level != null ? fmtNumber(node.control_level) : "—"}</td>
       <td>${dataQualityPill(node)}</td>
       <td style="font-size:.72rem;color:var(--text-soft);">${fmtRelative(node.timestamp)}</td>
-      <td><a href="/dashboard/nodes/detail.html?node=${encodeURIComponent(node.node_id)}" style="color:var(--blue);font-weight:600;font-size:.8rem;">Detail →</a></td>
+      <td><a href="/dashboard/nodes/detail.html?node=${encodeURIComponent(node.node_id)}" style="color:var(--blue);font-weight:600;font-size:.8rem;">Detail ${icon("arrow-right")}</a></td>
     </tr>`;
 }
 

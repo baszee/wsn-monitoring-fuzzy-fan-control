@@ -4,12 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Simulasi What-If — WSN Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/src/site.css?v=20261029-3"/>
   <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
-</head>
+    <link rel="stylesheet" href="/src/ui.css?v=1" />
+  </head>
 <body class="dashboard-body">
 <div class="p2-shell">
   <aside class="sidebar" id="sidebar-root"></aside>
@@ -18,14 +16,14 @@
   <div class="p2-main">
     <header class="p2-topbar">
       <div class="p2-topbar-title">
-        <button class="menu-button" id="menu-button" aria-label="Buka navigasi">☰</button>
+        <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
         <div>
           <h1>Simulasi What-If</h1>
           <p>Uji skenario fuzzy tanpa mempengaruhi fisik fan aktuator</p>
         </div>
       </div>
       <div class="p2-topbar-right">
-        <div class="data-badge badge-ok"><i>●</i><span>Mode Simulasi</span></div>
+        <div class="data-badge badge-ok"><i></i><span>Mode Simulasi</span></div>
         <button class="icon-button" id="reset-btn" title="Reset ke default">
           <svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15"/></svg>
         </button>
@@ -35,9 +33,9 @@
     <div class="page-body">
       <!-- Info notice -->
       <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
-        <span style="font-size:1.25rem;">🧪</span>
+        <i data-icon="flask"></i>
         <div style="font-size:0.82rem;color:#1e40af;">
-          <strong>Laboratorium Uji Mandiri:</strong> Geser nilai untuk mencoba skenario. Hasil simulasi tidak mengubah data tersimpan dan tidak mengirim perintah ke fan.
+          <strong>Mode simulasi:</strong> Geser nilai untuk mencoba skenario. Hasil simulasi tidak mengubah data tersimpan dan tidak mengirim perintah ke fan.
         </div>
       </div>
 
@@ -89,10 +87,10 @@
           <div>
             <span style="font-size:0.75rem;font-weight:600;color:var(--text-soft);display:block;margin-bottom:0.5rem;">Skenario Cepat (Preset):</span>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
-              <button class="sim-preset-btn" data-t="24" data-rh="50" data-d="0.10" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">🍃 Normal / Sejuk</button>
-              <button class="sim-preset-btn" data-t="34" data-rh="30" data-d="0.15" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">☀️ Panas Kering</button>
-              <button class="sim-preset-btn" data-t="28" data-rh="75" data-d="0.20" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">💧 Sangat Lembap</button>
-              <button class="sim-preset-btn" data-t="36" data-rh="40" data-d="0.85" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">🚨 Kritis (Debu Pekat)</button>
+              <button class="sim-preset-btn" data-t="24" data-rh="50" data-d="0.10" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Normal / Sejuk</button>
+              <button class="sim-preset-btn" data-t="34" data-rh="30" data-d="0.15" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Panas Kering</button>
+              <button class="sim-preset-btn" data-t="28" data-rh="75" data-d="0.20" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Sangat Lembap</button>
+              <button class="sim-preset-btn" data-t="36" data-rh="40" data-d="0.85" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Kritis (Debu Pekat)</button>
             </div>
           </div>
         </div>
@@ -145,7 +143,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite">
-  <span>✓</span>
+  <span></span>
   <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
 </div>
 

@@ -198,7 +198,7 @@
 .inactive-pill { font-size: .7rem; background: #fee2e2; color: #dc2626; border-radius: 99px; padding: .15rem .5rem; }
 
 /* ── Sidebar override for Phase 2 pages ────────────────────────── */
-.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 240px; background: #fff; border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 50; transition: transform .25s; }
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 252px; background: #fff; border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; z-index: 50; transition: transform .25s; }
 .sidebar.open { transform: translateX(0) !important; }
 @media (max-width: 900px) { .sidebar { transform: translateX(-100%); } }
 
@@ -229,8 +229,6 @@
 }
 
 /* ── Utility ────────────────────────────────────────────────────── */
-.badge-ok  { background: #dcfce7; color: #16a34a; }
-.badge-err { background: #fee2e2; color: #dc2626; }
 
 .skeleton { background: linear-gradient(90deg, #f0f4ff 25%, #dde8ff 50%, #f0f4ff 75%); background-size: 200% 100%; animation: skeleton-sweep 1.4s infinite; border-radius: 6px; }
 @keyframes skeleton-sweep { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
