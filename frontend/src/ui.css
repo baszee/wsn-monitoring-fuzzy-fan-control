@@ -18,7 +18,7 @@
 .ic-svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .metric-icon .ic { width: 16px; height: 16px; }
 .icon-button .ic, .menu-button .ic { width: 18px; height: 18px; }
-.text-button .ic, .sidebar-footer .ic, .node-determining-tag .ic, td .ic { width: 13px; height: 13px; }
+.text-button .ic, .sidebar-footer .ic, .sidebar-footer svg, .sidebar-footer .ic-svg, .node-determining-tag .ic, td .ic { width: 14px; height: 14px; flex: 0 0 14px; }
 td .ic { color: var(--blue); }
 .chain-step-icon .ic { width: 18px; height: 18px; color: var(--blue); }
 .feature-icon .ic, .flow-icon .ic { width: 24px; height: 24px; }
@@ -35,14 +35,36 @@ td .ic { color: var(--blue); }
 
 /* Sidebar: lebar penuh atau rel ikon */
 :root { --sidebar-w: 252px; }
-.dashboard-shell { grid-template-columns: var(--sidebar-w) minmax(0, 1fr); transition: grid-template-columns .2s ease; }
-.sidebar { width: var(--sidebar-w); transition: width .2s ease; }
-.p2-main { margin-left: var(--sidebar-w); transition: margin-left .2s ease; }
+.dashboard-shell, .p2-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  transition: grid-template-columns .2s ease;
+}
+.sidebar {
+  width: var(--sidebar-w);
+  transition: width .2s ease, transform .25s ease;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 18px 18px;
+  border-right: 1px solid var(--line);
+  background: #fff;
+  overflow-y: auto;
+}
+.dashboard-main, .p2-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 .sidebar-head { display: flex; align-items: center; gap: 8px; }
 .rail-toggle { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 11px; background: #fff; color: #536880; cursor: pointer; }
 .rail-toggle:hover { color: var(--blue); border-color: #bcd6f2; }
-.rail-toggle .ic { width: 19px; height: 19px; }
+.rail-toggle svg, .rail-toggle .ic, .rail-toggle .ic-svg { width: 19px; height: 19px; flex: 0 0 19px; }
 .sidebar-brand { padding: 0 4px; }
 
 @media (min-width: 981px) {
@@ -59,9 +81,33 @@ td .ic { color: var(--blue); }
   body.sidebar-collapsed .side-nav a { justify-content: center; padding: 0; }
   body.sidebar-collapsed .nav-label { height: 1px; margin: 10px 12px; padding: 0; font-size: 0; background: var(--line); }
   body.sidebar-collapsed .sidebar-footer { padding: 12px 0 0; }
-  body.sidebar-collapsed .sidebar-footer a { justify-content: center; }
+  body.sidebar-collapsed .sidebar-footer a { justify-content: center; width: 100%; }
 }
-@media (max-width: 980px) { .sidebar { width: 252px; } }
+@media (max-width: 980px) {
+  .dashboard-shell, .p2-shell { display: block; }
+  .sidebar {
+    width: 252px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: 18px 0 45px rgba(43,70,100,.15);
+    z-index: 50;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+    background: rgba(15,34,57,.3);
+    backdrop-filter: blur(2px);
+    display: none;
+  }
+  .sidebar-backdrop.visible, .sidebar-backdrop.show { display: block; }
+  .dashboard-main, .p2-main { margin-left: 0; width: 100%; }
+  .menu-button { display: grid; place-items: center; }
+}
 
 /* Lencana status kuning */
 .data-badge.warn { color: #956500; border-color: #f1e1b0; background: #fff8e1; }

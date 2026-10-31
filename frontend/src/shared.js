@@ -46,7 +46,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
 
   root.innerHTML = `
     <div class="sidebar-head">
-      <button class="rail-toggle" id="sidebar-toggle" type="button" aria-label="Ciutkan atau perluas navigasi" aria-expanded="true">${icon("menu")}</button>
+      <button class="rail-toggle" id="sidebar-toggle" type="button" aria-label="Ciutkan atau perluas navigasi" aria-expanded="true"><span class="ic">${icon("menu")}</span></button>
       <a class="brand sidebar-brand" href="/">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32"><path d="M16 22V9m-5 13h10M12 9a4 4 0 0 1 8 0"/><path d="M8.8 12.2a9.5 9.5 0 0 1 14.4 0M5.5 8.7a14 14 0 0 1 21 0"/></svg>
@@ -66,7 +66,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </nav>
 
     <div class="sidebar-footer">
-      <a href="/" title="Kembali ke beranda">${icon("arrow-left")} <span class="lbl">Kembali ke beranda</span></a>
+      <a href="/" title="Kembali ke beranda"><span class="ic">${icon("arrow-left")}</span> <span class="lbl">Kembali ke beranda</span></a>
       <small>Prototipe penelitian</small>
     </div>
   `;
