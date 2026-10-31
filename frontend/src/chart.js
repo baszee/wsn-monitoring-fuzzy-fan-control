@@ -1,7 +1,7 @@
 import { fmtNumber, fmtClock } from "/src/shared.js?v=20261029-3";
 
 export const PALETTE = ["#2f7df0", "#13a8aa", "#e7a21a", "#8b5cf6"];
-const W = 760, H = 230, L = 46, R = 16, T = 12, B = 30, PW = W - L - R, PH = H - T - B;
+const L = 46, R = 16, T = 12, B = 30;
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 
 export function thin(pts, max = 300) {
@@ -31,6 +31,11 @@ export function drawChart(wrap, { series, t0, t1, fixed, floor, dec = 1, label =
   const values = segs.flatMap((s) => s.segs.flat().map((p) => p.v));
   if (!values.length) return null;
 
+  const cs = getComputedStyle(wrap);
+  const W = Math.max(320, Math.round(wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)) || 760);
+  const H = Math.max(170, Math.round(wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) || 230);
+  const PW = W - L - R, PH = H - T - B;
+
   let y0, y1;
   if (fixed) [y0, y1] = fixed;
   else {
@@ -46,9 +51,11 @@ export function drawChart(wrap, { series, t0, t1, fixed, floor, dec = 1, label =
     const r = i / 4, y = T + PH * r;
     return `<line class="chart-grid" x1="${L}" y1="${y}" x2="${W - RT_()}" y2="${y}"/><text class="chart-axis-text" x="${L - 8}" y="${y + 3}" text-anchor="end">${fmtNumber(y1 - (y1 - y0) * r, dec)}</text>`;
   }).join("");
+  const longRange = t1 - t0 >= 20 * 3600e3;
+  const tickLabel = (t) => longRange ? `${new Date(t).toLocaleDateString("id-ID", { weekday: "short" })} ${fmtClock(t, false)}` : fmtClock(t, false);
   const xl = [0, 1, 2, 3].map((i) => {
     const t = t0 + ((t1 - t0) * i) / 3;
-    return `<text class="chart-axis-text" x="${X(t)}" y="${H - 8}" text-anchor="${i === 0 ? "start" : i === 3 ? "end" : "middle"}">${fmtClock(t, false)}</text>`;
+    return `<text class="chart-axis-text" x="${X(t)}" y="${H - 8}" text-anchor="${i === 0 ? "start" : i === 3 ? "end" : "middle"}">${tickLabel(t)}</text>`;
   }).join("");
   const lines = segs.map((s) => s.segs.map((seg) => {
     if (seg.length === 1) return `<circle cx="${X(seg[0].t).toFixed(1)}" cy="${Y(seg[0].v).toFixed(1)}" r="3" fill="${s.color}"/>`;

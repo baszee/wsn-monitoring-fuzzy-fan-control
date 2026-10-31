@@ -97,3 +97,22 @@ def test_simulate_uses_active_config_and_returns_pwm():
     assert body["config_version"] == "t1"
     assert body["candidate_pwm_percent"] > 90.0
 
+
+
+def test_nodes_latest_shows_previous_result_while_new_record_pending():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.core.database import get_db
+    ops.FRESHNESS_SECONDS = 10
+    db, ctrl = _db(), _ctrl()
+    _record(db, 6)
+    run_processing_cycle(db, controller=ctrl)      # rekaman 1 terproses
+    _record(db, 1)                                  # rekaman 2 belum diproses
+    app.dependency_overrides[get_db] = lambda: db
+    try:
+        node = TestClient(app).get("/api/nodes/latest").json()[0]
+    finally:
+        app.dependency_overrides.clear()
+    assert node["data_status"] == "Valid"
+    assert node["condition_score"] is not None      # tidak kosong
+    assert node["dust_index"] is not None

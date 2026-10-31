@@ -43,7 +43,9 @@ backend/
     main.py     aplikasi FastAPI
   init_db.sql   skema PostgreSQL
   seed_dummy.py data awal: konfigurasi, 27 aturan, node contoh
-  feed_dummy.py pengirim data uji tiap 10 detik
+  dummy_profile.py  generator data uji yang halus (suhu, RH, debu)
+  backfill_dummy.py isi riwayat 24 jam untuk tangkapan layar dan uji grafik
+  feed_dummy.py     pengirim data uji tiap 10 detik, menyambung dengan riwayat
 frontend/
   index.html    beranda
   dashboard/    halaman dashboard
@@ -66,7 +68,8 @@ uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
 Untuk mengirim data uji, buka terminal kedua:
 
 ```powershell
-python backend/feed_dummy.py
+python backend/backfill_dummy.py      # sekali saja: isi riwayat 24 jam (menghapus data lama)
+python backend/feed_dummy.py          # biarkan menyala agar data tetap segar
 ```
 
 Database SQLite default ada di `wsn.db` pada root proyek. Untuk PostgreSQL, isi `DATABASE_URL`.

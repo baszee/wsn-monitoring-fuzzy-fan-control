@@ -34,11 +34,16 @@
                 <h2 id="decision-title">Keputusan kendali zona</h2>
                 <span class="status-pill" id="fan-status">Memuat</span>
               </div>
+              <div class="zone-banner" id="zone-banner">
+                <span>Kondisi zona</span>
+                <strong id="zone-class">—</strong>
+                <p id="zone-summary"></p>
+              </div>
               <div class="fan-stage"><canvas id="fan-canvas" role="img" aria-label="Ilustrasi kipas"></canvas></div>
               <div class="pwm-readout"><span>Perintah PWM</span><strong id="pwm-value">—</strong></div>
               <p class="decision-note" id="decision-note"></p>
               <dl class="decision-facts">
-                <div><dt>u zona</dt><dd id="fact-uzona">—</dd></div>
+                <div><dt>Kebutuhan kipas</dt><dd id="fact-need">—</dd></div>
                 <div><dt>Node penentu</dt><dd id="fact-node">—</dd></div>
                 <div><dt>Mode</dt><dd id="fact-mode">—</dd></div>
                 <div><dt>Keputusan terakhir</dt><dd id="fact-time">—</dd></div>
@@ -46,35 +51,36 @@
               <p class="decision-caption">Ilustrasi perintah PWM, bukan RPM.</p>
             </article>
 
-            <section class="board" aria-labelledby="board-title">
-              <div class="board-head">
-                <h2 id="board-title">Kondisi per node</h2>
-                <p>s = skor kondisi, u = tingkat kendali, keduanya skala 0 sampai 100.</p>
-              </div>
-              <div class="node-board" id="node-board"><div class="board-empty">Memuat data node...</div></div>
-            </section>
-          </section>
-
-          <article class="panel history-panel">
-            <div class="panel-header">
-              <div><h2>Riwayat</h2><p id="history-caption">Memuat</p></div>
-              <div class="panel-tools">
-                <div class="segmented" id="metric-tabs">
-                  <button class="active" data-tab="control">Kendali</button>
-                  <button data-tab="temperature">Suhu</button>
-                  <button data-tab="humidity">RH</button>
-                  <button data-tab="dust_index">Debu</button>
+            <div class="home-main">
+              <section class="board" aria-labelledby="board-title">
+                <div class="board-head">
+                  <h2 id="board-title">Kondisi per node</h2>
+                  <p>Pilih kartu node untuk melihat rincian pengukuran dan perhitungannya.</p>
                 </div>
-                <div class="segmented range-tabs" id="range-tabs">
-                  <button class="active" data-range="1h">1 jam</button>
-                  <button data-range="6h">6 jam</button>
-                  <button data-range="24h">24 jam</button>
-                </div>
-              </div>
+                <div class="node-board" id="node-board"><div class="board-empty">Memuat data node...</div></div>
+              </section>
+<article class="panel history-panel">
+                          <div class="panel-header">
+                            <div><h2>Riwayat</h2><p id="history-caption">Memuat</p></div>
+                            <div class="panel-tools">
+                              <div class="segmented" id="metric-tabs">
+                                <button class="active" data-tab="control">Kendali</button>
+                                <button data-tab="temperature">Suhu</button>
+                                <button data-tab="humidity">RH</button>
+                                <button data-tab="dust_index">Debu</button>
+                              </div>
+                              <div class="segmented range-tabs" id="range-tabs">
+                                <button data-range="1h">1 jam</button>
+                                <button data-range="6h">6 jam</button>
+                                <button class="active" data-range="24h">24 jam</button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="chart-wrap" id="history-chart"><div class="chart-loading">Memuat riwayat...</div></div>
+                          <div class="chart-legend"><div class="legend-items" id="chart-legend"></div><span class="chart-note" id="chart-note"></span></div>
+                        </article>
             </div>
-            <div class="chart-wrap" id="history-chart"><div class="chart-loading">Memuat riwayat...</div></div>
-            <div class="chart-legend"><div class="legend-items" id="chart-legend"></div><span class="chart-note" id="chart-note"></span></div>
-          </article>
+          </section>
         </div>
       </main>
     </div>

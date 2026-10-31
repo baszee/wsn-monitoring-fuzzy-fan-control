@@ -137,7 +137,7 @@ td .ic { color: var(--blue); }
 .mf-box ul { margin: 0; padding-left: 1.2rem; font-size: .75rem; line-height: 1.6; }
 
 
-
+/* Perbaikan Tahap 5b */
 .ic > .ic-svg { width: 100%; height: 100%; vertical-align: top; }
 .chain-step-icon { flex: 0 0 auto; display: inline-flex; }
 .chain-step-icon .ic-svg { width: 20px; height: 20px; color: var(--blue); }

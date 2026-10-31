@@ -18,7 +18,8 @@ function ageText(sec) {
 const classKey = (c) => (c === "Baik" ? "good" : c === "Perlu Perhatian" ? "attention" : c === "Buruk" ? "bad" : "");
 
 // ── State ──────────────────────────────────────────────────────────────────
-const state = { nodes: [], control: null, history: null, tab: "control", range: "1h", failed: false };
+let cfg = null;
+const state = { nodes: [], control: null, history: null, tab: "control", range: "24h", failed: false };
 const fan = createFan($("#fan-canvas"));
 
 // ── Status atas ────────────────────────────────────────────────────────────
@@ -39,6 +40,36 @@ function renderStatus() {
 }
 
 // ── Kartu keputusan ────────────────────────────────────────────────────────
+// Kebutuhan kipas dalam kata, dihitung dari batas u_off dan u_max pada konfigurasi aktif.
+function needLabel(u) {
+  const off = cfg?.u_off, max = cfg?.u_max;
+  if (u == null || off == null || max == null) return "—";
+  if (u <= off) return "Tidak perlu";
+  const r = (u - off) / (max - off);
+  return r < 1 / 3 ? "Rendah" : r < 2 / 3 ? "Sedang" : "Tinggi";
+}
+
+// Kondisi zona = kondisi terburuk di antara node yang datanya valid.
+function zoneCondition() {
+  const valid = state.nodes.filter((n) => n.data_status === "Valid" && n.condition_class);
+  if (!valid.length) return null;
+  const order = ["Baik", "Perlu Perhatian", "Buruk"];
+  const worst = valid.reduce((a, n) => (order.indexOf(n.condition_class) > order.indexOf(a) ? n.condition_class : a), "Baik");
+  const count = (c) => valid.filter((n) => n.condition_class === c).length;
+  const parts = [];
+  if (count("Buruk")) parts.push(`${count("Buruk")} node buruk`);
+  if (count("Perlu Perhatian")) parts.push(`${count("Perlu Perhatian")} perlu perhatian`);
+  if (count("Baik")) parts.push(`${count("Baik")} baik`);
+  return { worst, summary: parts.join(", ") };
+}
+
+function renderZoneBanner(unavailable) {
+  const box = $("#zone-banner"), z = unavailable ? null : zoneCondition();
+  box.className = `zone-banner ${z ? classKey(z.worst) : ""}`;
+  $("#zone-class").textContent = z ? z.worst : "Belum dapat dinilai";
+  $("#zone-summary").textContent = z ? `Dari ${state.nodes.length} node: ${z.summary}.` : "Menunggu data node yang valid.";
+}
+
 function renderDecision() {
   const c = state.control;
   const unavailable = !c || c.fan_command_status === "Kendali tidak tersedia" || !c.worker_alive;
@@ -56,7 +87,7 @@ function renderDecision() {
       : `Tidak ada node dengan data valid dalam ${c.freshness_seconds} detik terakhir.`;
     fan.setTarget(0, true);
     $("#pwm-value").textContent = "—";
-    $("#fact-uzona").textContent = "—";
+    $("#fact-need").textContent = "—";
     $("#fact-node").textContent = "—";
   } else {
     pill.textContent = c.fan_command_status;
@@ -66,9 +97,11 @@ function renderDecision() {
     note.textContent = c.hysteresis_held
       ? `PWM hasil hitung ${fmtNumber(c.candidate_pwm_percent, 1)}%, ditahan karena perubahan kecil.`
       : "";
-    $("#fact-uzona").textContent = fmtNumber(c.zone_control_level, 1);
+    $("#fact-need").textContent = needLabel(c.zone_control_level);
+    $("#fact-need").title = `Tingkat kendali zona ${fmtNumber(c.zone_control_level, 1)}`;
     $("#fact-node").textContent = c.determining_node_id ?? "Tidak ada";
   }
+  renderZoneBanner(unavailable);
   $("#fact-mode").textContent = c?.control_mode === "manual" ? "Manual" : c ? "Otomatis" : "—";
   $("#fact-time").textContent = c?.created_at ? clock(parseTs(c.created_at)) : "—";
 }
@@ -81,18 +114,16 @@ function tileHtml(n) {
   const href = `/dashboard/nodes/detail.html?node=${encodeURIComponent(n.node_id)}`;
   const reason = n.data_status === "Data lama" ? `Data lama, ${ageText(n.data_age_seconds)} yang lalu` : (n.data_status || "Tidak ada data");
   const u = Math.max(0, Math.min(100, Number(n.control_level) || 0));
+  const tip = scored ? `Skor kondisi ${fmtNumber(n.condition_score, 1)}, tingkat kendali ${fmtNumber(n.control_level, 1)}` : "";
 
   let body;
   if (!ok) body = `<p class="tile-reason">${esc(reason)}</p>`;
-  else if (!scored) body = `<p class="tile-wait">Data baru masuk, hasil fuzzy sedang dihitung.</p>`;
-  else body = `<div class="tile-scores">
-      <div><span>Skor kondisi (s)</span><strong>${fmtNumber(n.condition_score, 1)}</strong></div>
-      <div><span>Tingkat kendali (u)</span><strong>${fmtNumber(n.control_level, 1)}</strong></div>
-    </div>
+  else if (!scored) body = `<p class="tile-wait">Data baru masuk, hasil sedang dihitung.</p>`;
+  else body = `<div class="tile-need"><span>Kebutuhan kipas</span><strong>${needLabel(n.control_level)}</strong></div>
     <div class="tile-bar" aria-hidden="true"><i style="width:${u}%"></i></div>`;
 
   return `
-    <a class="panel node-tile${ok ? "" : " inactive"}${det ? " determining" : ""}" href="${href}">
+    <a class="panel node-tile${ok ? "" : " inactive"}${det ? " determining" : ""}" href="${href}" title="${esc(tip)}">
       <div class="tile-top">
         <span class="tile-id">${esc(n.node_id)}</span>
         ${det ? `<span class="tag-determining">${icon("target")} Penentu</span>` : ""}
@@ -101,7 +132,7 @@ function tileHtml(n) {
       ${body}
       <div class="tile-readings">
         <div><span>Suhu</span><strong>${fmtNumber(n.temperature, 1)} °C</strong></div>
-        <div><span>RH</span><strong>${fmtNumber(n.humidity, 0)}%</strong></div>
+        <div><span>Kelembapan</span><strong>${fmtNumber(n.humidity, 0)}%</strong></div>
         <div><span>Debu</span><strong>${fmtNumber(n.dust_index, 2)}</strong></div>
       </div>
     </a>`;
@@ -158,6 +189,7 @@ function renderChart() {
 async function refreshLive() {
   try {
     const [nodes, control] = await Promise.all([apiFetch("/api/nodes/latest"), apiFetch("/api/control/latest")]);
+    if (!cfg) cfg = await apiFetch("/api/config/active").catch(() => null);
     state.nodes = nodes; state.control = control; state.failed = false;
   } catch (e) {
     if (!state.failed) showToast("Dashboard belum terhubung", "Pastikan layanan backend aktif.", "error");
@@ -189,6 +221,8 @@ function bindTabs(containerSel, attr, onPick) {
 bindTabs("#metric-tabs", "tab", (v) => { state.tab = v; renderChart(); });
 bindTabs("#range-tabs", "range", (v) => { state.range = v; $("#history-chart").classList.add("is-loading"); refreshHistory().finally(() => $("#history-chart").classList.remove("is-loading")); });
 $("#refresh-button").addEventListener("click", refreshAll);
+let resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderChart, 150); });
 
 refreshAll();
 setInterval(refreshLive, 5000);

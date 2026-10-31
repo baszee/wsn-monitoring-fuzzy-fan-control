@@ -92,6 +92,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
         # Pasangkan hasil fuzzy dengan rekaman sensor yang sama. Jangan mencampur
         # pembacaan terbaru dengan hasil dari siklus yang berbeda.
         fuzzy_data = None
+        shown = sensor_data
         if sensor_data:
             fuzzy_data = (
                 db.query(FuzzyResult)
@@ -102,19 +103,41 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 .order_by(FuzzyResult.processed_at.desc())
                 .first()
             )
+            if fuzzy_data is None and fresh:
+                # Rekaman terbaru belum selesai diproses (selisih satu siklus worker).
+                # Tampilkan rekaman terproses sebelumnya secara utuh, bukan campuran.
+                prev = (
+                    db.query(FuzzyResult)
+                    .filter(FuzzyResult.zone_node_id == node.zone_node_id)
+                    .order_by(FuzzyResult.source_timestamp.desc())
+                    .first()
+                )
+                if prev is not None and prev.temperature is not None \
+                        and age_seconds(prev.source_timestamp) <= 3 * ops.FRESHNESS_SECONDS:
+                    fuzzy_data = prev
+                    shown = None  # nilai ukur diambil dari snapshot hasil fuzzy
+
+        if shown is None and fuzzy_data is not None:
+            temp_v, hum_v, volt_v, ts_v = (fuzzy_data.temperature, fuzzy_data.humidity,
+                                           fuzzy_data.dust_raw_voltage, fuzzy_data.source_timestamp)
+        else:
+            temp_v = sensor_data.temperature if sensor_data else None
+            hum_v = sensor_data.humidity if sensor_data else None
+            volt_v = sensor_data.dust_raw_voltage if sensor_data else None
+            ts_v = sensor_data.timestamp if sensor_data else None
 
         item = NodeMeasurementResponse(
             node_id=node.node_id,
             zone_id=node.zone_id,
             is_active=node.is_active,
-            temperature=sensor_data.temperature if sensor_data else None,
-            humidity=sensor_data.humidity if sensor_data else None,
-            dust_raw_voltage=sensor_data.dust_raw_voltage if sensor_data else None,
+            temperature=temp_v,
+            humidity=hum_v,
+            dust_raw_voltage=volt_v,
             dust_index=fuzzy_data.dust_index if fuzzy_data else None,
             condition_score=fuzzy_data.condition_score if fuzzy_data else None,
             condition_class=fuzzy_data.condition_class if fuzzy_data else None,
             control_level=fuzzy_data.control_level if fuzzy_data else None,
-            source_timestamp=sensor_data.timestamp if sensor_data else None,
+            source_timestamp=ts_v,
             status_valid=sensor_data.status_valid if sensor_data else False,
             is_determining_node=is_determining,
             data_age_seconds=age,
