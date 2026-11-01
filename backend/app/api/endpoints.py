@@ -42,6 +42,7 @@ from app.core.ratelimit import rate_limit
 from app.core.security import require_admin
 from app.services.freshness import age_seconds, is_fresh
 from app.services.worker import apply_auto, apply_manual, global_fan_controller, worker_status
+from app.services.serverless import run_request_cycle
 
 router = APIRouter()
 
@@ -58,6 +59,9 @@ def _worker_alive() -> bool:
 )
 def get_latest_nodes(db: Session = Depends(get_db)):
     """Mengambil rekaman sensor terkini, hasil fuzzy, dan status penentu per node."""
+    if ops.SERVERLESS_MODE:
+        run_request_cycle(db)
+
     active_nodes = db.query(ZoneNode).filter(ZoneNode.is_active == True).all()
 
     # Dapatkan node penentu terakhir dari tabel zone_controls
@@ -227,6 +231,9 @@ def _control_response(latest_ctrl: ZoneControl) -> ZoneControlResponse:
 )
 def get_latest_control(db: Session = Depends(get_db)):
     """Mengambil rekaman kendali zona terakhir (u_zona, i*, duty cycle PWM, status fan)."""
+    if ops.SERVERLESS_MODE:
+        run_request_cycle(db)
+
     latest_ctrl = (
         db.query(ZoneControl)
         .order_by(ZoneControl.created_at.desc(), ZoneControl.zone_control_id.desc())

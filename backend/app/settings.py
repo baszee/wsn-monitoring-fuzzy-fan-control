@@ -34,6 +34,11 @@ WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)
 DEMO_MODE = _bool("DEMO_MODE", False)
 DEMO_FEED_INTERVAL_SECONDS = _float("DEMO_FEED_INTERVAL_SECONDS", 3.0)
 
+# Vercel dan platform function-as-a-service tidak menjamin task latar belakang
+# tetap berjalan setelah respons selesai. Pada mode ini satu siklus dipicu oleh
+# request dashboard, sedangkan deployment biasa/Orange Pi tetap memakai worker.
+SERVERLESS_MODE = _bool("SERVERLESS_MODE", bool(os.getenv("VERCEL")))
+
 # Resolusi centroid (satuan skala 0-100). Lebih kecil = lebih halus.
 CENTROID_STEP = _float("CENTROID_STEP", 0.01)
 

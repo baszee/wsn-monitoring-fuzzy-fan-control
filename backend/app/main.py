@@ -48,18 +48,19 @@ async def lifespan(app: FastAPI):
     # Selalu mulai Otomatis dengan PWM 0%; mode Manual tidak dipulihkan.
     reset_control_state()
 
-    # Jalankan background worker periodik (tiap WORKER_INTERVAL_SECONDS detik)
-    worker_task = asyncio.create_task(
-        background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)
-    )
-
-    if ops.DEMO_MODE:
-        demo_feed_task = asyncio.create_task(
-            demo_feed_loop(
-                interval_seconds=ops.DEMO_FEED_INTERVAL_SECONDS,
-                stop_event=stop_event,
-            )
+    if not ops.SERVERLESS_MODE:
+        # Server biasa/Orange Pi: worker dan generator demo boleh hidup kontinu.
+        worker_task = asyncio.create_task(
+            background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)
         )
+
+        if ops.DEMO_MODE:
+            demo_feed_task = asyncio.create_task(
+                demo_feed_loop(
+                    interval_seconds=ops.DEMO_FEED_INTERVAL_SECONDS,
+                    stop_event=stop_event,
+                )
+            )
 
     yield
 
