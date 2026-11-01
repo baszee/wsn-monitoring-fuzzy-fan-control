@@ -33,6 +33,10 @@ WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)
 # Generator data tiruan opsional untuk demo daring satu layanan.
 DEMO_MODE = _bool("DEMO_MODE", False)
 DEMO_FEED_INTERVAL_SECONDS = _float("DEMO_FEED_INTERVAL_SECONDS", 3.0)
+# Satu siklus kondisi demo (normal -> meningkat -> tinggi -> pulih).
+# Nilai bawaan 10 menit membuat perubahan kendali terlihat saat demonstrasi
+# tanpa mengubah perilaku ketika aplikasi memakai data penerima yang nyata.
+DEMO_CYCLE_SECONDS = _float("DEMO_CYCLE_SECONDS", 600.0)
 
 # Vercel dan platform function-as-a-service tidak menjamin task latar belakang
 # tetap berjalan setelah respons selesai. Pada mode ini satu siklus dipicu oleh

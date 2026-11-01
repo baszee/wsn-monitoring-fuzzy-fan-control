@@ -7,12 +7,24 @@ from datetime import datetime, timezone
 from dummy_profile import PROFILE, Generator
 from sqlalchemy.orm import Session
 
+from app import settings as ops
 from app.core.database import SessionLocal
 from app.models import MockReceiverValidData
 from app.services.freshness import age_seconds
 
 logger = logging.getLogger("wsn.demo_feed")
 generator = Generator()
+
+
+def _virtual_hour(now: datetime, cycle_seconds: float) -> float:
+    """Petakan satu siklus demo singkat ke profil lingkungan 24 jam.
+
+    Generator tidak lagi mengikuti zona waktu server. Dengan demikian hasil
+    demo konsisten di laptop, Vercel, maupun Orange Pi dan kondisi kendali
+    tinggi dapat terlihat tanpa menunggu jam tertentu.
+    """
+    cycle = max(float(cycle_seconds), 60.0)
+    return (now.timestamp() % cycle) / cycle * 24.0
 
 
 def ensure_demo_snapshot(
@@ -34,8 +46,7 @@ def ensure_demo_snapshot(
         if latest is not None and age_seconds(latest.timestamp, now) < interval:
             return False
 
-    local = now.astimezone()
-    hour = local.hour + local.minute / 60 + local.second / 3600
+    hour = _virtual_hour(now, ops.DEMO_CYCLE_SECONDS)
     for node_id in PROFILE:
         temperature, humidity, dust = generator.sample(node_id, hour, interval)
         db.add(MockReceiverValidData(
