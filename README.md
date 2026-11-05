@@ -11,7 +11,7 @@ Setiap node mengirim suhu, kelembapan relatif (RH), dan tegangan sensor debu. Ba
 3. Kondisi node ditentukan dari s_i: Baik (s_i < 35), Perlu Perhatian (35 sampai 65), Buruk (s_i > 65).
 4. Tingkat kendali zona adalah u_zona = max(u_i). Node dengan u_i tertinggi menjadi node penentu.
 5. u_zona dipetakan ke PWM fan. Fan mati bila u_zona <= 15. Di atas itu PWM naik linear dari 30% sampai 100% pada u_zona = 88,33. Perubahan PWM baru diterapkan bila selisihnya minimal 5%.
-6. Data yang lebih lama dari batas kesegaran (bawaan 10 detik) tidak dipakai. Bila tidak ada data yang bisa dipakai, fan mati dan status kendali "Kendali tidak tersedia".
+6. Data yang lebih lama dari batas kesegaran (bawaan 30 detik) tidak dipakai. Bila tidak ada data yang bisa dipakai, fan mati dan status kendali "Kendali tidak tersedia".
 
 Admin dapat memilih mode Manual dan menerapkan PWM 0 sampai 100% dari halaman Fan dan Kendali. Selama Manual, fuzzy, kendali zona, dan PWM otomatis tetap dihitung dan disimpan sebagai pembanding. Aplikasi selalu mulai di mode Otomatis dengan PWM 0%.
 
@@ -81,6 +81,34 @@ python backend/feed_dummy.py          # biarkan menyala agar data tetap segar
 
 Database SQLite default ada di `wsn.db` pada root proyek. Untuk PostgreSQL, isi `DATABASE_URL`.
 
+### Sumber data M2 (`node_readings`)
+
+Secara bawaan aplikasi tetap memakai `mock_receiver_valid_data`. Untuk membaca tabel
+`node_readings` milik subsistem penerima M2, tambahkan ke `.env`:
+
+```text
+SENSOR_SOURCE=node_readings
+FRESHNESS_SECONDS=30
+```
+
+Adaptor hanya membaca tabel M2. Bootstrap aplikasi tidak membuat, mengubah, atau
+menghapus `node_readings`. Pemetaan yang digunakan adalah `received_at` sebagai waktu
+sumber, `v0` sebagai nilai debu mentah, dan ID angka `1` sebagai label `NODE-01`.
+
+Sebelum PostgreSQL/Orange Pi siap, tabel tersebut dapat disimulasikan pada SQLite lokal:
+
+```powershell
+$env:DATABASE_URL="sqlite:///./wsn_m2_dev.db"
+$env:SENSOR_SOURCE="node_readings"
+python backend/bootstrap_db.py
+python backend/tools/sim_node_readings.py --init --interval 5
+```
+
+Gunakan file database pengembangan terpisah seperti `wsn_m2_dev.db` agar ID rekaman
+simulator tidak bercampur dengan riwayat dummy lama di `wsn.db`.
+
+Status koneksi, data terakhir, usia data, RSSI/SNR, dan worker tersedia di `GET /api/status`.
+
 ## Deployment Railway
 
 Proyek sudah menyiapkan `requirements.txt` dan `railpack.json` di root. Railway akan memasang dependensi, menyiapkan database, lalu menjalankan satu proses Uvicorn pada port yang diberikan Railway.
@@ -101,7 +129,8 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 
 | Nama | Bawaan | Fungsi |
 | :--- | :--- | :--- |
-| `FRESHNESS_SECONDS` | 10 | Batas usia data yang masih dipakai |
+| `SENSOR_SOURCE` | `mock` | Sumber sensor: `mock` atau tabel M2 `node_readings` |
+| `FRESHNESS_SECONDS` | 30 | Batas usia data yang masih dipakai |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |
 | `CORS_ORIGINS` | `http://localhost:8000` | Asal yang diizinkan, dipisah koma |

@@ -15,16 +15,20 @@ class NodeMeasurementResponse(BaseModel):
     temperature: Optional[float] = None
     humidity: Optional[float] = None
     dust_raw_voltage: Optional[float] = None
+    pressure_hpa: Optional[float] = None
+    rssi: Optional[int] = None
+    snr: Optional[float] = None
     dust_index: Optional[float] = None
     condition_score: Optional[float] = None     # s_i
     condition_class: Optional[str] = None       # Baik / Perlu Perhatian / Buruk
     control_level: Optional[float] = None       # u_i
     source_timestamp: Optional[datetime] = None
     status_valid: bool = False
+    inputs_complete: bool = False
     is_determining_node: bool = False           # Apakah node ini adalah i* penentu u_zona
     data_age_seconds: Optional[float] = None
     is_fresh: bool = False
-    data_status: str = "Tidak ada data"   # Valid | Data lama | Tidak valid | Tidak ada data
+    data_status: str = "Tidak ada data"   # Valid | Data lama | Tidak valid | Masukan tidak lengkap | Tidak ada data
 
 
 class ZoneControlResponse(BaseModel):
@@ -37,7 +41,7 @@ class ZoneControlResponse(BaseModel):
     previous_pwm_percent: Optional[float] = None
     auto_pwm_percent: Optional[float] = None
     hysteresis_held: bool = False
-    freshness_seconds: int = 10
+    freshness_seconds: int = 30
     last_evaluated_at: Optional[datetime] = None
     worker_alive: bool = False
     control_status: str                         # Aktif / Mati / Kendali tidak tersedia

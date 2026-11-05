@@ -300,6 +300,7 @@ export function dataQuality(node = {}) {
   const table = {
     "Valid":          { key: "valid",   className: "pill-good" },
     "Data lama":      { key: "stale",   className: "pill-warn" },
+    "Masukan tidak lengkap": { key: "incomplete", className: "pill-warn" },
     "Tidak valid":    { key: "invalid", className: "pill-bad" },
     "Tidak ada data": { key: "none",    className: "pill-unknown" },
   };

@@ -24,8 +24,14 @@ def _bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
-# Kesegaran data (detik). Satu sumber kebenaran untuk dashboard dan worker.
-FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 10)
+# Sumber sensor: mock (pengembangan sekarang) atau node_readings (tabel M2).
+SENSOR_SOURCE = os.getenv("SENSOR_SOURCE", "mock").strip().lower()
+if SENSOR_SOURCE not in {"mock", "node_readings"}:
+    SENSOR_SOURCE = "mock"
+
+# Kesegaran data (detik). Node M2 mengirim sekitar tiap 10 detik, sehingga 30
+# detik memberi ruang untuk jitter jaringan dan penulisan database.
+FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 30)
 
 # Interval worker memeriksa rekaman baru (detik).
 WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)

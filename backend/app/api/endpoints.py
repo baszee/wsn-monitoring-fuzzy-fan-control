@@ -9,7 +9,8 @@ Menyediakan endpoints:
 """
 
 from typing import List, Optional
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
+import time
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session
@@ -18,7 +19,6 @@ from app import settings as ops
 from app.core.database import get_db
 from app.models import (
     ZoneNode,
-    MockReceiverValidData,
     FuzzyResult,
     ZoneControl,
     ControlConfig
@@ -43,6 +43,7 @@ from app.core.security import require_admin
 from app.services.freshness import age_seconds, is_fresh
 from app.services.worker import apply_auto, apply_manual, global_fan_controller, worker_status
 from app.services.serverless import run_request_cycle
+from app.sources import get_sensor_source
 
 router = APIRouter()
 
@@ -50,6 +51,93 @@ router = APIRouter()
 def _worker_alive() -> bool:
     last = worker_status["last_cycle_at"]
     return last is not None and age_seconds(last) <= 3 * ops.WORKER_INTERVAL_SECONDS
+
+
+@router.get("/status", summary="Status integrasi sumber sensor, database, dan worker")
+def get_integration_status(db: Session = Depends(get_db)):
+    """Status aman untuk diagnosis tanpa memaparkan DSN atau kredensial."""
+    source = get_sensor_source()
+    started = time.perf_counter()
+    try:
+        now = source.db_now(db)
+    except Exception as exc:
+        return {
+            "database": {
+                "connected": False,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+                "error": type(exc).__name__,
+            },
+            "source": {"mode": source.name, "available": False, "is_fresh": False},
+            "worker": {
+                "alive": _worker_alive(),
+                "last_cycle_at": worker_status["last_cycle_at"],
+                "last_source_time": worker_status.get("last_source_time"),
+                "last_error": worker_status.get("last_error"),
+                "last_error_at": worker_status.get("last_error_at"),
+            },
+            "nodes": [],
+        }
+
+    try:
+        latest = source.latest_any(db)
+        nodes = []
+        for node in db.query(ZoneNode).filter(ZoneNode.is_active == True).all():
+            reading = source.latest(db, node.node_id)
+            nodes.append({
+                "node_id": node.node_id,
+                "last_received_at": reading.timestamp if reading else None,
+                "age_seconds": round(age_seconds(reading.timestamp, now), 1) if reading else None,
+                "is_fresh": is_fresh(reading.timestamp, now) if reading else False,
+                "status_valid": reading.status_valid if reading else False,
+                "inputs_complete": reading.inputs_complete if reading else False,
+                "rssi": reading.rssi if reading else None,
+                "snr": reading.snr if reading else None,
+            })
+        return {
+            "database": {
+                "connected": True,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+                "database_time": now,
+            },
+            "source": {
+                "mode": source.name,
+                "available": True,
+                "last_received_at": latest.timestamp if latest else None,
+                "last_node_id": latest.node_id if latest else None,
+                "age_seconds": round(age_seconds(latest.timestamp, now), 1) if latest else None,
+                "is_fresh": is_fresh(latest.timestamp, now) if latest else False,
+            },
+            "worker": {
+                "alive": _worker_alive(),
+                "last_cycle_at": worker_status["last_cycle_at"],
+                "last_source_time": worker_status.get("last_source_time"),
+                "last_error": worker_status.get("last_error"),
+                "last_error_at": worker_status.get("last_error_at"),
+            },
+            "nodes": nodes,
+        }
+    except Exception as exc:
+        return {
+            "database": {
+                "connected": True,
+                "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+                "database_time": now,
+            },
+            "source": {
+                "mode": source.name,
+                "available": False,
+                "is_fresh": False,
+                "error": type(exc).__name__,
+            },
+            "worker": {
+                "alive": _worker_alive(),
+                "last_cycle_at": worker_status["last_cycle_at"],
+                "last_source_time": worker_status.get("last_source_time"),
+                "last_error": worker_status.get("last_error"),
+                "last_error_at": worker_status.get("last_error_at"),
+            },
+            "nodes": [],
+        }
 
 
 @router.get(
@@ -62,6 +150,8 @@ def get_latest_nodes(db: Session = Depends(get_db)):
     if ops.SERVERLESS_MODE:
         run_request_cycle(db)
 
+    source = get_sensor_source()
+    source_now = source.db_now(db)
     active_nodes = db.query(ZoneNode).filter(ZoneNode.is_active == True).all()
 
     # Dapatkan node penentu terakhir dari tabel zone_controls
@@ -74,27 +164,29 @@ def get_latest_nodes(db: Session = Depends(get_db)):
 
     results = []
     for node in active_nodes:
-        # Ambil data sensor terbaru dari mock receiver
-        sensor_data = (
-            db.query(MockReceiverValidData)
-            .filter(MockReceiverValidData.node_id == node.node_id)
-            .order_by(MockReceiverValidData.timestamp.desc())
-            .first()
-        )
+        sensor_data = source.latest(db, node.node_id)
 
         if not sensor_data:
-            data_status, age, fresh = "Tidak ada data", None, False
+            data_status, age, fresh, inputs_complete = "Tidak ada data", None, False, False
         else:
-            age = age_seconds(sensor_data.timestamp)
-            fresh = is_fresh(sensor_data.timestamp)
+            age = age_seconds(sensor_data.timestamp, source_now)
+            fresh = is_fresh(sensor_data.timestamp, source_now)
+            inputs_complete = sensor_data.inputs_complete
             if not sensor_data.status_valid:
                 data_status = "Tidak valid"
+            elif not inputs_complete:
+                data_status = "Masukan tidak lengkap"
             elif not fresh:
                 data_status = "Data lama"
             else:
                 data_status = "Valid"
 
-        is_determining = bool(determining_node_id) and determining_node_id == node.node_id and fresh
+        is_determining = (
+            bool(determining_node_id)
+            and determining_node_id == node.node_id
+            and fresh
+            and inputs_complete
+        )
 
         # Pasangkan hasil fuzzy dengan rekaman sensor yang sama. Jangan mencampur
         # pembacaan terbaru dengan hasil dari siklus yang berbeda.
@@ -110,7 +202,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 .order_by(FuzzyResult.processed_at.desc())
                 .first()
             )
-            if fuzzy_data is None and fresh:
+            if fuzzy_data is None and fresh and inputs_complete:
                 # Rekaman terbaru belum selesai diproses (selisih satu siklus worker).
                 # Tampilkan rekaman terproses sebelumnya secara utuh, bukan campuran.
                 prev = (
@@ -120,7 +212,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                     .first()
                 )
                 if prev is not None and prev.temperature is not None \
-                        and age_seconds(prev.source_timestamp) <= 3 * ops.FRESHNESS_SECONDS:
+                        and age_seconds(prev.source_timestamp, source_now) <= 3 * ops.FRESHNESS_SECONDS:
                     fuzzy_data = prev
                     shown = None  # nilai ukur diambil dari snapshot hasil fuzzy
 
@@ -140,12 +232,16 @@ def get_latest_nodes(db: Session = Depends(get_db)):
             temperature=temp_v,
             humidity=hum_v,
             dust_raw_voltage=volt_v,
+            pressure_hpa=sensor_data.pressure_hpa if sensor_data else None,
+            rssi=sensor_data.rssi if sensor_data else None,
+            snr=sensor_data.snr if sensor_data else None,
             dust_index=fuzzy_data.dust_index if fuzzy_data else None,
             condition_score=fuzzy_data.condition_score if fuzzy_data else None,
             condition_class=fuzzy_data.condition_class if fuzzy_data else None,
             control_level=fuzzy_data.control_level if fuzzy_data else None,
             source_timestamp=ts_v,
             status_valid=sensor_data.status_valid if sensor_data else False,
+            inputs_complete=inputs_complete,
             is_determining_node=is_determining,
             data_age_seconds=age,
             is_fresh=fresh,
@@ -167,17 +263,9 @@ def get_node_history(
 ):
     """Riwayat ringkas untuk grafik dashboard tanpa menambah data perkiraan."""
     range_hours = {"1h": 1, "6h": 6, "24h": 24}
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=range_hours[range])
-
-    rows = (
-        db.query(MockReceiverValidData)
-        .filter(
-            MockReceiverValidData.node_id == node_id,
-            MockReceiverValidData.timestamp >= cutoff,
-        )
-        .order_by(MockReceiverValidData.timestamp.asc())
-        .all()
-    )
+    source = get_sensor_source()
+    cutoff = source.db_now(db) - timedelta(hours=range_hours[range])
+    rows = source.history(db, node_id, cutoff)
 
     config = (
         db.query(ControlConfig)
@@ -195,8 +283,13 @@ def get_node_history(
             "temperature": row.temperature,
             "humidity": row.humidity,
             "dust_raw_voltage": row.dust_raw_voltage,
-            "dust_index": normalize_dust(row.dust_raw_voltage, c_0=c_0, c_h=c_h),
+            "dust_index": normalize_dust(row.dust_raw_voltage, c_0=c_0, c_h=c_h)
+            if row.dust_raw_voltage is not None else None,
             "status_valid": row.status_valid,
+            "inputs_complete": row.inputs_complete,
+            "pressure_hpa": row.pressure_hpa,
+            "rssi": row.rssi,
+            "snr": row.snr,
         }
         for row in rows
     ]
@@ -307,7 +400,7 @@ def get_control_history(
     db: Session = Depends(get_db),
 ):
     hours = {"1h": 1, "6h": 6, "24h": 24}[range]
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    cutoff = get_sensor_source().db_now(db) - timedelta(hours=hours)
 
     zone_rows = (
         db.query(ZoneControl)
@@ -359,17 +452,18 @@ def get_control_history(
 )
 def get_fuzzy_node_detail(node_id: str, db: Session = Depends(get_db)):
     """Mengembalikan derajat keanggotaan, aturan aktif, alpha_r, dan kurva agregasi."""
-    sensor_data = (
-        db.query(MockReceiverValidData)
-        .filter(MockReceiverValidData.node_id == node_id)
-        .order_by(MockReceiverValidData.timestamp.desc())
-        .first()
-    )
+    sensor_data = get_sensor_source().latest(db, node_id)
 
     if not sensor_data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Tidak ditemukan rekaman data sensor untuk node: {node_id}"
+        )
+
+    if not sensor_data.status_valid or not sensor_data.inputs_complete:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Rekaman terbaru valid sebagai paket, tetapi masukan fuzzy tidak lengkap.",
         )
 
     # Ambil konfigurasi aktif untuk parameter MFs dan acuan debu

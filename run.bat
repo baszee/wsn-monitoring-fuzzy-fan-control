@@ -5,8 +5,16 @@ cd /d "%~dp0"
 echo ==========================================================
 echo           MENJALANKAN SISTEM WSNOVA
 echo ==========================================================
-echo 1. Memulai simulator aliran sensor (feed_dummy)...
-start "WSNOVA Sensor Stream" /min cmd /c ".venv\Scripts\python.exe backend\feed_dummy.py --interval 5"
+set "WSN_SENSOR_SOURCE=%SENSOR_SOURCE%"
+if exist ".env" if not defined WSN_SENSOR_SOURCE (
+    for /f "tokens=1,* delims==" %%A in ('findstr /B /C:"SENSOR_SOURCE=" ".env"') do set "WSN_SENSOR_SOURCE=%%B"
+)
+if /I "%WSN_SENSOR_SOURCE%"=="node_readings" (
+    echo 1. Sumber node_readings aktif; feed_dummy tidak dijalankan.
+) else (
+    echo 1. Memulai simulator aliran sensor mock (feed_dummy)...
+    start "WSNOVA Sensor Stream" /min cmd /c ".venv\Scripts\python.exe backend\feed_dummy.py --interval 5"
+)
 
 echo 2. Memulai server web & API (Uvicorn)...
 echo.

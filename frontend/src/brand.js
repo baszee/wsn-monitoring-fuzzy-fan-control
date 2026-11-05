@@ -7,12 +7,12 @@ export const BRAND = {
   name: "WSNova",
   tagline: "Monitoring lingkungan dan kendali fan",
   logo: {
-    full: "/src/brand/logo-full.svg",
-    fullLight: "/src/brand/logo-full-light.svg",
-    mark: "/src/brand/logo-mark.svg",
-    markLight: "/src/brand/logo-mark-light.svg",
+    full: "/src/brand/wsnova-full-on-light.svg",
+    fullLight: "/src/brand/wsnova-full-on-dark.svg",
+    mark: "/src/brand/wsnova-mark.svg",
+    markLight: "/src/brand/wsnova-mark.svg",
   },
-  favicon: "/src/brand/favicon.svg",
+  favicon: "/src/brand/wsnova-favicon.svg",
   touchIcon: "/src/brand/apple-touch-icon.png",
 };
 

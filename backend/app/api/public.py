@@ -46,9 +46,7 @@ def get_public_summary(response: Response, db: Session = Depends(get_db)):
             "node_id": n.node_id,
             "temperature": _round(n.temperature, 1),
             "humidity": _round(n.humidity, 1),
-            # Tekanan udara belum disimpan oleh backend ini. Dikirim null agar
-            # landing page menyembunyikannya, dan otomatis tampil bila kelak ada.
-            "pressure_hpa": None,
+            "pressure_hpa": _round(n.pressure_hpa, 1),
             "dust_index": _round(n.dust_index, 2),
             "condition_class": n.condition_class if usable else None,
             "data_status": n.data_status,

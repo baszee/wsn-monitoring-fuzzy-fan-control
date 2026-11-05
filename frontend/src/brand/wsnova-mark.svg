@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <defs>
+    <linearGradient id="nova-grad" x1="30%" y1="15%" x2="70%" y2="85%">
+      <stop offset="0%" stop-color="#764AF1" />
+      <stop offset="50%" stop-color="#6833EE" />
+      <stop offset="100%" stop-color="#5815EC" />
+    </linearGradient>
+  </defs>
+
+  <!-- Cincin Orbit Miring -->
+  <ellipse cx="500" cy="502.5" rx="399.5" ry="171.6" transform="rotate(-21.8 500 502.5)" fill="none" stroke="#5912EC" stroke-width="15.5" />
+
+  <!-- Dua Titik Node pada Orbit -->
+  <circle cx="129" cy="679" r="42" fill="#5912EC" />
+  <circle cx="871" cy="326" r="42" fill="#5912EC" />
+
+  <!-- Bintang Utama 4 Sudut + Lubang Tengah Transparan -->
+  <path fill="url(#nova-grad)" fill-rule="evenodd" d="
+    M 512.5 108
+    C 539 368, 661 486, 921 512.5
+    C 661 539, 539 655, 512.5 915
+    C 486 655, 364 539, 104 512.5
+    C 364 486, 486 368, 512.5 108
+    Z
+    M 512 470
+    A 31 31 0 1 0 512 532
+    A 31 31 0 1 0 512 470
+    Z" />
+
+  <!-- Bintang Kecil (Sparkle) Pojok Kanan Atas -->
+  <path fill="#9E86F7" d="
+    M 819.5 113
+    C 823.5 145, 833.5 155, 865.5 159
+    C 833.5 163, 823.5 173, 819.5 205
+    C 815.5 173, 805.5 163, 773.5 159
+    C 805.5 155, 815.5 145, 819.5 113
+    Z" />
+</svg>

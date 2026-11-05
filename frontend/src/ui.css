@@ -150,8 +150,8 @@ td .ic { color: var(--blue); }
 /* Sidebar dashboard */
 .sidebar-head { min-height: 44px; padding: 0 2px 0 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .sidebar-brand { min-width: 0; padding: 0; }
-.brand-logo-sidebar { height: 28px; }
-.brand-logo-mark { display: none; height: 30px; }
+.brand-logo-sidebar { height: 40px; }
+.brand-logo-mark { display: none; height: 34px; }
 .rail-toggle { width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: #4b6078; cursor: pointer; }
 .rail-toggle:hover { color: var(--blue); border-color: #bcd6f2; background: var(--surface-soft); }
 .rail-toggle .ic, .rail-toggle svg { width: 18px; height: 18px; flex: 0 0 18px; }

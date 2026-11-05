@@ -3,7 +3,7 @@ Worker Siklus Pemrosesan & Penyimpanan Terintegrasi (backend/app/services/worker
 
 Menjalankan pipeline otomatis secara periodik:
 1. Membaca konfigurasi aktif dari tabel `control_config`.
-2. Mengambil data sensor terbaru dari tabel `mock_receiver_valid_data` untuk setiap node aktif.
+2. Mengambil data sensor terbaru melalui adaptor sumber (`mock` atau `node_readings`).
 3. Memvalidasi kelengkapan 3 parameter (suhu, kelembapan relatif / RH, debu).
 4. Menjalankan inferensi Fuzzy Mamdani (NumPy) per node valid dan menyimpannya ke `fuzzy_results`.
 5. Melakukan agregasi zona (worst-case u_zona & penentuan node i* deterministik via `zone.py`).
@@ -18,7 +18,6 @@ import time
 import uuid
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timezone
-import numpy as np
 from sqlalchemy.orm import Session
 
 from app import settings as ops
@@ -29,11 +28,11 @@ from app.models import (
     ZoneNode,
     FuzzyResult,
     ZoneControl,
-    MockReceiverValidData,
 )
 from app.services.fuzzy import FuzzyMamdaniEngine, evaluate_fuzzy, normalize_dust
 from app.services.zone import aggregate_zone
 from app.services.pwm import FanPWMController, MockPWMDriver
+from app.sources import get_sensor_source
 
 logger = logging.getLogger("wsn.worker")
 
@@ -48,7 +47,13 @@ global_fan_controller = FanPWMController(
 
 # Detak worker. Tabel zone_controls hanya ditulis saat ada perubahan,
 # jadi waktu evaluasi terakhir disimpan di sini.
-worker_status: Dict[str, Any] = {"last_cycle_at": None}
+worker_status: Dict[str, Any] = {
+    "last_cycle_at": None,
+    "last_source_time": None,
+    "last_error": None,
+    "last_error_at": None,
+    "source_mode": ops.SENSOR_SOURCE,
+}
 
 # Mode kendali. Selalu mulai Otomatis dengan PWM 0%; tidak dipulihkan setelah restart.
 control_lock = threading.RLock()
@@ -63,7 +68,8 @@ def _run_processing_cycle(
 ) -> Dict[str, Any]:
     """Ambil Data -> Validasi -> Kesegaran -> Fuzzy -> Zona -> PWM -> Simpan (hanya jika baru/berubah)."""
     fan_ctrl = controller or global_fan_controller
-    now = datetime.now(timezone.utc)
+    source = get_sensor_source()
+    now = source.db_now(db)
     cycle_id = f"CYC-{int(time.time())}-{uuid.uuid4().hex[:6]}"
 
     config = (
@@ -101,25 +107,11 @@ def _run_processing_cycle(
     new_results = 0
 
     for z_node in active_nodes:
-        rec = (
-            db.query(MockReceiverValidData)
-            .filter(MockReceiverValidData.node_id == z_node.node_id)
-            .order_by(MockReceiverValidData.timestamp.desc())
-            .first()
-        )
+        rec = source.latest(db, z_node.node_id)
         if not rec:
             continue
 
-        is_complete = (
-            rec.status_valid is True
-            and rec.temperature is not None
-            and rec.humidity is not None
-            and rec.dust_raw_voltage is not None
-            and not np.isnan(rec.temperature)
-            and not np.isnan(rec.humidity)
-            and not np.isnan(rec.dust_raw_voltage)
-        )
-        if not is_complete:
+        if not rec.status_valid or not rec.inputs_complete:
             continue
 
         # Kebijakan kesegaran: sama dengan yang ditampilkan dashboard
@@ -269,7 +261,13 @@ def _run_processing_cycle(
             wrote_control = True
         db.commit()
 
-    worker_status["last_cycle_at"] = now
+    worker_status.update(
+        last_cycle_at=datetime.now(timezone.utc),
+        last_source_time=now,
+        last_error=None,
+        last_error_at=None,
+        source_mode=source.name,
+    )
 
     return {
         "processing_cycle_id": cycle_id,
@@ -304,6 +302,21 @@ def reset_control_state(controller: Optional[FanPWMController] = None) -> None:
         fan_ctrl.driver.set_duty_cycle(0.0)
 
 
+def _apply_auto_failsafe(error: Exception) -> None:
+    """Pada kegagalan worker, hentikan keluaran Otomatis; Manual tidak diubah."""
+    now = datetime.now(timezone.utc)
+    with control_lock:
+        if control_state["mode"] == "auto":
+            global_fan_controller.driver.set_duty_cycle(0.0)
+            global_fan_controller.reset_hysteresis()
+            control_state["applied_pwm"] = 0.0
+        worker_status.update(
+            last_error=type(error).__name__,
+            last_error_at=now,
+            source_mode=ops.SENSOR_SOURCE,
+        )
+
+
 def apply_manual(
     db: Session,
     pwm_percent: float,
@@ -327,8 +340,9 @@ def apply_manual(
         if not config:
             return None
 
+        source_now = get_sensor_source().db_now(db)
         usable = bool(last_auto) and last_auto.get("has_valid_data") and (
-            age_seconds(last_auto["at"]) <= max(3 * ops.WORKER_INTERVAL_SECONDS, 5)
+            age_seconds(last_auto["at"], source_now) <= max(3 * ops.WORKER_INTERVAL_SECONDS, 5)
         )
         row = ZoneControl(
             config_version=config.config_version,
@@ -387,6 +401,7 @@ async def background_worker_loop(
             finally:
                 db.close()
         except Exception as e:
+            _apply_auto_failsafe(e)
             logger.error(f"Kesalahan pada background worker cycle: {e}")
 
         try:
