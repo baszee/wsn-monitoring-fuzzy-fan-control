@@ -1,7 +1,8 @@
-import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock } from "/src/shared.js?v=20261101-3";
+import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock, visibleInterval } from "/src/shared.js?v=20261106-3";
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
+import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261106-3";
+import { createFan } from "/src/fan-canvas.js?v=20261106-3";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261106-3";
 
 buildSidebar("ringkasan");
 
@@ -149,7 +150,7 @@ function renderNodes() {
 // ── Grafik ─────────────────────────────────────────────────────────────────
 const RANGE_MS = { "1h": 3600e3, "6h": 21600e3, "24h": 86400e3 };
 const RANGE_TEXT = { "1h": "1 jam", "6h": "6 jam", "24h": "24 jam" };
-const ZONE_COLOR = "#10213c";
+const ZONE_COLOR = ZONE_LINE;
 const TABS = {
   control:     { label: "Tingkat kendali", key: "control_level", fixed: [0, 100], dec: 0, note: "Tingkat kendali zona mengikuti node dengan kebutuhan tertinggi" },
   temperature: { label: "Suhu (°C)", key: "temperature", dec: 1, note: "Data sensor aktual, tanpa nilai perkiraan" },
@@ -226,5 +227,5 @@ let resizeTimer;
 window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(renderChart, 150); });
 
 refreshAll();
-setInterval(refreshLive, 5000);
-setInterval(refreshHistory, 30000);
+visibleInterval(refreshLive, 5000);
+visibleInterval(refreshHistory, 30000);

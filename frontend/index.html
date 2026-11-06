@@ -10,7 +10,8 @@
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
     <link rel="preload" href="/src/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/src/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/src/landing.css?v=20261101-1" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
+    <link rel="stylesheet" href="/src/landing.css?v=20261106-3" />
     <script>
       /* Penanda untuk reveal saat scroll. Bila skrip utama gagal, konten tetap ditampilkan. */
       document.documentElement.classList.add("js");
@@ -31,6 +32,7 @@
         <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
         <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3"/></symbol>
         <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+        <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></symbol>
       </defs>
     </svg>
 
@@ -41,12 +43,18 @@
         <a class="brand" href="/" aria-label="WSNova, kembali ke beranda">
           <img class="brand-logo" data-brand-logo="full" src="/src/brand/wsnova-full-on-light.svg" alt="WSNova" width="142" height="42" />
         </a>
-        <nav class="site-nav" aria-label="Navigasi utama">
+        <nav class="site-nav" id="site-nav" aria-label="Navigasi utama">
           <a href="#tentang">Tentang</a>
           <a href="#cara-kerja">Cara Kerja</a>
           <a href="#dashboard">Dashboard</a>
           <a href="#tim">Tim</a>
+          <a class="btn btn-primary nav-cta" href="/dashboard/">Buka Dashboard</a>
         </nav>
+        <a class="btn btn-primary btn-sm" href="/dashboard/">Buka Dashboard</a>
+        <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Buka menu">
+          <svg class="ic bars" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg class="ic x" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
       </div>
     </header>
 
@@ -59,13 +67,15 @@
             <h1 class="reveal" style="--d:60ms">Dari node sensor hingga <span>keputusan kendali.</span></h1>
             <p class="reveal" style="--d:120ms">WSNova adalah prototipe jaringan sensor nirkabel. Sensor membaca kondisi udara, datanya dikirim ke penerima dan tampil di dashboard web, lalu dinilai untuk menentukan perintah kipas.</p>
             <div class="hero-actions reveal" style="--d:180ms">
-              <a class="btn btn-primary" href="#cara-kerja">Lihat Cara Kerja</a>
+              <a class="btn btn-primary" href="/dashboard/">Buka Dashboard <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              <a class="btn btn-quiet" href="#cara-kerja">Lihat Cara Kerja</a>
             </div>
-            <dl class="hero-facts reveal" style="--d:240ms">
-              <div><dd>LoRa 433 MHz</dd><dt>Kirim data nirkabel</dt></div>
-              <div><dd>4</dd><dt>Parameter dibaca sensor</dt></div>
-              <div><dd>3</dd><dt>Kelas kondisi</dt></div>
-            </dl>
+            <ul class="hero-facts reveal" style="--d:240ms">
+              <li><button type="button" class="fact" aria-pressed="false" aria-controls="fact-note" data-note="LoRa adalah teknologi radio berdaya rendah untuk mengirim data jarak jauh. 433 MHz adalah frekuensi yang dipakai prototipe ini."><strong>LoRa 433 MHz</strong><span>Kirim data nirkabel</span></button></li>
+              <li><button type="button" class="fact" aria-pressed="false" aria-controls="fact-note" data-note="Suhu, kelembapan, tekanan udara, dan debu."><strong>4</strong><span>Parameter dibaca sensor</span></button></li>
+              <li><button type="button" class="fact" aria-pressed="false" aria-controls="fact-note" data-note="Setiap node dinilai Baik, Perlu Perhatian, atau Buruk."><strong>3</strong><span>Kelas kondisi</span></button></li>
+            </ul>
+            <p class="fact-note reveal" id="fact-note" aria-live="polite" style="--d:280ms">Tekan salah satu informasi di atas untuk penjelasan singkat.</p>
           </div>
 
           <div class="stage reveal" style="--d:120ms">
@@ -78,10 +88,11 @@
                 <path id="rD" d="M600 228 L600 344" />
               </defs>
 
-              <use href="#rA" class="route" /><use href="#rB" class="route" /><use href="#rC" class="route" /><use href="#rD" class="route" />
+              <use href="#rA" data-r="A" class="route" /><use href="#rB" data-r="B" class="route" /><use href="#rC" data-r="C" class="route route-ctl" /><use href="#rD" data-r="D" class="route route-ctl" />
 
               <!-- Node sensor 1 -->
-              <g transform="translate(110 170)">
+              <g class="hit" data-key="node" role="button" tabindex="0" aria-pressed="false" aria-label="Node sensor, lihat penjelasan" transform="translate(110 170)">
+                <circle r="78" class="sel-ring" />
                 <circle r="62" class="halo" />
                 <path class="wave w1" d="M-15 -58a21 21 0 0 1 30 0" /><path class="wave w2" d="M-27 -68a37 37 0 0 1 54 0" />
                 <path class="ln" d="M0 -16V-44" /><circle cy="-47" r="4" class="solid" />
@@ -90,7 +101,8 @@
                 <text y="88" text-anchor="middle" class="lbl">NODE SENSOR</text>
               </g>
               <!-- Node sensor 2 -->
-              <g transform="translate(110 390)">
+              <g class="hit" data-key="node" role="button" tabindex="0" aria-pressed="false" aria-label="Node sensor, lihat penjelasan" transform="translate(110 390)">
+                <circle r="78" class="sel-ring" />
                 <circle r="62" class="halo" />
                 <path class="wave w2" d="M-15 -58a21 21 0 0 1 30 0" /><path class="wave w1" d="M-27 -68a37 37 0 0 1 54 0" />
                 <path class="ln" d="M0 -16V-44" /><circle cy="-47" r="4" class="solid" />
@@ -100,7 +112,9 @@
               </g>
 
               <!-- Penerima -->
-              <g transform="translate(360 280)">
+              <g class="hit" data-key="penerima" role="button" tabindex="0" aria-pressed="false" aria-label="Penerima, lihat penjelasan" transform="translate(360 280)">
+                <circle r="104" class="sel-ring" />
+                <circle r="96" class="glow" />
                 <circle r="66" class="ring" />
                 <path class="ln" d="M-34 -34v-24M34 -34v-24" /><circle cx="-34" cy="-61" r="4" class="solid" /><circle cx="34" cy="-61" r="4" class="solid" />
                 <rect x="-52" y="-34" width="104" height="68" rx="16" class="gw" />
@@ -109,7 +123,8 @@
               </g>
 
               <!-- Dashboard -->
-              <g transform="translate(600 150)">
+              <g class="hit" data-key="dashboard" role="button" tabindex="0" aria-pressed="false" aria-label="Dashboard, lihat penjelasan" transform="translate(600 150)">
+                <rect x="-92" y="-66" width="184" height="132" rx="20" class="sel-ring" />
                 <text y="-74" text-anchor="middle" class="lbl">DASHBOARD</text>
                 <rect x="-80" y="-54" width="160" height="108" rx="14" class="body" />
                 <path class="ln thin" d="M-80 -30H80" />
@@ -121,7 +136,8 @@
               </g>
 
               <!-- Kipas -->
-              <g transform="translate(600 400)">
+              <g class="hit" data-key="kipas" role="button" tabindex="0" aria-pressed="false" aria-label="Kipas, lihat penjelasan" transform="translate(600 400)">
+                <circle r="64" class="sel-ring" />
                 <circle r="54" class="fan-out" /><circle r="44" class="fan-in" />
                 <g class="fan-rot">
                   <ellipse cy="-21" rx="10" ry="20" class="blade" /><ellipse cy="-21" rx="10" ry="20" class="blade" transform="rotate(90)" />
@@ -139,11 +155,19 @@
               <!-- Paket data -->
               <circle r="6" class="packet"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-0.4s"><mpath href="#rA" /></animateMotion></circle>
               <circle r="6" class="packet"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-1.8s"><mpath href="#rB" /></animateMotion></circle>
-              <circle r="6" class="packet"><animateMotion dur="2.2s" repeatCount="indefinite" begin="-0.6s"><mpath href="#rC" /></animateMotion></circle>
-              <circle r="6" class="packet"><animateMotion dur="1.8s" repeatCount="indefinite" begin="-0.9s"><mpath href="#rD" /></animateMotion></circle>
+              <circle r="6" class="packet packet-ctl"><animateMotion dur="2.2s" repeatCount="indefinite" begin="-0.6s"><mpath href="#rC" /></animateMotion></circle>
+              <circle r="6" class="packet packet-ctl"><animateMotion dur="1.8s" repeatCount="indefinite" begin="-0.9s"><mpath href="#rD" /></animateMotion></circle>
 
               <text x="28" y="518" class="cap">Ilustrasi alur data</text>
             </svg>
+            <div class="flow-panel">
+              <p class="flow-note" id="flow-note" aria-live="polite">Pilih salah satu bagian pada ilustrasi untuk melihat perannya.</p>
+              <div class="flow-nav">
+                <button type="button" class="flow-btn" id="flow-prev" aria-label="Bagian sebelumnya"><svg class="ic" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+                <span class="flow-count" id="flow-count" aria-hidden="true">0 / 4</span>
+                <button type="button" class="flow-btn" id="flow-next" aria-label="Bagian berikutnya"><svg class="ic" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -169,6 +193,12 @@
             <span class="eyebrow eyebrow-dark">Cara kerja</span>
             <h2>Empat tahap sederhana.</h2>
             <p>Dari bacaan sensor sampai perintah untuk kipas.</p>
+          </div>
+          <div class="rail reveal" id="rail" role="group" aria-label="Pilih tahap">
+            <button type="button" class="rail-step" aria-pressed="false"><i>1</i><span>Ukur</span></button>
+            <button type="button" class="rail-step" aria-pressed="false"><i>2</i><span>Kirim</span></button>
+            <button type="button" class="rail-step" aria-pressed="false"><i>3</i><span>Nilai</span></button>
+            <button type="button" class="rail-step" aria-pressed="false"><i>4</i><span>Perintah</span></button>
           </div>
           <div class="steps">
             <article class="card step reveal">
@@ -240,6 +270,37 @@
             <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-target"/></svg></span><h3>Analisis fuzzy</h3><p>Lihat bagaimana sebuah bacaan diubah menjadi kondisi dan tingkat kendali.</p></article>
             <article class="card feature reveal" style="--d:140ms"><span class="ico"><svg class="ic"><use href="#i-flask"/></svg></span><h3>Simulasi</h3><p>Coba nilai bayangan untuk melihat hasil penilaian. Simulasi tidak menjalankan kipas.</p></article>
           </div>
+
+          <div class="preview reveal" aria-labelledby="pv-title">
+            <div class="pv-head">
+              <h3 id="pv-title">Contoh tampilan ringkasan</h3>
+              <p class="pv-status"><i aria-hidden="true"></i>Data demonstrasi · 3 node contoh · Mode Otomatis</p>
+            </div>
+            <div class="pv-body">
+              <ul class="pv-nodes">
+                <li class="pv-node">
+                  <div class="pv-top"><b>NODE-01</b><span class="pv-tag ok">Baik</span></div>
+                  <dl><div><dt>Suhu</dt><dd>28,4 °C</dd></div><div><dt>Kelembapan</dt><dd>61 %</dd></div><div><dt>Indeks debu</dt><dd>0,24</dd></div></dl>
+                </li>
+                <li class="pv-node determining">
+                  <div class="pv-top"><b>NODE-02</b><span class="pv-tag warn">Perlu Perhatian</span></div>
+                  <span class="pv-decider"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Penentu</span>
+                  <dl><div><dt>Suhu</dt><dd>31,2 °C</dd></div><div><dt>Kelembapan</dt><dd>74 %</dd></div><div><dt>Indeks debu</dt><dd>0,58</dd></div></dl>
+                </li>
+                <li class="pv-node">
+                  <div class="pv-top"><b>NODE-03</b><span class="pv-tag ok">Baik</span></div>
+                  <dl><div><dt>Suhu</dt><dd>29,0 °C</dd></div><div><dt>Kelembapan</dt><dd>55 %</dd></div><div><dt>Indeks debu</dt><dd>0,31</dd></div></dl>
+                </li>
+              </ul>
+              <dl class="pv-side">
+                <div><dt>Kondisi zona</dt><dd class="warn">Perlu Perhatian</dd></div>
+                <div><dt>Node penentu</dt><dd class="decider">NODE-02</dd></div>
+                <div><dt>PWM kipas</dt><dd class="pwm">65 %</dd></div>
+                <div><dt>Pembaruan</dt><dd class="muted">10 detik lalu</dd></div>
+              </dl>
+            </div>
+            <p class="pv-note">Angka di atas hanya contoh untuk menggambarkan tampilan. Data sebenarnya ada di dashboard.</p>
+          </div>
         </div>
       </section>
 
@@ -297,13 +358,52 @@
     </main>
 
     <footer class="site-footer">
-      <div class="wrap footer-row">
-        <a class="brand" href="/" aria-label="WSNova"><img class="brand-logo" data-brand-logo="full" src="/src/brand/wsnova-full-on-light.svg" alt="WSNova" width="115" height="34" /></a>
-        <p>Teknik Komputer · Universitas Negeri Semarang</p>
-        <p>© 2026 Tim WSNova</p>
+      <div class="wrap">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a class="brand" href="/" aria-label="WSNova, kembali ke beranda"><img class="brand-logo" data-brand-logo="fullLight" src="/src/brand/wsnova-full-on-dark.svg" alt="WSNova" width="142" height="42" /></a>
+            <p>Prototipe jaringan sensor nirkabel untuk memantau kondisi udara dan menentukan perintah kipas dari data sensor.</p>
+            <a class="footer-ig" href="https://www.instagram.com/wsnnova/" target="_blank" rel="noopener noreferrer" aria-label="Instagram WSNova, @wsnnova (dibuka di tab baru)"><svg class="ic" aria-hidden="true"><use href="#i-instagram"/></svg><span>@wsnnova</span></a>
+          </div>
+          <nav class="footer-col" aria-label="Bagian halaman">
+            <h3>Jelajahi</h3>
+            <ul>
+              <li><a href="#tentang">Tentang</a></li>
+              <li><a href="#cara-kerja">Cara Kerja</a></li>
+              <li><a href="#keputusan">Pengambilan Keputusan</a></li>
+              <li><a href="#dashboard">Fitur Dashboard</a></li>
+              <li><a href="#teknologi">Teknologi</a></li>
+              <li><a href="#tim">Tim</a></li>
+            </ul>
+          </nav>
+          <nav class="footer-col" aria-label="Halaman dashboard">
+            <h3>Dashboard</h3>
+            <ul>
+              <li><a href="/dashboard/">Ringkasan</a></li>
+              <li><a href="/dashboard/nodes/">Node Sensor</a></li>
+              <li><a href="/dashboard/fan/">Fan &amp; Kendali</a></li>
+              <li><a href="/dashboard/history/">Riwayat</a></li>
+              <li><a href="/dashboard/fuzzy/">Analisis Fuzzy</a></li>
+              <li><a href="/dashboard/simulation/">Simulasi</a></li>
+            </ul>
+          </nav>
+          <div class="footer-col">
+            <h3>Proyek</h3>
+            <ul>
+              <li>Capstone Teknik Komputer</li>
+              <li>Universitas Negeri Semarang</li>
+              <li>LoRa 433 MHz · Fuzzy Mamdani</li>
+              <li>Pembimbing: Vera Noviana Sulistyawan, S.T., M.T.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2026 Tim WSNova</p>
+          <p>Klasifikasi kondisi merupakan hasil pengolahan internal prototipe dan bukan penilaian baku kualitas udara.</p>
+        </div>
       </div>
     </footer>
 
-    <script type="module" src="/src/landing.js?v=20261101-1"></script>
+    <script type="module" src="/src/landing.js?v=20261106-3"></script>
   </body>
 </html>

@@ -4,7 +4,7 @@
 import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtRelative, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261101-3";
+         normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261106-3";
 
 buildSidebar("nodes");
 
@@ -66,7 +66,7 @@ function renderNodeRow(node) {
   const isDetermining = controlData?.control_node_id === node.node_id;
   const cls = conditionClass(node.condition_score);
   return `
-    <tr ${isDetermining ? 'style="background:rgba(47,128,237,.05);"' : ""}>
+    <tr ${isDetermining ? 'style="background:rgba(89,18,236,.05);"' : ""}>
       <td><strong>${node.node_id}</strong>${isDetermining ? ` ${icon("target")}` : ""}</td>
       <td>${fmtNumber(node.temperature)}</td>
       <td>${fmtNumber(node.humidity)}</td>

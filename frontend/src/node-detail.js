@@ -1,9 +1,10 @@
 /**
  * node-detail.js — Halaman Detail Node
  */
+import { COLORS } from "/src/theme.js?v=20261106-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261101-3";
+         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261106-3";
 
 buildSidebar("nodes");
 
@@ -82,7 +83,7 @@ function renderMFList(mfMap) {
           <span style="color:var(--text-soft);">${key.replace(/_/g," ")}</span>
           <strong style="color:var(--text);">${pct}%</strong>
         </div>
-        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${val > 0.5 ? "#2F80ED" : "#94a3b8"};"></div></div>
+        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${val > 0.5 ? "#5912ec" : "#94a3b8"};"></div></div>
       </div>`;
   }).join("");
 }
@@ -108,7 +109,7 @@ function renderRules(rules) {
               <td style="color:var(--text-soft);">${r.id ?? i + 1}</td>
               <td style="font-size:.75rem;">Suhu ${r.temp ?? "—"}, kelembapan ${r.rh ?? "—"}, debu ${r.dust ?? "—"}</td>
               <td style="font-size:.75rem;">${r.condition_class ?? "—"} · Kendali ${r.control_level ?? "—"}</td>
-              <td style="font-weight:700;color:${alpha > 0 ? "var(--blue)" : "var(--text-soft)"};">${pct}%</td>
+              <td style="font-weight:700;color:${alpha > 0 ? "var(--purple)" : "var(--text-soft)"};">${pct}%</td>
               <td><div class="alpha-bar" style="width:${pct}%;max-width:80px;"></div></td>
             </tr>`;
         }).join("")}
@@ -164,8 +165,8 @@ function drawHistoryChart() {
   wrap.innerHTML = `
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">
       ${gridLines}
-      <polyline points="${points}" fill="none" stroke="#2F80ED" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      ${histData.map((d, i) => `<circle cx="${toX(times[i])}" cy="${toY(d[currentMetric] ?? minV)}" r="3" fill="#2F80ED"/>`).join("")}
+      <polyline points="${points}" fill="none" stroke="${COLORS.blue}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${histData.map((d, i) => `<circle cx="${toX(times[i])}" cy="${toY(d[currentMetric] ?? minV)}" r="3" fill="${COLORS.blue}"/>`).join("")}
       ${timeLabels}
     </svg>`;
 }

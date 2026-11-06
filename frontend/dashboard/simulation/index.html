@@ -6,9 +6,10 @@
   <title>Simulasi What-If — WSNova</title>
   <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/site.css?v=20261101-5"/>
-  <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
-    <link rel="stylesheet" href="/src/ui.css?v=5" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
+  <link rel="stylesheet" href="/src/site.css?v=20261106-3"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261106-3"/>
+    <link rel="stylesheet" href="/src/ui.css?v=20261106-3" />
   </head>
 <body class="dashboard-body">
 <div class="p2-shell">
@@ -34,9 +35,9 @@
 
     <div class="page-body">
       <!-- Info notice -->
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
+      <div style="background:var(--purple-surface);border:1px solid var(--purple-line);border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
         <i data-icon="flask"></i>
-        <div style="font-size:0.82rem;color:#1e40af;">
+        <div style="font-size:0.82rem;color:var(--purple-dark);">
           <strong>Mode simulasi:</strong> Geser nilai untuk mencoba skenario. Hasil simulasi tidak mengubah data tersimpan dan tidak mengirim perintah ke fan.
         </div>
       </div>
@@ -116,7 +117,7 @@
             </div>
             <div class="sim-result-item">
               <span>PWM (sebelum penyaring perubahan kecil)</span>
-              <strong id="res-pwm" style="color:var(--blue);">—</strong>
+              <strong id="res-pwm" style="color:var(--purple);">—</strong>
             </div>
           </div>
 
@@ -149,7 +150,7 @@
   <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
 </div>
 
-<script type="module" src="/src/simulation.js?v=20261101-1"></script>
+<script type="module" src="/src/simulation.js?v=20261106-3"></script>
   <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
 </body>
 </html>

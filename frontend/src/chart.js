@@ -1,6 +1,7 @@
-import { fmtNumber, fmtClock } from "/src/shared.js?v=20261101-3";
+import { NODE_PALETTE } from "/src/theme.js?v=20261106-3";
+import { fmtNumber, fmtClock } from "/src/shared.js?v=20261106-3";
 
-export const PALETTE = ["#2f7df0", "#13a8aa", "#e7a21a", "#8b5cf6"];
+export const PALETTE = NODE_PALETTE;
 const L = 46, R = 16, T = 12, B = 30;
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 

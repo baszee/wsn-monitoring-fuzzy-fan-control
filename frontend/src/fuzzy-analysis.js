@@ -2,17 +2,18 @@
  * fuzzy-analysis.js — Halaman Analisis Fuzzy
  * Visualisasi fungsi keanggotaan + 27 aturan
  */
+import { COLORS } from "/src/theme.js?v=20261106-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261101-3";
+         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261106-3";
 
 buildSidebar("fuzzy");
 
 // ── MF Definitions (diambil dari konfigurasi aktif, bukan disalin manual) ─
 const MF_STYLE = {
-  temp:  { universe: [0, 50],  colors: { Rendah: "#3b82f6", Normal: "#10b981", Tinggi: "#ef4444" } },
-  rh:    { universe: [0, 100], colors: { Kering: "#f59e0b", Normal: "#10b981", Lembap: "#06b6d4" } },
-  dust:  { universe: [0, 1],   colors: { Rendah: "#3b82f6", Sedang: "#f59e0b", Tinggi: "#ef4444" } },
-  score: { universe: [0, 100], colors: { Baik: "#16a34a", "Perlu Perhatian": "#d97706", Buruk: "#dc2626" } },
+  temp:  { universe: [0, 50],  colors: { Rendah: COLORS.blue, Normal: "#0f8a6a", Tinggi: "#c94055" } },
+  rh:    { universe: [0, 100], colors: { Kering: "#b76e00", Normal: "#0f8a6a", Lembap: "#0891b2" } },
+  dust:  { universe: [0, 1],   colors: { Rendah: COLORS.blue, Sedang: "#b76e00", Tinggi: "#c94055" } },
+  score: { universe: [0, 100], colors: { Baik: "#0f8a6a", "Perlu Perhatian": "#b76e00", Buruk: "#c94055" } },
 };
 const SRC_KEY = { temp: "temp", rh: "rh", dust: "dust", score: "condition_score" };
 
@@ -81,8 +82,8 @@ function drawMFChart(svgId, legendId, defKey, currentVal, activeMF) {
   let markerHTML = "";
   if (currentVal != null) {
     const mx = toX(currentVal);
-    markerHTML = `<line x1="${mx}" y1="${PT}" x2="${mx}" y2="${H - PB}" stroke="#2F80ED" stroke-width="1.5" stroke-dasharray="3 3"/>
-                  <text x="${mx}" y="${PT - 1}" text-anchor="middle" font-size="8" fill="#2F80ED">${Number(currentVal.toFixed(2))}</text>`;
+    markerHTML = `<line x1="${mx}" y1="${PT}" x2="${mx}" y2="${H - PB}" stroke="#5912ec" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <text x="${mx}" y="${PT - 1}" text-anchor="middle" font-size="8" fill="#5912ec">${Number(currentVal.toFixed(2))}</text>`;
   }
 
   svg.innerHTML = gridHTML + pathsHTML + markerHTML + axisHTML;
@@ -194,7 +195,7 @@ function renderRulesTable(rules) {
         <td>${r.dust ?? "—"}</td>
         <td>${r.condition_class ?? "—"}</td>
         <td>${r.control_level ?? "—"}</td>
-        <td style="font-weight:700;color:${active ? "var(--blue)" : "var(--text-soft)"};">${pct}%</td>
+        <td style="font-weight:700;color:${active ? "var(--purple)" : "var(--text-soft)"};">${pct}%</td>
         <td><div class="alpha-bar" style="width:${pct}%;max-width:70px;"></div></td>
       </tr>`;
   }).join("");

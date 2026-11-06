@@ -1,5 +1,6 @@
-import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs } from "/src/shared.js?v=20261101-3";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js";
+import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs, visibleInterval } from "/src/shared.js?v=20261106-3";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261106-3";
+import { ZONE_COLOR } from "/src/theme.js?v=20261106-3";
 
 buildSidebar("riwayat");
 
@@ -42,7 +43,7 @@ function renderTable() {
     return;
   }
   el.innerHTML = state.nodes.map((n) => `
-    <tr style="${n.node_id === state.node ? "background:rgba(47,128,237,.05);" : ""}">
+    <tr style="${n.node_id === state.node ? "background:rgba(36,104,208,.05);" : ""}">
       <td><strong>${esc(n.node_id)}</strong></td>
       <td>${fmtNumber(n.temperature, 1)}</td>
       <td>${fmtNumber(n.humidity, 1)}</td>
@@ -68,7 +69,7 @@ function renderChart() {
   if (h && state.metric === "control_level" && state.node === "ALL") {
     const pts = h.zone.map((r) => ({ t: parseTs(r.timestamp), v: r.zone_control_level })).filter((p) => Number.isFinite(p.t));
     if (pts.length) pts.push({ t: Date.now(), v: pts[pts.length - 1].v });
-    series.push({ name: "Zona", color: "#10213c", width: 2.6, step: true, pts });
+    series.push({ name: "Zona", color: ZONE_COLOR, width: 2.6, step: true, pts });
   }
 
   const t1 = Date.now();
@@ -120,4 +121,4 @@ $("refresh-btn").addEventListener("click", async () => { await loadAll(); showTo
 
 loadAll();
 startPolling(async () => { try { await loadNodes(); } catch {} }, 10000);   // tabel perbandingan
-setInterval(() => loadHistory().catch(() => {}), 30000);
+visibleInterval(() => loadHistory().catch(() => {}), 30000);

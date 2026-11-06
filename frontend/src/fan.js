@@ -1,7 +1,7 @@
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js";
+import { createFan } from "/src/fan-canvas.js?v=20261106-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
-         startPolling, getSession, adminPost } from "/src/shared.js?v=20261101-3";
+         startPolling, getSession, adminPost } from "/src/shared.js?v=20261106-3";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);

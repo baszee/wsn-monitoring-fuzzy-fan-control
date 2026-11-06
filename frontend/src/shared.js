@@ -4,6 +4,7 @@
  */
 
 
+import { COLORS } from "/src/theme.js?v=20261106-3";
 import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
@@ -199,7 +200,7 @@ function _initModeBanner() {
   };
   const tick = async () => { try { render(await apiFetch("/api/control/latest")); } catch { /* abaikan */ } };
   tick();
-  setInterval(tick, 5000);
+  visibleInterval(tick, 5000);
 }
 
 // ─── Toast ─────────────────────────────────────────────────────────────────
@@ -274,8 +275,8 @@ export function conditionLabel(classStr) {
 }
 
 export function conditionColor(classStr) {
-  const map = { good: "#16a34a", warn: "#d97706", bad: "#dc2626", unknown: "#6b7280" };
-  return map[classStr] ?? "#6b7280";
+  const map = { good: "#0f8a6a", warn: "#b76e00", bad: "#c94055", unknown: "#64748b" };
+  return map[classStr] ?? "#64748b";
 }
 
 // ─── Normalisasi respons API & kualitas data ───────────────────────────────
@@ -342,12 +343,31 @@ export function setConnectionBadge(ok, badgeEl) {
  */
 export function startPolling(fetchFn, intervalMs = 8000) {
   fetchFn();
-  const id = setInterval(fetchFn, intervalMs);
-  return { stop: () => clearInterval(id) };
+  return visibleInterval(fetchFn, intervalMs);
+}
+
+/**
+ * Seperti setInterval, tetapi berhenti saat tab browser tidak aktif.
+ * Begitu tab dibuka lagi, fungsi langsung dipanggil sekali lalu jadwal berlanjut.
+ * @returns {{ stop: Function }}
+ */
+export function visibleInterval(fn, intervalMs) {
+  let id = null;
+  let stopped = false;
+  const start = () => { if (id === null && !stopped) id = setInterval(fn, intervalMs); };
+  const pause = () => { if (id !== null) { clearInterval(id); id = null; } };
+  const onVisibility = () => {
+    if (stopped) return;
+    if (document.hidden) pause();
+    else { fn(); start(); }
+  };
+  document.addEventListener("visibilitychange", onVisibility);
+  if (!document.hidden) start();
+  return { stop: () => { stopped = true; pause(); document.removeEventListener("visibilitychange", onVisibility); } };
 }
 
 // ─── Mini Sparkline SVG ────────────────────────────────────────────────────
-export function drawSparkline(svgEl, values, color = "#2F80ED") {
+export function drawSparkline(svgEl, values, color = COLORS.blue) {
   if (!svgEl || !values?.length) return;
   const W = 100, H = 28, PAD = 2;
   const min = Math.min(...values), max = Math.max(...values);

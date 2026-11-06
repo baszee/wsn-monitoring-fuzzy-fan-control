@@ -1,0 +1,65 @@
+/* tokens.css — satu-satunya sumber warna WSNova.
+   Peran warna:
+   - Ungu  : identitas WSNova, analisis fuzzy, keputusan kendali, tombol utama
+   - Biru  : sensor, pengiriman data, monitoring, navigasi
+   - Hijau / kuning / merah : kondisi sistem (baik / perlu perhatian / buruk)
+   - Putih dan navy gelap   : fondasi tampilan
+   Ubah warna di sini saja; file CSS lain memakai variabel ini. */
+:root {
+  /* Dasar */
+  --ink: #18122b;
+  --text: #334155;
+  --muted: #64748b;
+  --text-soft: var(--muted);
+  --line: #e2e8f0;
+  --border: var(--line);
+  --line-strong: #cbd5e1;
+  --white: #ffffff;
+  --surface: #f7f8fc;
+  --surface-soft: #f7f8fc;
+  --soft: var(--surface-soft);
+  --page-bg: #f3f5fb;
+
+  /* Identitas WSNova (ungu logo) */
+  --purple: #5912ec;
+  --purple-dark: #4a0fcb;
+  --purple-light: #7c4dff;
+  --purple-soft: #eee9ff;
+  --purple-surface: #f7f4ff;
+  --purple-line: #d9cdfb;
+  --purple-deep: #2f1763;
+
+  /* Monitoring dan komunikasi data */
+  --blue: #2468d0;
+  --blue-dark: #1b54ad;
+  --blue-light: #4f8ee8;
+  --blue-surface: #edf5ff;
+  --surface-blue: var(--blue-surface);
+  --blue-soft: #dbeafe;
+  --blue-pale: #e8f1ff;
+  --blue-line: #bcd6f2;
+  --brand-blue: #2f80ed;
+  --cyan: #0891b2;
+  --cyan-soft: #d9f3f9;
+
+  /* Status */
+  --good: #0f8a6a;
+  --good-surface: #e8f8f3;
+  --good-line: #c7ecdf;
+  --warning: #b76e00;
+  --warning-text: #8f5600;
+  --warning-surface: #fff5d6;
+  --warning-line: #f1dfae;
+  --danger: #c94055;
+  --danger-surface: #fff0f2;
+  --danger-line: #f6ccd3;
+  /* Versi terang untuk titik penanda dan latar gelap */
+  --good-bright: #22c08a;
+  --warning-bright: #f0b429;
+  --danger-bright: #ef5d73;
+
+  /* Alias lama */
+  --green: var(--good);
+  --amber: var(--warning);
+  --red: var(--danger);
+}

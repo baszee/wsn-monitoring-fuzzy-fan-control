@@ -1,3 +1,4 @@
+// Warna kipas: ungu (keputusan kendali), abu-abu saat tidak tersedia.
 // Kipas canvas bersama. Putaran sebanding dengan PWM; diam saat 0%; abu-abu saat tidak tersedia.
 export function createFan(canvas) {
   const ctx = canvas.getContext("2d");
@@ -15,9 +16,9 @@ export function createFan(canvas) {
 
     ctx.beginPath();
     ctx.arc(C, C, R, 0, Math.PI * 2);
-    ctx.fillStyle = disabled ? "#f1f5f9" : "#f0f6ff";
+    ctx.fillStyle = disabled ? "#f1f5f9" : "#f7f4ff";
     ctx.fill();
-    ctx.strokeStyle = disabled ? "#e2e8f0" : "#dbeafe";
+    ctx.strokeStyle = disabled ? "#e2e8f0" : "#e4dafc";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -29,8 +30,8 @@ export function createFan(canvas) {
       ctx.save();
       ctx.rotate((i * Math.PI) / 2);
       const g = ctx.createLinearGradient(0, 0, 60, -30);
-      g.addColorStop(0, disabled ? "#94a3b8" : "#2F80ED");
-      g.addColorStop(1, disabled ? "#cbd5e1" : "#60a5fa");
+      g.addColorStop(0, disabled ? "#94a3b8" : "#5912ec");
+      g.addColorStop(1, disabled ? "#cbd5e1" : "#9b7cf7");
       ctx.beginPath();
       ctx.moveTo(8, 0);
       ctx.bezierCurveTo(12, -20, 50, -35, 65, -20);
@@ -45,7 +46,7 @@ export function createFan(canvas) {
 
     ctx.beginPath();
     ctx.arc(C, C, 14, 0, Math.PI * 2);
-    ctx.fillStyle = disabled ? "#94a3b8" : "#1d4ed8";
+    ctx.fillStyle = disabled ? "#94a3b8" : "#4a0fcb";
     ctx.fill();
   }
 

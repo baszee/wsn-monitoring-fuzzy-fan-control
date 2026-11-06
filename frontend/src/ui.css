@@ -4,13 +4,6 @@
 
 :root {
   font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* Alias agar pages.css memakai token yang sama dengan site.css */
-  --text: var(--ink);
-  --text-soft: var(--muted);
-  --border: var(--line);
-  --blue-pale: #e8f1ff;
-  --page-bg: #f3f7fb;
-  --surface: #f3f7fb;   /* dipakai pages.css sebagai latar abu muda di dalam kartu */
 }
 
 /* Ikon */
@@ -20,7 +13,7 @@
 .icon-button .ic, .menu-button .ic { width: 18px; height: 18px; }
 .text-button .ic, .node-determining-tag .ic, td .ic { width: 14px; height: 14px; flex: 0 0 14px; }
 td .ic { color: var(--blue); }
-.chain-step-icon .ic { width: 18px; height: 18px; color: var(--blue); }
+.chain-step-icon .ic { width: 18px; height: 18px; color: var(--purple); }
 .feature-icon .ic, .flow-icon .ic { width: 24px; height: 24px; }
 .menu-button { display: none; place-items: center; }
 
@@ -89,37 +82,37 @@ td .ic { color: var(--blue); }
 }
 
 /* Lencana status kuning */
-.data-badge.warn { color: #956500; border-color: #f1e1b0; background: #fff8e1; }
-.data-badge.warn i { background: #e7a21a; }
+.data-badge.warn { color: var(--warning-text); border-color: var(--warning-line); background: var(--warning-surface); }
+.data-badge.warn i { background: var(--warning-bright); }
 
 /* Penanda status berupa titik berwarna, bukan simbol */
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
 /* Toast per jenis */
 .toast > span .ic { width: 18px; height: 18px; }
-.toast.toast-success > span { color: #16866f; background: #e5f8f2; }
-.toast.toast-warn > span { color: #956500; background: #fff5dc; }
-.toast.toast-error > span { color: #bd4054; background: #ffedf0; }
+.toast.toast-success > span { color: var(--good); background: var(--good-surface); }
+.toast.toast-warn > span { color: var(--warning-text); background: var(--warning-surface); }
+.toast.toast-error > span { color: var(--danger); background: var(--danger-surface); }
 
 .fan-stage { display: grid; place-items: center; }
 .fan-stage canvas { width: 176px; height: 176px; max-width: 100%; }
 .pwm-readout { text-align: center; }
 .pwm-readout span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
-.pwm-readout strong { display: block; margin-top: 4px; font: 800 44px/1 "Manrope"; letter-spacing: -.05em; }
+.pwm-readout strong { display: block; margin-top: 4px; font: 800 44px/1 "Manrope"; letter-spacing: -.05em; color: var(--purple); }
 .fan-visual-card.unavailable .pwm-readout strong, .decision-card.unavailable .pwm-readout strong { color: #94a3b8; }
-.decision-note { min-height: 16px; margin: 0; text-align: center; color: #956500; font-size: 11px; line-height: 1.4; }
+.decision-note { min-height: 16px; margin: 0; text-align: center; color: var(--warning-text); font-size: 11px; line-height: 1.4; }
 .chain-values { font-size: .8rem; color: var(--text-soft); margin-top: 2px; display: block; }
 
 .mf-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
 .mf-box { background: var(--surface); padding: 1rem; border-radius: 10px; }
-.mf-box strong { display: block; font-size: .85rem; margin-bottom: .5rem; color: var(--blue); }
+.mf-box strong { display: block; font-size: .85rem; margin-bottom: .5rem; color: var(--purple); }
 .mf-box ul { margin: 0; padding-left: 1.2rem; font-size: .75rem; line-height: 1.6; }
 
 
 /* Perbaikan Tahap 5b */
 .ic > .ic-svg { width: 100%; height: 100%; vertical-align: top; }
 .chain-step-icon { flex: 0 0 auto; display: inline-flex; }
-.chain-step-icon .ic-svg { width: 20px; height: 20px; color: var(--blue); }
+.chain-step-icon .ic-svg { width: 20px; height: 20px; color: var(--purple); }
 .chain-step-body { min-width: 0; }
 .chain-step-body strong, .chain-values { overflow-wrap: anywhere; }
 .decision-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -128,7 +121,7 @@ td .ic { color: var(--blue); }
 
 /* Admin: banner mode manual, kontrol manual, halaman login */
 [hidden] { display: none !important; }
-.mode-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 24px; background: #fff4d8; border-bottom: 1px solid #f1dfae; color: #7a5200; font-size: 12px; }
+.mode-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 24px; background: var(--warning-surface); border-bottom: 1px solid var(--warning-line); color: var(--warning-text); font-size: 12px; }
 .mode-banner strong { font: 800 12px "Manrope"; letter-spacing: .08em; }
 .admin-controls { margin-top: 12px; display: grid; gap: 10px; }
 .manual-label { display: flex; justify-content: space-between; font-size: .8rem; color: var(--text-soft); }
@@ -143,7 +136,7 @@ td .ic { color: var(--blue); }
 .login-card label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: #536880; }
 .login-card input { height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; color: var(--ink); background: #fff; }
 .login-card input:focus { outline: 2px solid #bcd6f2; border-color: var(--blue); }
-.login-error { min-height: 16px; margin: 0; color: #bd4054; font-size: 12px; }
+.login-error { min-height: 16px; margin: 0; color: var(--danger); font-size: 12px; }
 .login-back { text-align: center; color: var(--muted); font-size: 12px; font-weight: 700; }
 
 
@@ -159,7 +152,7 @@ td .ic { color: var(--blue); }
 .sidebar-zone { margin: 18px 0 8px; padding: 12px 14px; display: grid; gap: 2px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
 .sidebar-zone > span { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .sidebar-zone strong { margin-top: 4px; display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; }
-.sidebar-zone strong i { width: 8px; height: 8px; border-radius: 50%; background: #14b8a6; box-shadow: 0 0 0 3px #d7f7f3; }
+.sidebar-zone strong i { width: 8px; height: 8px; border-radius: 50%; background: var(--good-bright); box-shadow: 0 0 0 3px #d7f7f3; }
 .sidebar-zone small { color: var(--muted); font-size: 12px; }
 
 .side-nav { display: flex; flex-direction: column; gap: 2px; }

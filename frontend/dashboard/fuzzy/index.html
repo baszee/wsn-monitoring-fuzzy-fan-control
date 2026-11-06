@@ -6,9 +6,10 @@
   <title>Analisis Fuzzy — WSNova</title>
   <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/site.css?v=20261101-5"/>
-  <link rel="stylesheet" href="/src/pages.css?v=20261029-3"/>
-    <link rel="stylesheet" href="/src/ui.css?v=5" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
+  <link rel="stylesheet" href="/src/site.css?v=20261106-3"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261106-3"/>
+    <link rel="stylesheet" href="/src/ui.css?v=20261106-3" />
   </head>
 <body class="dashboard-body">
 <div class="p2-shell">
@@ -43,11 +44,11 @@
       <!-- Output Summary -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
         <div class="metric-card">
-          <div class="metric-head"><span>Skor Kondisi</span><span class="metric-icon metric-blue"><i data-icon="gauge"></i></span></div>
+          <div class="metric-head"><span>Skor Kondisi</span><span class="metric-icon metric-purple"><i data-icon="gauge"></i></span></div>
           <div class="metric-value"><strong id="out-score">—</strong><span>/100</span></div>
         </div>
         <div class="metric-card">
-          <div class="metric-head"><span>Tingkat Kendali</span><span class="metric-icon metric-sky"><i data-icon="fan"></i></span></div>
+          <div class="metric-head"><span>Tingkat Kendali</span><span class="metric-icon metric-purple"><i data-icon="fan"></i></span></div>
           <div class="metric-value"><strong id="out-control">—</strong><span>/100</span></div>
         </div>
         <div class="metric-card">
@@ -55,7 +56,7 @@
           <div class="metric-value"><strong id="out-class" style="font-size:1rem;">—</strong></div>
         </div>
         <div class="metric-card">
-          <div class="metric-head"><span>Aturan Aktif</span><span class="metric-icon metric-cyan">#</span></div>
+          <div class="metric-head"><span>Aturan Aktif</span><span class="metric-icon metric-purple">#</span></div>
           <div class="metric-value"><strong id="out-rules">—</strong><span>aturan</span></div>
         </div>
       </div>
@@ -117,7 +118,7 @@
   <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
 </div>
 
-<script type="module" src="/src/fuzzy-analysis.js?v=20261029-3"></script>
+<script type="module" src="/src/fuzzy-analysis.js?v=20261106-3"></script>
   <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
 </body>
 </html>
