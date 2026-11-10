@@ -93,6 +93,8 @@ def apply_hysteresis(
 class BasePWMDriver(ABC):
     """Antarmuka abstrak driver PWM motor fan."""
 
+    name = "base"
+
     @abstractmethod
     def set_duty_cycle(self, percent: float) -> None:
         """Mengatur sinyal PWM keluaran (0.0 - 100.0%)."""
@@ -119,6 +121,8 @@ class MockPWMDriver(BasePWMDriver):
     Mock Driver PWM untuk lingkungan pengujian dan sistem lokal (tanpa hardware fisik).
     Mencatat seluruh riwayat perintah yang dikirim untuk verifikasi.
     """
+
+    name = "mock"
 
     def __init__(self, initial_pwm: float = 0.0):
         self.current_pwm = float(np.clip(initial_pwm, 0.0, 100.0))

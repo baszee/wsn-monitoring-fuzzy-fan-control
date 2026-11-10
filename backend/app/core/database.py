@@ -17,12 +17,18 @@ SOURCE_SCHEMA: Optional[str] = (
 
 # Create database engine
 connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args=connect_args,
-    echo=False,
-    pool_pre_ping=not settings.DATABASE_URL.startswith("sqlite")
-)
+engine_kwargs = {
+    "echo": False,
+    "connect_args": connect_args,
+}
+if not settings.DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update({
+        "pool_size": 3,
+        "max_overflow": 2,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+    })
+engine = create_engine(settings.DATABASE_URL, **engine_kwargs)
 if APP_SCHEMA:
     # Tabel tanpa schema eksplisit (seluruh tabel WSNova) diarahkan ke APP_SCHEMA,
     # baik saat create_all maupun saat query. Tabel penerima memakai SOURCE_SCHEMA

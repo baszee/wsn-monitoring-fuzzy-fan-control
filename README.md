@@ -140,6 +140,11 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 | `APP_DB_SCHEMA` | kosong | Schema PostgreSQL opsional untuk tabel WSNova, misalnya `wsnova` |
 | `SOURCE_DB_SCHEMA` | kosong | Schema PostgreSQL tabel penerima; otomatis `public` bila `APP_DB_SCHEMA` diisi |
 | `WORKER_ENABLED` | `true` | Jalankan pemrosesan fuzzy/kendali; hanya satu instance boleh `true` |
+| `PWM_DRIVER` | `mock` | Driver keluaran: `mock`, `arduino`, atau `orangepi` setelah GPIO diverifikasi |
+| `PWM_SERIAL_PORT` | kosong | Port bridge Arduino, misalnya `COM13` atau `/dev/ttyACM0` |
+| `PWM_SERIAL_BAUD` | `115200` | Baud rate protokol bridge Arduino |
+| `PWM_FREQUENCY_HZ` | `25000` | Frekuensi target PWM fan 4-pin |
+| `PWM_INVERTED` | `true` | Inversi untuk rangkaian NPN open-collector; dilakukan oleh driver perangkat |
 | `FRESHNESS_SECONDS` | 30 | Batas usia data yang masih dipakai |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |

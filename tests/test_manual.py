@@ -19,6 +19,7 @@ from app.core.security import hash_password, login_limiter, sessions
 from app.main import app
 from app.models import ControlConfig, FuzzyResult, MockReceiverValidData, ZoneControl, ZoneNode
 from app.services.fuzzy import DEFAULT_MEMBERSHIP_PARAMS, DEFAULT_RULE_BASE
+from app.services.pwm import FanPWMController, MockPWMDriver
 from app.services.worker import (
     apply_auto, apply_manual, control_state, global_fan_controller, reset_control_state, run_processing_cycle,
 )
@@ -201,6 +202,20 @@ def test_fuzzy_and_auto_pwm_keep_updating_during_manual(client, db):
     assert last.control_mode == "manual" and last.pwm_command_percent == 20.0
     assert last.auto_pwm_percent > 40                               # pembanding otomatis tetap diperbarui
     assert result["control_mode"] == "manual"
+
+
+def test_manual_pwm_is_resent_each_worker_cycle_for_hardware_watchdog(db):
+    """Regresi: Manual tidak boleh timeout setelah satu perintah awal."""
+    controller = FanPWMController(driver=MockPWMDriver())
+    _record(db)
+    apply_manual(db, 73, controller=controller)
+    commands_after_click = len(controller.driver.history)
+
+    run_processing_cycle(db, controller=controller)
+
+    assert len(controller.driver.history) == commands_after_click + 1
+    assert controller.driver.history[-1]["pwm_percent"] == 73.0
+    assert controller.driver.get_duty_cycle() == 73.0
 
 
 def test_back_to_auto_resets_hysteresis_and_follows_latest_auto(client, db):

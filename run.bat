@@ -27,11 +27,11 @@ if /I "%WSN_WORKER_ENABLED%"=="false" (
 ) else if /I not "%WSN_SENSOR_SOURCE%"=="mock" (
     echo 2. Sumber %WSN_SENSOR_SOURCE% aktif; feed_dummy tidak dijalankan.
 ) else (
-    echo 2. Memulai simulator aliran sensor mock (feed_dummy)...
+    echo 2. Memulai simulator aliran sensor mock [feed_dummy]...
     start "WSNOVA Sensor Stream" /min cmd /c ".venv\Scripts\python.exe backend\feed_dummy.py --interval 5"
 )
 
-echo 3. Memulai server web & API (Uvicorn)...
+echo 3. Memulai server web dan API [Uvicorn]...
 echo.
 echo Dashboard aktif di: http://localhost:8000/dashboard/
 echo Tekan Ctrl+C untuk menghentikan server.

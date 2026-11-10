@@ -31,14 +31,15 @@ from app.models import (
 )
 from app.services.fuzzy import FuzzyMamdaniEngine, evaluate_fuzzy, normalize_dust
 from app.services.zone import aggregate_zone
-from app.services.pwm import FanPWMController, MockPWMDriver
+from app.services.pwm import FanPWMController
+from app.services.pwm_factory import create_pwm_driver
 from app.sources import get_sensor_source
 
 logger = logging.getLogger("wsn.worker")
 
 # Controller PWM global yang mempertahankan status d_prev selama aplikasi berjalan
 global_fan_controller = FanPWMController(
-    driver=MockPWMDriver(initial_pwm=0.0),
+    driver=create_pwm_driver(),
     u_off=15.0,
     u_max=88.33,
     d_min=30.0,
@@ -191,6 +192,8 @@ def _run_processing_cycle(
     if mode == "manual":
         applied_pwm = control_state["manual_pwm"]
         fan_status = "Aktif" if applied_pwm > 0 else "Mati"
+        # Kirim sinyal manual secara periodik agar watchdog Arduino (5 detik) tidak timeout
+        fan_ctrl.driver.set_duty_cycle(applied_pwm)
     else:
         applied_pwm = pwm_decision["final_pwm"]
         fan_status = pwm_decision["fan_command_status"]
@@ -305,13 +308,19 @@ def reset_control_state(controller: Optional[FanPWMController] = None) -> None:
 
 
 def _apply_auto_failsafe(error: Exception) -> None:
-    """Pada kegagalan worker, hentikan keluaran Otomatis; Manual tidak diubah."""
+    """Pada kegagalan worker, hentikan keluaran Otomatis; Manual mengirim heartbeat ulang."""
     now = datetime.now(timezone.utc)
     with control_lock:
         if control_state["mode"] == "auto":
             global_fan_controller.driver.set_duty_cycle(0.0)
             global_fan_controller.reset_hysteresis()
             control_state["applied_pwm"] = 0.0
+        else:
+            try:
+                # Pertahankan perintah manual ke driver saat terjadi gangguan query database
+                global_fan_controller.driver.set_duty_cycle(control_state["manual_pwm"])
+            except Exception:
+                pass
         worker_status.update(
             last_error=type(error).__name__,
             last_error_at=now,

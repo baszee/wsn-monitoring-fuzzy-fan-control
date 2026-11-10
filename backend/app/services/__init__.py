@@ -14,6 +14,7 @@ from app.services.pwm import (
     MockPWMDriver,
     FanPWMController,
 )
+from app.services.pwm_factory import create_pwm_driver
 
 try:
     from app.services.worker import (
@@ -38,4 +39,5 @@ __all__ = [
     "BasePWMDriver",
     "MockPWMDriver",
     "FanPWMController",
+    "create_pwm_driver",
 ]

@@ -76,6 +76,25 @@ SERVERLESS_MODE = _bool("SERVERLESS_MODE", bool(os.getenv("VERCEL")))
 # Instance dashboard/read-only milik anggota tim harus mengisi false.
 WORKER_ENABLED = _bool("WORKER_ENABLED", True)
 
+# Driver keluaran fan. ``mock`` aman untuk Vercel/PC tanpa perangkat;
+# ``arduino`` mengirim perintah ke bridge PWM melalui USB serial. Driver
+# Orange Pi disediakan sebagai pilihan konfigurasi sejak awal, tetapi akan
+# menolak start sampai implementasi GPIO untuk board aktual tersedia.
+PWM_DRIVERS = ("mock", "arduino", "orangepi")
+PWM_DRIVER = os.getenv("PWM_DRIVER", "mock").strip().lower()
+if PWM_DRIVER not in PWM_DRIVERS:
+    raise ValueError(
+        f"PWM_DRIVER={PWM_DRIVER!r} tidak dikenal; pilih salah satu dari "
+        f"{', '.join(PWM_DRIVERS)}."
+    )
+
+PWM_SERIAL_PORT = os.getenv("PWM_SERIAL_PORT", "").strip()
+PWM_SERIAL_BAUD = _int("PWM_SERIAL_BAUD", 115200)
+PWM_SERIAL_TIMEOUT_SECONDS = _float("PWM_SERIAL_TIMEOUT_SECONDS", 2.0)
+PWM_SERIAL_STARTUP_SECONDS = _float("PWM_SERIAL_STARTUP_SECONDS", 2.0)
+PWM_FREQUENCY_HZ = _int("PWM_FREQUENCY_HZ", 25000)
+PWM_INVERTED = _bool("PWM_INVERTED", True)
+
 # Resolusi centroid (satuan skala 0-100). Lebih kecil = lebih halus.
 CENTROID_STEP = _float("CENTROID_STEP", 0.01)
 

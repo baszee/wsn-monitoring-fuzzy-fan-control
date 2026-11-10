@@ -75,7 +75,6 @@ def _paket(sesi, **overrides):
         adc=1000,
         vpin=0.8,
         v0=1.2,
-        dust_ugm3=120.0,
         temperature=28.0,
         humidity=52.0,
         pressure_hpa=1008.0,

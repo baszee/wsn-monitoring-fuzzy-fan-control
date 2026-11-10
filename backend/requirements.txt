@@ -11,6 +11,9 @@ alembic==1.20.1
 # Scientific & Fuzzy Inference (Pure NumPy)
 numpy==2.5.4
 
+# USB serial bridge untuk driver PWM Arduino (tetap aman saat PWM_DRIVER=mock)
+pyserial==3.5
+
 # Testing
 pytest==9.2.0
 httpx2==2.16.0  # dibutuhkan Starlette/FastAPI TestClient

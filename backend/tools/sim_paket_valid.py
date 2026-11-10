@@ -62,7 +62,6 @@ def _sample(sesi_uji_id: int, node_id: int, node_sesi: int, seq: int, rng: rando
         adc=adc,
         vpin=round(vpin, 3),
         v0=round(v0, 3),
-        dust_ugm3=round(dust, 1),
         temperature=round(temperature, 2),
         humidity=round(humidity, 2),
         pressure_hpa=round(pressure, 2),

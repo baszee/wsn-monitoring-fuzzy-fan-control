@@ -61,7 +61,6 @@ class PaketValid(SourceBase):
     adc = Column(Integer, nullable=False)
     vpin = Column(Float, nullable=False)
     v0 = Column(Float, nullable=False)
-    dust_ugm3 = Column(Float, nullable=False)
     temperature = Column(Float, nullable=True)
     humidity = Column(Float, nullable=True)
     pressure_hpa = Column(Float, nullable=True)

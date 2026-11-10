@@ -53,6 +53,19 @@ def _worker_alive() -> bool:
     return last is not None and age_seconds(last) <= 3 * ops.WORKER_INTERVAL_SECONDS
 
 
+def _pwm_status():
+    """Status driver tanpa memaparkan kredensial atau detail internal serial."""
+    driver = global_fan_controller.driver
+    return {
+        "driver": getattr(driver, "name", type(driver).__name__),
+        "connected": bool(getattr(driver, "is_connected", True)),
+        "port": getattr(driver, "port", None),
+        "duty_cycle": driver.get_duty_cycle(),
+        "frequency_hz": ops.PWM_FREQUENCY_HZ,
+        "inverted": ops.PWM_INVERTED,
+    }
+
+
 @router.get("/status", summary="Status integrasi sumber sensor, database, dan worker")
 def get_integration_status(db: Session = Depends(get_db)):
     """Status aman untuk diagnosis tanpa memaparkan DSN atau kredensial."""
@@ -76,6 +89,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "last_error": worker_status.get("last_error"),
                 "last_error_at": worker_status.get("last_error_at"),
             },
+            "pwm": _pwm_status(),
             "nodes": [],
         }
 
@@ -116,6 +130,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "last_error": worker_status.get("last_error"),
                 "last_error_at": worker_status.get("last_error_at"),
             },
+            "pwm": _pwm_status(),
             "nodes": nodes,
         }
     except Exception as exc:
@@ -139,6 +154,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "last_error": worker_status.get("last_error"),
                 "last_error_at": worker_status.get("last_error_at"),
             },
+            "pwm": _pwm_status(),
             "nodes": [],
         }
 
