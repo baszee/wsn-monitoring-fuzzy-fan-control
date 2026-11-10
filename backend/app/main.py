@@ -113,6 +113,20 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
+@app.middleware("http")
+async def no_stale_frontend(request: Request, call_next):
+    """Halaman dan aset dashboard selalu diperiksa ulang ke server.
+
+    Tanpa ini browser dapat terus menampilkan HTML/JS lama setelah pembaruan.
+    "no-cache" tetap memakai ETag/Last-Modified, sehingga file yang tidak berubah
+    cukup dijawab 304 tanpa diunduh ulang.
+    """
+    response = await call_next(request)
+    if not request.url.path.startswith("/api"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 # Daftarkan Router REST API dengan prefix /api
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request: Request, exc: RequestValidationError):
