@@ -7,6 +7,10 @@ adaptor read-only dengan alur berikut:
 receiver.py M2 -> sesi_uji + paket_valid -> adaptor backend -> fuzzy -> zone_controls
 ```
 
+Snapshot schema receiver yang menjadi kontrak integrasi disimpan pada
+`docs/database/receiver-schema-v1.sql`. Perubahan berikutnya dari pemilik receiver harus
+dibandingkan dengan snapshot ini sebelum adaptor diperbarui.
+
 ## Mode pengembangan
 
 - `SENSOR_SOURCE=mock`: memakai `mock_receiver_valid_data` dan `feed_dummy.py`.
@@ -43,6 +47,7 @@ memengaruhi fuzzy dan kendali fan. Nilai kosong memakai semua sesi.
 - Jangan membuka port PostgreSQL 5432 langsung ke internet; gunakan jaringan privat.
 - Gunakan akun terpisah untuk receiver M2 dan backend Abbas.
 - Simpan DSN dan password pada environment, bukan source code.
+- Pastikan hanya satu instance memakai `WORKER_ENABLED=true`; instance lain harus read-only.
 
 ## Pengujian lokal tanpa Orange Pi
 

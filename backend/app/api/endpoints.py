@@ -69,6 +69,7 @@ def get_integration_status(db: Session = Depends(get_db)):
             },
             "source": {"mode": source.name, "available": False, "is_fresh": False},
             "worker": {
+                "enabled": ops.WORKER_ENABLED,
                 "alive": _worker_alive(),
                 "last_cycle_at": worker_status["last_cycle_at"],
                 "last_source_time": worker_status.get("last_source_time"),
@@ -108,6 +109,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "is_fresh": is_fresh(latest.timestamp, now) if latest else False,
             },
             "worker": {
+                "enabled": ops.WORKER_ENABLED,
                 "alive": _worker_alive(),
                 "last_cycle_at": worker_status["last_cycle_at"],
                 "last_source_time": worker_status.get("last_source_time"),
@@ -130,6 +132,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "error": type(exc).__name__,
             },
             "worker": {
+                "enabled": ops.WORKER_ENABLED,
                 "alive": _worker_alive(),
                 "last_cycle_at": worker_status["last_cycle_at"],
                 "last_source_time": worker_status.get("last_source_time"),
@@ -147,7 +150,7 @@ def get_integration_status(db: Session = Depends(get_db)):
 )
 def get_latest_nodes(db: Session = Depends(get_db)):
     """Mengambil rekaman sensor terkini, hasil fuzzy, dan status penentu per node."""
-    if ops.SERVERLESS_MODE:
+    if ops.SERVERLESS_MODE and ops.WORKER_ENABLED:
         run_request_cycle(db)
 
     source = get_sensor_source()
@@ -197,6 +200,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 db.query(FuzzyResult)
                 .filter(
                     FuzzyResult.zone_node_id == node.zone_node_id,
+                    FuzzyResult.source_name == source.name,
                     FuzzyResult.source_record_id == sensor_data.id,
                 )
                 .order_by(FuzzyResult.processed_at.desc())
@@ -207,7 +211,10 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 # Tampilkan rekaman terproses sebelumnya secara utuh, bukan campuran.
                 prev = (
                     db.query(FuzzyResult)
-                    .filter(FuzzyResult.zone_node_id == node.zone_node_id)
+                    .filter(
+                        FuzzyResult.zone_node_id == node.zone_node_id,
+                        FuzzyResult.source_name == source.name,
+                    )
                     .order_by(FuzzyResult.source_timestamp.desc())
                     .first()
                 )
@@ -324,7 +331,7 @@ def _control_response(latest_ctrl: ZoneControl) -> ZoneControlResponse:
 )
 def get_latest_control(db: Session = Depends(get_db)):
     """Mengambil rekaman kendali zona terakhir (u_zona, i*, duty cycle PWM, status fan)."""
-    if ops.SERVERLESS_MODE:
+    if ops.SERVERLESS_MODE and ops.WORKER_ENABLED:
         run_request_cycle(db)
 
     latest_ctrl = (
@@ -400,7 +407,8 @@ def get_control_history(
     db: Session = Depends(get_db),
 ):
     hours = {"1h": 1, "6h": 6, "24h": 24}[range]
-    cutoff = get_sensor_source().db_now(db) - timedelta(hours=hours)
+    source = get_sensor_source()
+    cutoff = source.db_now(db) - timedelta(hours=hours)
 
     zone_rows = (
         db.query(ZoneControl)
@@ -411,7 +419,11 @@ def get_control_history(
     node_rows = (
         db.query(FuzzyResult, ZoneNode.node_id)
         .join(ZoneNode, ZoneNode.zone_node_id == FuzzyResult.zone_node_id)
-        .filter(ZoneNode.zone_id == zone_id, FuzzyResult.source_timestamp >= cutoff)
+        .filter(
+            ZoneNode.zone_id == zone_id,
+            FuzzyResult.source_name == source.name,
+            FuzzyResult.source_timestamp >= cutoff,
+        )
         .order_by(FuzzyResult.source_timestamp.asc())
         .all()
     )

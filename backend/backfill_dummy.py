@@ -74,7 +74,8 @@ for i in range(steps):
         d_idx = normalize_dust(volt, c_0=config.dust_low_reference, c_h=config.dust_high_reference)
         out = engine.evaluate(temperature=temp, humidity=rh, dust_index=d_idx)["outputs"]
         fr = FuzzyResult(zone_node_id=zn.zone_node_id, config_version=config.config_version,
-                         processing_cycle_id=cycle, source_record_id=rec.id, source_timestamp=ts,
+                         processing_cycle_id=cycle, source_name="mock",
+                         source_record_id=rec.id, source_timestamp=ts,
                          temperature=temp, humidity=rh, dust_raw_voltage=volt, dust_index=d_idx,
                          condition_score=out["condition_score"], condition_class=out["condition_class"],
                          control_level=out["control_level"], processed_at=ts)

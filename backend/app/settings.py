@@ -72,6 +72,10 @@ DEMO_CYCLE_SECONDS = _float("DEMO_CYCLE_SECONDS", 600.0)
 # request dashboard, sedangkan deployment biasa/Orange Pi tetap memakai worker.
 SERVERLESS_MODE = _bool("SERVERLESS_MODE", bool(os.getenv("VERCEL")))
 
+# Hanya satu instance WSNova yang boleh memproses fuzzy dan mengendalikan fan.
+# Instance dashboard/read-only milik anggota tim harus mengisi false.
+WORKER_ENABLED = _bool("WORKER_ENABLED", True)
+
 # Resolusi centroid (satuan skala 0-100). Lebih kecil = lebih halus.
 CENTROID_STEP = _float("CENTROID_STEP", 0.01)
 

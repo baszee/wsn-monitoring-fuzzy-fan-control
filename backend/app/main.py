@@ -35,6 +35,11 @@ worker_task = None
 demo_feed_task = None
 
 
+def background_worker_enabled() -> bool:
+    """Worker kontinu hanya hidup pada instance pemilik non-serverless."""
+    return ops.WORKER_ENABLED and not ops.SERVERLESS_MODE
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -48,7 +53,7 @@ async def lifespan(app: FastAPI):
     # Selalu mulai Otomatis dengan PWM 0%; mode Manual tidak dipulihkan.
     reset_control_state()
 
-    if not ops.SERVERLESS_MODE:
+    if background_worker_enabled():
         # Server biasa/Orange Pi: worker dan generator demo boleh hidup kontinu.
         worker_task = asyncio.create_task(
             background_worker_loop(interval_seconds=ops.WORKER_INTERVAL_SECONDS, stop_event=stop_event)

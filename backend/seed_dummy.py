@@ -13,9 +13,8 @@ from datetime import datetime, timezone, timedelta
 # Pastikan direktori backend masuk sys.path saat dieksekusi langsung
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy import text
-
-from app.core.database import APP_SCHEMA, SessionLocal, engine, Base
+from app.core.database import SessionLocal
+from app.core.migrations import upgrade_database
 from app.models import ZoneNode, ControlConfig, MockReceiverValidData
 
 def get_default_fuzzy_membership_params():
@@ -89,17 +88,10 @@ def get_default_rule_base():
 def seed_database(include_samples: bool = True):
     print("=== Memulai Inisialisasi & Seeding Data Dummy ===")
     
-    # Schema khusus WSNova (opsional, hanya PostgreSQL). Nama sudah divalidasi
-    # di app.core.config sehingga aman disisipkan sebagai identifier.
-    if APP_SCHEMA:
-        print(f"Memastikan schema '{APP_SCHEMA}' untuk tabel WSNova tersedia...")
-        with engine.begin() as conn:
-            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{APP_SCHEMA}"'))
-
-    # Buat seluruh tabel aplikasi jika belum ada. Tabel milik penerima (paket_valid,
-    # sesi_uji, node_readings) berada di metadata terpisah dan tidak pernah dibuat di sini.
-    print("Membuat tabel database via SQLAlchemy metadata...")
-    Base.metadata.create_all(bind=engine)
+    # Terapkan migrasi tabel WSNova. Tabel sumber penerima berada di metadata
+    # terpisah dan tidak pernah dibuat, diubah, atau dihapus oleh migrasi ini.
+    print("Menerapkan migrasi database WSNova...")
+    upgrade_database()
     
     db = SessionLocal()
     try:

@@ -237,6 +237,7 @@ def test_status_reports_paket_valid_metadata():
     assert status["source"]["mode"] == "paket_valid"
     assert status["source"]["available"] is True
     assert status["source"]["last_node_id"] == "NODE-01"
+    assert status["worker"]["enabled"] is ops.WORKER_ENABLED
     assert status["nodes"][0]["snr"] == 7.5
 
 
@@ -282,3 +283,11 @@ def test_invalid_session_mode_env_stops_startup():
     })
     assert proc.returncode != 0
     assert "PAKET_VALID_SESSION_MODES" in proc.stderr
+
+
+def test_worker_enabled_can_be_disabled_from_env():
+    proc = _import_settings_with({"SENSOR_SOURCE": "mock", "WORKER_ENABLED": "false"})
+    assert proc.returncode == 0, proc.stderr
+    check = _import_settings_with({"SENSOR_SOURCE": "mock", "WORKER_ENABLED": "invalid"})
+    # Nilai boolean yang tidak dikenal mengikuti perilaku aman helper: false.
+    assert check.returncode == 0

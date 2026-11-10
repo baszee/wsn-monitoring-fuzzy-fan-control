@@ -10,6 +10,7 @@ class FuzzyResult(Base):
     zone_node_id = Column(Integer, ForeignKey("zone_nodes.zone_node_id", ondelete="CASCADE"), nullable=False)
     config_version = Column(String(50), ForeignKey("control_config.config_version"), nullable=False)
     processing_cycle_id = Column(String(100), nullable=False, index=True)
+    source_name = Column(String(32), nullable=False)
     source_record_id = Column(BigInteger, nullable=False)
     source_timestamp = Column(DateTime(timezone=True), nullable=False)
     
@@ -26,8 +27,8 @@ class FuzzyResult(Base):
     processed_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     __table_args__ = (
-        UniqueConstraint("zone_node_id", "source_record_id", "config_version",
-                         name="uq_fuzzy_node_record_cfg"),
+        UniqueConstraint("source_name", "zone_node_id", "source_record_id", "config_version",
+                         name="uq_fuzzy_source_node_record_cfg"),
     )
 
     # Relasi

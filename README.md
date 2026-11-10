@@ -80,6 +80,8 @@ python backend/feed_dummy.py          # biarkan menyala agar data tetap segar
 ```
 
 Database SQLite default ada di `wsn.db` pada root proyek. Untuk PostgreSQL, isi `DATABASE_URL`.
+`backend/bootstrap_db.py` menjalankan migrasi Alembic sebelum mengisi konfigurasi awal.
+Migrasi manual dapat dijalankan dengan `python backend/migrate_db.py`.
 
 ### Sumber data M2 (`paket_valid`)
 
@@ -96,6 +98,8 @@ Adaptor hanya membaca tabel M2. Bootstrap aplikasi tidak membuat, mengubah, atau
 menghapus `paket_valid` maupun `sesi_uji`. Pemetaan yang digunakan adalah `received_at` sebagai waktu
 sumber, `v0` sebagai nilai debu mentah, dan ID angka `1` sebagai label `NODE-01`.
 Sumber lama `node_readings` masih tersedia sebagai mode kompatibilitas.
+Snapshot schema receiver yang menjadi kontrak adaptor disimpan di
+`docs/database/receiver-schema-v1.sql`.
 
 Sebelum PostgreSQL/Orange Pi siap, tabel tersebut dapat disimulasikan pada SQLite lokal:
 
@@ -135,6 +139,7 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 | `PAKET_VALID_SESSION_MODES` | kosong | Filter `sensor`, `uji`, atau keduanya; kosong memakai semua sesi |
 | `APP_DB_SCHEMA` | kosong | Schema PostgreSQL opsional untuk tabel WSNova, misalnya `wsnova` |
 | `SOURCE_DB_SCHEMA` | kosong | Schema PostgreSQL tabel penerima; otomatis `public` bila `APP_DB_SCHEMA` diisi |
+| `WORKER_ENABLED` | `true` | Jalankan pemrosesan fuzzy/kendali; hanya satu instance boleh `true` |
 | `FRESHNESS_SECONDS` | 30 | Batas usia data yang masih dipakai |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |

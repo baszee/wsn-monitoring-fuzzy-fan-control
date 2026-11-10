@@ -3,7 +3,7 @@ Worker Siklus Pemrosesan & Penyimpanan Terintegrasi (backend/app/services/worker
 
 Menjalankan pipeline otomatis secara periodik:
 1. Membaca konfigurasi aktif dari tabel `control_config`.
-2. Mengambil data sensor terbaru melalui adaptor sumber (`mock` atau `node_readings`).
+2. Mengambil data sensor terbaru melalui adaptor sumber (`mock`, `paket_valid`, atau `node_readings`).
 3. Memvalidasi kelengkapan 3 parameter (suhu, kelembapan relatif / RH, debu).
 4. Menjalankan inferensi Fuzzy Mamdani (NumPy) per node valid dan menyimpannya ke `fuzzy_results`.
 5. Melakukan agregasi zona (worst-case u_zona & penentuan node i* deterministik via `zone.py`).
@@ -124,6 +124,7 @@ def _run_processing_cycle(
                 db.query(FuzzyResult)
                 .filter(
                     FuzzyResult.zone_node_id == z_node.zone_node_id,
+                    FuzzyResult.source_name == source.name,
                     FuzzyResult.source_record_id == rec.id,
                     FuzzyResult.config_version == config_version,
                 )
@@ -151,6 +152,7 @@ def _run_processing_cycle(
                     zone_node_id=z_node.zone_node_id,
                     config_version=config_version,
                     processing_cycle_id=cycle_id,
+                    source_name=source.name,
                     source_record_id=rec.id,
                     source_timestamp=rec.timestamp,
                     temperature=rec.temperature,
