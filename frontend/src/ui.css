@@ -187,3 +187,19 @@ td .ic { color: var(--blue); }
   body.sidebar-collapsed .nav-label { height: 1px; margin: 12px 10px; padding: 0; font-size: 0; background: var(--line); }
   body.sidebar-collapsed .side-nav { margin-top: 16px; }
 }
+
+/* ── Bahasa umum: detail teknis yang dapat dibuka, penanda halaman teknis ── */
+.tech-details { border: 1px solid var(--line, #e2e8f0); border-radius: 12px; background: var(--surface-soft, #f8fafc); }
+.tech-details > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: .5rem; padding: .7rem .95rem; font-size: .8rem; font-weight: 700; color: var(--text, #1e293b); }
+.tech-details > summary::-webkit-details-marker { display: none; }
+.tech-details > summary::before { content: "▸"; color: var(--text-soft, #64748b); transition: transform .15s ease; }
+.tech-details[open] > summary::before { transform: rotate(90deg); }
+.tech-details > summary small { font-weight: 500; color: var(--text-soft, #64748b); }
+.tech-details .tech-body { padding: 0 .95rem .9rem; font-size: .8rem; }
+.tech-notice, .plain-note { display: flex; gap: .6rem; flex-wrap: wrap; align-items: baseline; padding: .7rem .95rem; border-radius: 12px; font-size: .8rem; line-height: 1.5; }
+.tech-notice { background: #f3efff; color: #3b1f8f; border: 1px solid #e2d8ff; }
+.tech-notice a { color: inherit; font-weight: 700; }
+.plain-note { background: var(--surface-soft, #f8fafc); color: var(--text-soft, #64748b); border: 1px dashed var(--line, #e2e8f0); }
+.level-word { font-weight: 800; }
+.level-word.good { color: #0f8a6a; } .level-word.warn { color: #b76e00; } .level-word.bad { color: #c94055; }
+.node-code { font-size: .68rem; font-weight: 600; color: var(--text-soft, #64748b); letter-spacing: .02em; }

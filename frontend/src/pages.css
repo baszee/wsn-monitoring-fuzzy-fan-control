@@ -11,7 +11,7 @@
 .page-body { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
 
 /* ── Node grid ─────────────────────────────────────────────────── */
-.node-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.node-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
 
 .node-card {
   background: #fff;
@@ -236,3 +236,10 @@
 .pill-warn { background: var(--warning-surface); color: var(--warning-text); padding: .15rem .55rem; border-radius: 99px; font-size: .72rem; font-weight: 600; }
 .pill-bad  { background: var(--danger-surface); color: var(--danger); padding: .15rem .55rem; border-radius: 99px; font-size: .72rem; font-weight: 600; }
 .pill-unknown { background: #f1f5f9; color: #64748b; padding: .15rem .55rem; border-radius: 99px; font-size: .72rem; font-weight: 600; }
+
+/* Empat bacaan per kartu sensor (suhu, kelembapan, debu, tekanan) */
+.node-params.node-params-4 { grid-template-columns: 1fr 1fr; row-gap: .6rem; }
+.node-card-head .node-code { margin-left: .1rem; }
+.reading-card .reading-unit .level-word { font-size: inherit; }
+.node-card-head { flex-wrap: wrap; row-gap: .35rem; }
+.node-id-badge, .node-determining-tag, .node-card-head .node-code { white-space: nowrap; }

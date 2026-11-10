@@ -9,7 +9,7 @@ import {
   fmtNumber,
   conditionClass,
   conditionLabel,
-} from "/src/shared.js?v=20261106-3";
+} from "/src/shared.js?v=20261111-1";
 
 buildSidebar("simulasi");
 

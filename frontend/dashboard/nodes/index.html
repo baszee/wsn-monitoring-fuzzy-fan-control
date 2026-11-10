@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Node Sensor — WSNova</title>
+  <title>Sensor — WSNova</title>
   <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
-  <link rel="stylesheet" href="/src/site.css?v=20261106-3"/>
-  <link rel="stylesheet" href="/src/pages.css?v=20261106-3"/>
-    <link rel="stylesheet" href="/src/ui.css?v=20261106-3" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261111-1" />
+  <link rel="stylesheet" href="/src/site.css?v=20261111-1"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261111-1"/>
+    <link rel="stylesheet" href="/src/ui.css?v=20261111-1" />
   </head>
 <body class="dashboard-body">
 <div class="p2-shell">
@@ -24,8 +24,8 @@
       <div class="p2-topbar-title">
         <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
         <div>
-          <h1>Node Sensor</h1>
-          <p>Semua node</p>
+          <h1>Sensor</h1>
+          <p>Semua sensor di ruangan</p>
         </div>
       </div>
       <div class="p2-topbar-right">
@@ -42,29 +42,28 @@
       <!-- Summary KPI bar -->
       <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
         <div class="metric-card" style="flex:1;min-width:160px;">
-          <div class="metric-head"><span>Node Aktif</span><span class="metric-icon metric-blue"><i data-icon="radio"></i></span></div>
-          <div class="metric-value"><strong id="kpi-active">—</strong><span>node</span></div>
+          <div class="metric-head"><span>Sensor terpasang</span><span class="metric-icon metric-blue"><i data-icon="radio"></i></span></div>
+          <div class="metric-value"><strong id="kpi-active">—</strong><span>sensor</span></div>
         </div>
         <div class="metric-card" style="flex:1;min-width:160px;">
-          <div class="metric-head"><span>Data Segar &amp; Valid</span><span class="metric-icon metric-blue"><i data-icon="check"></i></span></div>
-          <div class="metric-value"><strong id="kpi-valid">—</strong><span>node</span></div>
+          <div class="metric-head"><span>Mengirim data terbaru</span><span class="metric-icon metric-blue"><i data-icon="check"></i></span></div>
+          <div class="metric-value"><strong id="kpi-valid">—</strong><span>sensor</span></div>
         </div>
         <div class="metric-card" style="flex:1;min-width:160px;">
-          <div class="metric-head"><span>Node Penentu</span><span class="metric-icon metric-purple"><i data-icon="target"></i></span></div>
+          <div class="metric-head"><span>Diikuti kipas</span><span class="metric-icon metric-purple"><i data-icon="target"></i></span></div>
           <div class="metric-value"><strong id="kpi-determining" style="font-size:1rem;">—</strong></div>
         </div>
         <div class="metric-card" style="flex:1;min-width:160px;">
-          <div class="metric-head"><span>Kondisi Zona</span><span class="metric-icon metric-purple"><i data-icon="gauge"></i></span></div>
+          <div class="metric-head"><span>Kondisi ruangan</span><span class="metric-icon metric-purple"><i data-icon="gauge"></i></span></div>
           <div class="metric-value"><strong id="kpi-condition" style="font-size:1rem;">—</strong></div>
         </div>
       </div>
 
       <!-- Node Cards Grid -->
       <div>
-        <h2 style="font-size:.9rem;font-weight:700;color:var(--text);margin:0 0 .75rem;">Kartu Node</h2>
+        <h2 style="font-size:.9rem;font-weight:700;color:var(--text);margin:0 0 .75rem;">Kondisi tiap sensor</h2>
         <div class="node-grid" id="node-grid">
           <!-- cards injected by JS -->
-          <div class="node-card"><div style="height:80px;" class="skeleton"></div></div>
           <div class="node-card"><div style="height:80px;" class="skeleton"></div></div>
           <div class="node-card"><div style="height:80px;" class="skeleton"></div></div>
         </div>
@@ -72,25 +71,25 @@
 
       <!-- Node Table (all) -->
       <div class="panel-full">
-        <h3>Tabel Semua Node</h3>
+        <h3>Tabel semua sensor</h3>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Node</th>
+                <th>Sensor</th>
+                <th>Kondisi</th>
                 <th>Suhu (°C)</th>
-                <th>RH (%)</th>
-                <th>Indeks Debu</th>
-                <th>Skor Kondisi</th>
-                <th>Kelas</th>
-                <th>Tingkat Kendali</th>
-                <th>Status</th>
-                <th>Update Terakhir</th>
+                <th>Kelembapan (%)</th>
+                <th>Debu</th>
+                <th>Tekanan (hPa)</th>
+                <th>Sinyal</th>
+                <th>Data</th>
+                <th>Terakhir masuk</th>
                 <th>Detail</th>
               </tr>
             </thead>
             <tbody id="nodes-table-full">
-              <tr><td colspan="10" class="table-loading">Memuat data node...</td></tr>
+              <tr><td colspan="10" class="table-loading">Memuat data sensor...</td></tr>
             </tbody>
           </table>
         </div>
@@ -104,7 +103,7 @@
   <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
 </div>
 
-<script type="module" src="/src/nodes.js?v=20261106-3"></script>
+<script type="module" src="/src/nodes.js?v=20261111-1"></script>
   <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
 </body>
 </html>

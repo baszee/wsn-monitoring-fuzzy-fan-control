@@ -1,4 +1,4 @@
-import { apiFetch, getSession } from "/src/shared.js?v=20261106-3";
+import { apiFetch, getSession } from "/src/shared.js?v=20261111-1";
 
 const form = document.getElementById("login-form");
 const errorEl = document.getElementById("login-error");

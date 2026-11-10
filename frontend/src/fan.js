@@ -1,7 +1,8 @@
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js?v=20261106-3";
+import { createFan } from "/src/fan-canvas.js?v=20261111-1";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
-         startPolling, getSession, adminPost } from "/src/shared.js?v=20261106-3";
+         startPolling, getSession, adminPost, nodeName, zoneName, needLabel, fanStatusLabel,
+         techDetails } from "/src/shared.js?v=20261111-1";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);
@@ -18,43 +19,55 @@ function chainStep(iconName, label, value, hint = "") {
 
 function renderChain(ctrl, nodes, unavailable, manual) {
   const valid = nodes.filter((n) => n.data_status === "Valid");
-  const perNode = valid.length ? valid.map((n) => `${esc(n.node_id)} ${fmtNumber(n.control_level, 1)}`).join("  |  ") : "Tidak ada node valid";
-  const delta = cfg?.delta_d_update;
-  const dTxt = delta != null ? ` ${fmtNumber(delta, 0)}%` : "";
+  const perNode = valid.length
+    ? valid.map((n) => `${esc(nodeName(n.node_id))}: ${needLabel(n.control_level, cfg).toLowerCase()}`).join(" · ")
+    : "Belum ada sensor dengan data terbaru";
+  const hasAuto = ctrl.zone_control_level != null && !unavailable;
 
-  let filter = "—";
+  let step3 = "—";
   if (!unavailable && ctrl.candidate_pwm_percent != null) {
-    if (ctrl.hysteresis_held) filter = `Ditahan, selisih kurang dari${dTxt}`;
-    else if (ctrl.auto_pwm_percent === 0) filter = "Tidak berlaku, fan mati";
-    else filter = "Perubahan diteruskan";
+    if (ctrl.hysteresis_held) step3 = "Dipertahankan, perubahan kebutuhan masih kecil";
+    else if (ctrl.auto_pwm_percent === 0) step3 = "Kebutuhan rendah, kipas di putaran terendah";
+    else step3 = "Kecepatan baru diterapkan";
   }
-  const cand = unavailable || ctrl.candidate_pwm_percent == null ? "—" : `${fmtNumber(ctrl.candidate_pwm_percent, 1)}%`;
-  const prev = unavailable || ctrl.previous_pwm_percent == null || manual ? "" : `PWM sebelumnya ${fmtNumber(ctrl.previous_pwm_percent, 1)}%`;
-  const hasAuto = ctrl.zone_control_level != null;
+  const out = unavailable ? "—" : `${fmtNumber(ctrl.pwm_command_percent, 0)}%`;
 
   $("chain-steps").innerHTML = [
-    chainStep("hash", "u tiap node", perNode),
-    chainStep("bars", "Tingkat kendali zona", hasAuto ? fmtNumber(ctrl.zone_control_level, 1) : "—", hasAuto ? `Node penentu: ${esc(ctrl.determining_node_id ?? "tidak ada")}` : ""),
-    chainStep("gauge", "PWM hasil hitung", cand),
-    chainStep("repeat", "Penyaring perubahan kecil", filter, prev),
-    chainStep("check", "Perintah PWM", unavailable ? "—" : `${fmtNumber(ctrl.pwm_command_percent, 1)}%`, manual ? "Manual, mengabaikan hasil otomatis" : ""),
+    chainStep("radio", "1. Setiap sensor menilai kebutuhan kipas", perNode),
+    chainStep("target", "2. Kipas mengikuti kebutuhan tertinggi", hasAuto ? `${esc(nodeName(ctrl.determining_node_id))}, kebutuhan ${needLabel(ctrl.zone_control_level, cfg).toLowerCase()}` : "—"),
+    chainStep("repeat", "3. Perubahan kecil diabaikan agar kipas tidak naik-turun", step3),
+    chainStep("check", "4. Kecepatan yang dikirim ke kipas", out, manual ? "Mode manual: diatur langsung oleh admin" : ""),
   ].join("");
 }
 
-function renderRules(rules) {
-  const box = $("determining-rules");
+function renderTech(ctrl, rules) {
+  const root = $("tech-root");
+  const prev = root.querySelector("details");
+  const open = prev ? prev.open : false;
+  const rows = [
+    ["Tingkat kendali zona u", ctrl.zone_control_level != null ? fmtNumber(ctrl.zone_control_level, 2) : "—"],
+    ["Node penentu", esc(ctrl.determining_node_id ?? "—")],
+    ["PWM hasil pemetaan (kandidat)", ctrl.candidate_pwm_percent != null ? `${fmtNumber(ctrl.candidate_pwm_percent, 1)}%` : "—"],
+    ["PWM sebelumnya", ctrl.previous_pwm_percent != null ? `${fmtNumber(ctrl.previous_pwm_percent, 1)}%` : "—"],
+    ["PWM otomatis (pembanding saat Manual)", ctrl.auto_pwm_percent != null ? `${fmtNumber(ctrl.auto_pwm_percent, 1)}%` : "—"],
+    ["Ditahan histeresis", ctrl.hysteresis_held ? "Ya" : "Tidak"],
+    ["u_off · u_max", cfg ? `${fmtNumber(cfg.u_off, 2)} · ${fmtNumber(cfg.u_max, 2)}` : "—"],
+    ["D_min · ΔD_update", cfg ? `${fmtNumber(cfg.d_min, 0)}% · ${fmtNumber(cfg.delta_d_update, 0)}%` : "—"],
+    ["Batas kesegaran data", `${ctrl.freshness_seconds ?? "—"} detik`],
+    ["Status perintah (backend)", esc(ctrl.fan_command_status ?? "—")],
+    ["Versi konfigurasi", esc(ctrl.config_version ?? "—")],
+    ["ID siklus", esc(ctrl.processing_cycle_id ?? "—")],
+    ["Terakhir dievaluasi", ctrl.last_evaluated_at ? fmtClock(parseTs(ctrl.last_evaluated_at)) : "—"],
+  ];
   const active = rules.filter((r) => (r.alpha ?? 0) > 0).sort((a, b) => b.alpha - a.alpha).slice(0, 10);
-  if (!active.length) {
-    box.innerHTML = `<p style="color:var(--text-soft);font-size:.82rem;">Tidak ada aturan aktif.</p>`;
-    return;
-  }
-  box.innerHTML = `<div class="sim-rules-list">${active.map((r) => {
-    const pct = (r.alpha * 100).toFixed(0);
-    return `<div class="sim-rule-row active">
-      <span class="sim-rule-alpha">${pct}%</span>
-      <span class="sim-rule-text">Aturan ${esc(r.id)}: debu ${esc(r.dust)}, RH ${esc(r.rh)}, suhu ${esc(r.temp)}. Hasil: kondisi ${esc(r.condition_class)}, kendali ${esc(r.control_level)}</span>
-      <div class="sim-alpha-bar-wrap"><div class="sim-alpha-bar" style="width:${pct}%"></div></div></div>`;
-  }).join("")}</div>`;
+  const rulesHtml = active.length ? active.map((r) =>
+    `<div class="settings-row"><span>Aturan ${esc(r.id)}: debu ${esc(r.dust)}, RH ${esc(r.rh)}, suhu ${esc(r.temp)} → ${esc(r.condition_class)} · kendali ${esc(r.control_level)}</span><strong>${(r.alpha * 100).toFixed(0)}%</strong></div>`).join("")
+    : `<p style="color:var(--text-soft)">Tidak ada aturan aktif.</p>`;
+  root.innerHTML = techDetails("pemetaan u → PWM, histeresis, dan aturan fuzzy node penentu",
+    `<div class="settings-list">${rows.map(([k, v]) => `<div class="settings-row"><span>${k}</span><strong>${v}</strong></div>`).join("")}</div>
+     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Aturan fuzzy aktif pada node penentu</h4>
+     <div class="settings-list">${rulesHtml}</div>`);
+  root.querySelector("details").open = open;
 }
 
 // ── Kontrol admin ──────────────────────────────────────────────────────────
@@ -65,8 +78,8 @@ function renderAdmin(manual, ctrl) {
   $("mode-pill").textContent = manual ? "Manual" : "Otomatis";
   $("mode-pill").className = manual ? "pill-warn" : "pill-good";
   $("mode-text").textContent = manual
-    ? "Perintah fan ditentukan admin dan mengabaikan hasil otomatis."
-    : "Perintah fan dihitung otomatis dari data node.";
+    ? "Kecepatan kipas sedang diatur langsung oleh admin. Penilaian otomatis tetap berjalan di latar belakang."
+    : "Kecepatan kipas diatur otomatis dari data sensor.";
   if (session.authenticated && !sliderTouched) {
     const v = Math.round(ctrl.pwm_command_percent ?? 0);
     $("manual-slider").value = v;
@@ -93,10 +106,10 @@ $("manual-slider").addEventListener("input", (e) => {
 });
 $("manual-apply").addEventListener("click", () => {
   const v = Number($("manual-slider").value);
-  adminAction("/api/control/manual", { pwm_percent: v }, "Mode manual aktif", `PWM ${v}% diterapkan.`);
+  adminAction("/api/control/manual", { pwm_percent: v }, "Mode manual aktif", `Kecepatan ${v}% diterapkan.`);
 });
 $("manual-auto").addEventListener("click", () => {
-  adminAction("/api/control/auto", {}, "Mode otomatis aktif", "Perintah fan kembali mengikuti hasil otomatis.");
+  adminAction("/api/control/auto", {}, "Mode otomatis aktif", "Kecepatan kipas kembali diatur otomatis dari sensor.");
 });
 
 // ── Pemuatan data ──────────────────────────────────────────────────────────
@@ -109,53 +122,47 @@ async function fetchAll() {
     const manual = ctrl.control_mode === "manual";
     const unavailable = !manual && (ctrl.fan_command_status === "Kendali tidak tersedia" || !ctrl.worker_alive);
     $("fan-card").classList.toggle("unavailable", unavailable);
-    $("zone-label").textContent = `Perintah PWM, ${ctrl.zone_id ?? "zona"}`;
+    $("zone-label").textContent = `Kecepatan kipas, ${zoneName(ctrl.zone_id)}`;
 
     const pill = $("fan-status");
     pill.className = "status-pill";
     const note = $("decision-note");
     if (unavailable) {
-      pill.textContent = "Kendali tidak tersedia";
+      pill.textContent = fanStatusLabel("Kendali tidak tersedia");
       pill.classList.add("unavailable");
-      note.textContent = !ctrl.worker_alive ? "Pengolahan data sedang terhenti." : `Tidak ada node valid dalam ${ctrl.freshness_seconds} detik terakhir.`;
+      note.textContent = !ctrl.worker_alive ? "Pengolahan data sedang berhenti."
+        : `Belum ada sensor yang mengirim data dalam ${ctrl.freshness_seconds} detik terakhir. Kipas diatur ke putaran terendah.`;
       fan.setTarget(0, true);
       $("pwm-value").textContent = "—";
     } else {
-      pill.textContent = ctrl.fan_command_status;
+      pill.textContent = fanStatusLabel(ctrl.fan_command_status);
       if (ctrl.fan_command_status === "Mati") pill.classList.add("off");
-      note.textContent = manual ? `PWM otomatis ${fmtNumber(ctrl.auto_pwm_percent, 1)}%.`
-        : ctrl.hysteresis_held ? `Hasil hitung ${fmtNumber(ctrl.candidate_pwm_percent, 1)}%, perintah ditahan.` : "";
+      note.textContent = manual ? "Kecepatan sedang diatur langsung oleh admin."
+        : ctrl.hysteresis_held ? "Kecepatan dipertahankan karena perubahan kebutuhan masih kecil."
+        : Number(ctrl.pwm_command_percent) <= 0 ? "Kondisi ruangan tidak memerlukan kipas. Kipas berputar pelan pada pengaturan terendah."
+        : "";
       fan.setTarget(ctrl.pwm_command_percent, false);
-      $("pwm-value").textContent = `${fmtNumber(ctrl.pwm_command_percent, 1)}%`;
+      $("pwm-value").textContent = `${fmtNumber(ctrl.pwm_command_percent, 0)}%`;
     }
 
-    const hasAuto = ctrl.zone_control_level != null;
-    $("stat-uzona").textContent = unavailable || !hasAuto ? "—" : fmtNumber(ctrl.zone_control_level, 1);
-    $("stat-node").textContent = unavailable || !hasAuto ? "—" : (ctrl.determining_node_id ?? "Tidak ada");
+    const hasAuto = ctrl.zone_control_level != null && !unavailable;
+    $("stat-uzona").textContent = hasAuto ? needLabel(ctrl.zone_control_level, cfg) : "—";
+    $("stat-node").textContent = hasAuto && ctrl.determining_node_id ? nodeName(ctrl.determining_node_id) : "—";
     $("stat-mode").textContent = manual ? "Manual" : "Otomatis";
-    $("stat-config").textContent = ctrl.config_version ?? "—";
-
-    $("det-cycle").textContent = ctrl.processing_cycle_id ?? "—";
-    $("det-time").textContent = ctrl.created_at ? fmtClock(parseTs(ctrl.created_at)) : "—";
-    $("det-eval").textContent = ctrl.last_evaluated_at ? fmtClock(parseTs(ctrl.last_evaluated_at)) : "—";
-    $("det-fresh").textContent = `${ctrl.freshness_seconds} detik`;
-    $("row-auto").hidden = !manual;
-    $("det-auto").textContent = `${fmtNumber(ctrl.auto_pwm_percent, 1)}%`;
+    $("stat-time").textContent = ctrl.created_at ? fmtClock(parseTs(ctrl.created_at)) : "—";
     $("updated-at").textContent = ctrl.last_evaluated_at ? `Diperbarui ${fmtClock(parseTs(ctrl.last_evaluated_at))}` : "—";
 
     renderChain(ctrl, nodes, unavailable, manual);
     renderAdmin(manual, ctrl);
     setConnectionBadge(true, $("connection-badge"));
 
-    if (hasAuto && ctrl.determining_node_id) {
-      const detail = await apiFetch(`/api/fuzzy/${encodeURIComponent(ctrl.determining_node_id)}/detail`).catch(() => null);
-      renderRules(detail?.active_rules ?? []);
-    } else {
-      $("determining-rules").innerHTML = `<p style="color:var(--text-soft);font-size:.82rem;">Tidak ada node penentu.</p>`;
-    }
+    const detail = hasAuto && ctrl.determining_node_id
+      ? await apiFetch(`/api/fuzzy/${encodeURIComponent(ctrl.determining_node_id)}/detail`).catch(() => null)
+      : null;
+    renderTech(ctrl, detail?.active_rules ?? []);
   } catch (e) {
     setConnectionBadge(false, $("connection-badge"));
-    showToast("Gagal memuat data kendali", e.message, "error");
+    showToast("Gagal memuat data kipas", e.message, "error");
   }
 }
 

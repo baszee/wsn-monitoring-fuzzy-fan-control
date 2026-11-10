@@ -67,3 +67,9 @@
 .zone-banner.bad strong { color: var(--danger); }
 .tile-need { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; }
 .tile-need strong { font: 800 15px "Manrope"; color: var(--ink); letter-spacing: -.01em; }
+
+/* Empat bacaan sensor (suhu, kelembapan, debu, tekanan) dan baris sinyal */
+.tile-readings { grid-template-columns: repeat(2, 1fr); row-gap: 8px; }
+.tile-id .node-code { margin-left: 4px; }
+.tile-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 10.5px; color: var(--muted); }
+.tile-foot b { font-weight: 800; }

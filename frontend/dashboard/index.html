@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Ringkasan kondisi lingkungan dan keputusan kendali fan." />
+    <meta name="description" content="Ringkasan kondisi ruangan dari sensor dan kecepatan kipas saat ini." />
     <title>Ringkasan — WSNova</title>
   <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
-  <link rel="stylesheet" href="/src/site.css?v=20261106-3" />
-    <link rel="stylesheet" href="/src/ui.css?v=20261106-3" />
-    <link rel="stylesheet" href="/src/home.css?v=20261106-3" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261111-1" />
+  <link rel="stylesheet" href="/src/site.css?v=20261111-1" />
+    <link rel="stylesheet" href="/src/ui.css?v=20261111-1" />
+    <link rel="stylesheet" href="/src/home.css?v=20261111-1" />
   </head>
   <body class="dashboard-body">
     <div class="dashboard-shell">
@@ -21,7 +21,7 @@
         <header class="dashboard-topbar">
           <div class="topbar-title">
             <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
-            <div><h1>Ringkasan</h1><p id="zone-label">Kondisi zona</p></div>
+            <div><h1>Ringkasan</h1><p id="zone-label">Kondisi ruangan saat ini</p></div>
           </div>
           <div class="topbar-actions">
             <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa data</span></div>
@@ -34,43 +34,44 @@
           <section class="home-grid">
             <article class="panel decision-card" id="decision-card" aria-labelledby="decision-title">
               <div class="decision-head">
-                <h2 id="decision-title">Keputusan kendali zona</h2>
+                <h2 id="decision-title">Kipas ruangan</h2>
                 <span class="status-pill" id="fan-status">Memuat</span>
               </div>
               <div class="zone-banner" id="zone-banner">
-                <span>Kondisi zona</span>
+                <span>Kondisi ruangan</span>
                 <strong id="zone-class">—</strong>
                 <p id="zone-summary"></p>
               </div>
               <div class="fan-stage"><canvas id="fan-canvas" role="img" aria-label="Ilustrasi kipas"></canvas></div>
-              <div class="pwm-readout"><span>Perintah PWM</span><strong id="pwm-value">—</strong></div>
+              <div class="pwm-readout"><span>Kecepatan kipas</span><strong id="pwm-value">—</strong></div>
               <p class="decision-note" id="decision-note"></p>
               <dl class="decision-facts">
                 <div><dt>Kebutuhan kipas</dt><dd id="fact-need">—</dd></div>
-                <div><dt>Node penentu</dt><dd id="fact-node">—</dd></div>
+                <div><dt>Mengikuti</dt><dd id="fact-node">—</dd></div>
                 <div><dt>Mode</dt><dd id="fact-mode">—</dd></div>
-                <div><dt>Keputusan terakhir</dt><dd id="fact-time">—</dd></div>
+                <div><dt>Diperbarui</dt><dd id="fact-time">—</dd></div>
               </dl>
-              <p class="decision-caption">Ilustrasi perintah PWM, bukan RPM.</p>
+              <p class="decision-caption">Persen adalah perintah kecepatan ke kipas, bukan putaran yang diukur.</p>
             </article>
 
             <div class="home-main">
               <section class="board" aria-labelledby="board-title">
                 <div class="board-head">
-                  <h2 id="board-title">Kondisi per node</h2>
-                  <p>Pilih kartu node untuk melihat rincian pengukuran dan perhitungannya.</p>
+                  <h2 id="board-title">Kondisi tiap sensor</h2>
+                  <p>Pilih kartu untuk melihat rincian dan riwayat sensor.</p>
                 </div>
-                <div class="node-board" id="node-board"><div class="board-empty">Memuat data node...</div></div>
+                <div class="node-board" id="node-board"><div class="board-empty">Memuat data sensor...</div></div>
               </section>
 <article class="panel history-panel">
                           <div class="panel-header">
                             <div><h2>Riwayat</h2><p id="history-caption">Memuat</p></div>
                             <div class="panel-tools">
                               <div class="segmented" id="metric-tabs">
-                                <button class="active" data-tab="control">Kendali</button>
+                                <button class="active" data-tab="control">Kebutuhan kipas</button>
                                 <button data-tab="temperature">Suhu</button>
-                                <button data-tab="humidity">RH</button>
+                                <button data-tab="humidity">Kelembapan</button>
                                 <button data-tab="dust_index">Debu</button>
+                                <button data-tab="pressure_hpa">Tekanan</button>
                               </div>
                               <div class="segmented range-tabs" id="range-tabs">
                                 <button data-range="1h">1 jam</button>
@@ -89,7 +90,7 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"><span></span><div><strong id="toast-title">Info</strong><p id="toast-message"></p></div></div>
-    <script type="module" src="/src/home.js?v=20261106-3"></script>
+    <script type="module" src="/src/home.js?v=20261111-1"></script>
     <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
 </body>
 </html>

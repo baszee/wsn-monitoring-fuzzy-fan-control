@@ -1,197 +1,163 @@
 /**
- * node-detail.js — Halaman Detail Node
+ * node-detail.js — Halaman detail satu sensor.
+ * Bagian atas memakai bahasa umum; angka metode fuzzy ada di "Detail teknis".
  */
-import { COLORS } from "/src/theme.js?v=20261106-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtTime, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, dataQualityPill } from "/src/shared.js?v=20261106-3";
+         fmtTime, fmtNumber, startPolling, parseTs, normalizeNode, dataQualityPill,
+         nodeName, zoneName, dustLevel, signalLevel, needLabel, techDetails } from "/src/shared.js?v=20261111-1";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-1";
 
 buildSidebar("nodes");
 
 const params = new URLSearchParams(location.search);
 const NODE_ID = params.get("node") ?? "";
+const $ = (id) => document.getElementById(id);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+const CLASS_KEY = { "Baik": "good", "Perlu Perhatian": "warn", "Buruk": "bad" };
 
 if (!NODE_ID) {
-  document.getElementById("page-title").textContent = "Node tidak ditemukan";
-  document.getElementById("page-sub").textContent   = "Parameter node tidak tersedia.";
+  $("page-title").textContent = "Sensor tidak ditemukan";
+  $("page-sub").textContent = "Alamat halaman tidak menyebut sensor.";
+} else {
+  $("page-title").textContent = nodeName(NODE_ID);
+  $("page-sub").textContent = NODE_ID;
+  document.title = `${nodeName(NODE_ID)} — WSNova`;
 }
 
-document.getElementById("page-title").textContent = `Detail ${NODE_ID}`;
-document.getElementById("page-sub").textContent   = NODE_ID;
-
-// ── Chart State ────────────────────────────────────────────────────────────
+let cfg = null;
 let currentMetric = "temperature";
-let currentRange  = "24h";
-let histData      = [];
+let currentRange = "24h";
+let histData = [];
+let techOpen = false;
 
-// ── Fetch Latest ───────────────────────────────────────────────────────────
+const METRICS = {
+  temperature:  { label: "Suhu (°C)", title: "suhu (°C)", dec: 1 },
+  humidity:     { label: "Kelembapan (%)", title: "kelembapan (%)", dec: 1, floor: 0 },
+  dust_index:   { label: "Tingkat debu (0–100)", title: "tingkat debu (0–100)", dec: 0, scale: 100, fixed: [0, 100] },
+  pressure_hpa: { label: "Tekanan udara (hPa)", title: "tekanan udara (hPa)", dec: 1 },
+};
+const RANGE_MS = { "1h": 3600e3, "6h": 21600e3, "24h": 86400e3 };
+const RANGE_TEXT = { "1h": "1 jam", "6h": "6 jam", "24h": "24 jam" };
+
+// ── Data terkini ───────────────────────────────────────────────────────────
 async function fetchLatest() {
   try {
-    const [nodesAll, detail] = await Promise.all([
+    const [nodesAll, control, detail] = await Promise.all([
       apiFetch("/api/nodes/latest"),
+      apiFetch("/api/control/latest").catch(() => null),
       apiFetch(`/api/fuzzy/${encodeURIComponent(NODE_ID)}/detail`).catch(() => null),
     ]);
+    if (!cfg) cfg = await apiFetch("/api/config/active").catch(() => null);
 
     const nodes = Array.isArray(nodesAll) ? nodesAll : (nodesAll.nodes ?? []);
-    const node  = nodes.map(normalizeNode).find(n => n.node_id === NODE_ID);
-
-    if (node) {
-      document.getElementById("rd-temp").textContent    = fmtNumber(node.temperature);
-      document.getElementById("rd-rh").textContent      = fmtNumber(node.humidity);
-      document.getElementById("rd-voltage").textContent = fmtNumber(node.dust_raw_voltage, 3);
-      document.getElementById("rd-dust").textContent    = node.dust_index != null ? fmtNumber(node.dust_index, 4) : "—";
-      document.getElementById("rd-score").textContent   = fmtNumber(node.condition_score);
-      document.getElementById("rd-control").textContent = fmtNumber(node.control_level);
-
-      const cls = conditionClass(node.condition_score);
-      document.getElementById("info-class").innerHTML   = `<span class="pill-${cls}">${conditionLabel(cls)}</span>`;
-      document.getElementById("info-score2").textContent = fmtNumber(node.condition_score);
-      document.getElementById("info-ctrl").textContent   = fmtNumber(node.control_level);
-      document.getElementById("info-valid").innerHTML    = dataQualityPill(node);
-      document.getElementById("info-zone").textContent = node.zone_id ?? "—";
-      document.getElementById("page-sub").textContent = `${node.zone_id ?? "—"} · ${NODE_ID}`;
-      document.getElementById("info-time").textContent  = fmtTime(node.timestamp);
-      setUpdatedAt(node.timestamp);
-    }
-
-    if (detail) {
-      renderMFList(detail.memberships ?? {});
-      renderRules(detail.active_rules ?? []);
-    }
-
-    setConnectionBadge(true, document.getElementById("connection-badge"));
-  } catch(e) {
-    setConnectionBadge(false, document.getElementById("connection-badge"));
+    const node = nodes.map(normalizeNode).find((n) => n.node_id === NODE_ID);
+    if (node) renderNode(node, control);
+    renderTech(node, detail);
+    setConnectionBadge(true, $("connection-badge"));
+  } catch (e) {
+    setConnectionBadge(false, $("connection-badge"));
     showToast("Gagal memuat detail", e.message, "error");
   }
 }
 
-// ── Membership Degrees ─────────────────────────────────────────────────────
-function renderMFList(mfMap) {
-  const container = document.getElementById("mf-list");
+function renderNode(node, control) {
+  const dust = dustLevel(node.dust_index);
+  const sig = signalLevel(node.rssi, node.snr);
+  const scored = node.is_valid && node.condition_class;
+
+  $("rd-temp").textContent = fmtNumber(node.temperature);
+  $("rd-rh").textContent = fmtNumber(node.humidity);
+  $("rd-pressure").textContent = fmtNumber(node.pressure_hpa, 1);
+  $("rd-dust").innerHTML = `<span class="level-word ${dust.key}">${dust.label}</span>`;
+  $("rd-dust-sub").textContent = node.dust_index != null ? `${dust.pct} dari 100, dibandingkan rentang sensor` : "dibandingkan rentang sensor";
+  $("rd-class").innerHTML = scored
+    ? `<span class="level-word ${CLASS_KEY[node.condition_class] ?? ""}">${esc(node.condition_class)}</span>` : "—";
+  $("rd-signal").innerHTML = `<span class="level-word ${sig.key}">${sig.label}</span>`;
+
+  const determining = node.is_valid && control?.determining_node_id === NODE_ID && control?.fan_command_status !== "Kendali tidak tersedia";
+  $("info-need").textContent = node.is_valid ? needLabel(node.control_level, cfg) : "—";
+  $("info-determining").textContent = determining ? "Ya, kebutuhannya paling tinggi" : "Tidak";
+  $("info-valid").innerHTML = dataQualityPill(node);
+  $("info-time").textContent = fmtTime(node.timestamp);
+  $("info-zone").textContent = zoneName(node.zone_id);
+  $("page-sub").textContent = `${NODE_ID} · ${zoneName(node.zone_id)}`;
+  setUpdatedAt(node.timestamp);
+}
+
+// ── Detail teknis (untuk penguji) ──────────────────────────────────────────
+function renderTech(node, detail) {
+  const root = $("tech-root");
+  const prev = root.querySelector("details");
+  if (prev) techOpen = prev.open;
+
+  const rows = node ? [
+    ["Tegangan keluaran sensor debu (v0)", `${fmtNumber(node.dust_raw_voltage, 3)} V`],
+    ["Indeks debu ternormalisasi", fmtNumber(node.dust_index, 4)],
+    ["Skor kondisi (0–100)", fmtNumber(node.condition_score, 1)],
+    ["Tingkat kendali u (0–100)", fmtNumber(node.control_level, 1)],
+    ["RSSI", node.rssi != null ? `${node.rssi} dBm` : "—"],
+    ["SNR", node.snr != null ? `${fmtNumber(node.snr, 1)} dB` : "—"],
+    ["Status data (backend)", esc(node.data_status ?? "—")],
+  ] : [];
+  const table = `<div class="settings-list">${rows.map(([k, v]) => `<div class="settings-row"><span>${k}</span><strong>${v}</strong></div>`).join("")}</div>`;
+
   const labels = { temperature: "Suhu", humidity: "Kelembapan", dust: "Debu" };
-  const entries = Object.entries(mfMap).flatMap(([group, terms]) =>
-    Object.entries(terms ?? {}).map(([term, value]) => [`${labels[group] ?? group} · ${term}`, value])
-  );
-  if (!entries.length) { container.innerHTML = `<p style="color:var(--text-soft);font-size:.8rem;">Tidak ada data.</p>`; return; }
+  const mf = Object.entries(detail?.memberships ?? {}).flatMap(([g, terms]) =>
+    Object.entries(terms ?? {}).map(([t, v]) => `<div class="settings-row"><span>${labels[g] ?? g} · ${esc(t)}</span><strong>${(Number(v) * 100).toFixed(1)}%</strong></div>`));
+  const rules = (detail?.active_rules ?? []).filter((r) => (r.alpha ?? 0) > 0).sort((a, b) => b.alpha - a.alpha);
+  const rulesHtml = rules.length ? rules.map((r) =>
+    `<div class="settings-row"><span>Aturan ${esc(r.id)}: suhu ${esc(r.temp)}, kelembapan ${esc(r.rh)}, debu ${esc(r.dust)} → ${esc(r.condition_class)} · kendali ${esc(r.control_level)}</span><strong>${(r.alpha * 100).toFixed(1)}%</strong></div>`).join("")
+    : `<p style="color:var(--text-soft)">Tidak ada aturan aktif.</p>`;
 
-  container.innerHTML = entries.map(([key, val]) => {
-    const pct = (Number(val) * 100).toFixed(1);
-    return `
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.2rem;">
-          <span style="color:var(--text-soft);">${key.replace(/_/g," ")}</span>
-          <strong style="color:var(--text);">${pct}%</strong>
-        </div>
-        <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%;background:${val > 0.5 ? "#5912ec" : "#94a3b8"};"></div></div>
-      </div>`;
-  }).join("");
+  root.innerHTML = techDetails("nilai mentah, derajat keanggotaan, dan aturan fuzzy",
+    `${table}
+     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Derajat keanggotaan</h4>
+     <div class="settings-list">${mf.join("") || `<p style="color:var(--text-soft)">Tidak ada data.</p>`}</div>
+     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Aturan aktif (α &gt; 0)</h4>
+     <div class="settings-list">${rulesHtml}</div>`);
+  root.querySelector("details").open = techOpen;
 }
 
-// ── Active Rules ───────────────────────────────────────────────────────────
-function renderRules(rules) {
-  const container = document.getElementById("rules-container");
-  if (!rules.length) {
-    container.innerHTML = `<p style="color:var(--text-soft);font-size:.8rem;">Tidak ada aturan aktif.</p>`;
-    return;
-  }
-
-  const sorted = [...rules].sort((a, b) => (b.alpha ?? 0) - (a.alpha ?? 0));
-  container.innerHTML = `
-    <table class="rules-table">
-      <thead><tr><th>Aturan</th><th>Kondisi Masukan</th><th>Hasil</th><th>Kekuatan</th><th>Visual</th></tr></thead>
-      <tbody>
-        ${sorted.map((r, i) => {
-          const alpha = r.alpha ?? 0;
-          const pct   = (alpha * 100).toFixed(1);
-          return `
-            <tr class="${alpha > 0 ? "active-rule" : ""}">
-              <td style="color:var(--text-soft);">${r.id ?? i + 1}</td>
-              <td style="font-size:.75rem;">Suhu ${r.temp ?? "—"}, kelembapan ${r.rh ?? "—"}, debu ${r.dust ?? "—"}</td>
-              <td style="font-size:.75rem;">${r.condition_class ?? "—"} · Kendali ${r.control_level ?? "—"}</td>
-              <td style="font-weight:700;color:${alpha > 0 ? "var(--purple)" : "var(--text-soft)"};">${pct}%</td>
-              <td><div class="alpha-bar" style="width:${pct}%;max-width:80px;"></div></td>
-            </tr>`;
-        }).join("")}
-      </tbody>
-    </table>`;
-}
-
-// ── History Chart ──────────────────────────────────────────────────────────
+// ── Riwayat ────────────────────────────────────────────────────────────────
 async function fetchHistory() {
   try {
     const data = await apiFetch(`/api/nodes/${encodeURIComponent(NODE_ID)}/history?range=${currentRange}`);
     histData = Array.isArray(data) ? data : (data.history ?? []);
     drawHistoryChart();
-  } catch(e) {
-    document.getElementById("detail-chart-wrap").innerHTML = `<p style="color:var(--text-soft);padding:1rem;">Gagal memuat riwayat: ${e.message}</p>`;
+  } catch (e) {
+    $("detail-chart-wrap").innerHTML = `<div class="chart-empty">Gagal memuat riwayat: ${esc(e.message)}</div>`;
   }
 }
 
 function drawHistoryChart() {
-  const wrap = document.getElementById("detail-chart-wrap");
-  if (!histData.length) { wrap.innerHTML = `<p style="color:var(--text-soft);padding:1rem;font-size:.85rem;">Tidak ada data riwayat.</p>`; return; }
-
-  const W = 700, H = 160, PL = 40, PR = 10, PT = 10, PB = 30;
-  const values = histData.map(d => d[currentMetric] ?? 0).filter(v => v != null);
-  const times  = histData.map(d => new Date(d.timestamp));
-
-  const minV = Math.min(...values), maxV = Math.max(...values);
-  const rangeV = maxV - minV || 1;
-  const rangeT = (times[times.length - 1] - times[0]) || 1;
-
-  const toX = (t) => PL + ((t - times[0]) / rangeT) * (W - PL - PR);
-  const toY = (v) => PT + (1 - (v - minV) / rangeV) * (H - PT - PB);
-
-  const points = histData.map((d, i) => `${toX(times[i])},${toY(d[currentMetric] ?? minV)}`).join(" ");
-
-  // Grid lines
-  const gridLines = [0, 0.25, 0.5, 0.75, 1].map(f => {
-    const y = PT + f * (H - PT - PB);
-    const v = (maxV - f * rangeV).toFixed(1);
-    return `<line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}" class="h-grid-line"/>
-            <text x="${PL - 4}" y="${y + 4}" text-anchor="end" class="h-axis-label">${v}</text>`;
-  }).join("");
-
-  // Time labels
-  const step = Math.max(1, Math.floor(histData.length / 5));
-  const timeLabels = histData.filter((_, i) => i % step === 0).map((d, i) => {
-    const t = new Date(d.timestamp);
-    const x = toX(t);
-    const label = `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`;
-    return `<text x="${x}" y="${H - 2}" text-anchor="middle" class="h-axis-label">${label}</text>`;
-  }).join("");
-
-  wrap.innerHTML = `
-    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;">
-      ${gridLines}
-      <polyline points="${points}" fill="none" stroke="${COLORS.blue}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      ${histData.map((d, i) => `<circle cx="${toX(times[i])}" cy="${toY(d[currentMetric] ?? minV)}" r="3" fill="${COLORS.blue}"/>`).join("")}
-      ${timeLabels}
-    </svg>`;
+  const m = METRICS[currentMetric], wrap = $("detail-chart-wrap"), t1 = Date.now();
+  $("hist-title").textContent = `Riwayat ${m.title}, ${RANGE_TEXT[currentRange]} terakhir`;
+  const scale = m.scale ?? 1;
+  const pts = thin(histData
+    .map((d) => ({ t: parseTs(d.timestamp), v: d[currentMetric] == null ? null : d[currentMetric] * scale }))
+    .filter((p) => Number.isFinite(p.t)));
+  const items = drawChart(wrap, {
+    series: [{ name: nodeName(NODE_ID), color: PALETTE[0], width: 2, pts }],
+    t0: t1 - RANGE_MS[currentRange], t1, fixed: m.fixed, floor: m.floor, dec: m.dec, label: m.label,
+  });
+  if (!items) wrap.innerHTML = `<div class="chart-empty">Belum ada data pada rentang waktu ini.</div>`;
 }
 
-// ── Tab Listeners ──────────────────────────────────────────────────────────
-document.getElementById("hist-metric-tabs").addEventListener("click", e => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-  document.querySelectorAll("#hist-metric-tabs button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  currentMetric = btn.dataset.m;
-  drawHistoryChart();
-});
+function bindTabs(sel, attr, onPick) {
+  $(sel).addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    $(sel).querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
+    onPick(btn.dataset[attr]);
+  });
+}
+bindTabs("hist-metric-tabs", "m", (v) => { currentMetric = v; drawHistoryChart(); });
+bindTabs("hist-range-tabs", "r", (v) => { currentRange = v; fetchHistory(); });
+let resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawHistoryChart, 150); });
 
-document.getElementById("hist-range-tabs").addEventListener("click", e => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-  document.querySelectorAll("#hist-range-tabs button").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  currentRange = btn.dataset.r;
-  fetchHistory();
-});
-
-// ── Init ───────────────────────────────────────────────────────────────────
 if (NODE_ID) {
   startPolling(fetchLatest, 10000);
   fetchHistory();
+  setInterval(() => { if (!document.hidden) fetchHistory(); }, 30000);
 }

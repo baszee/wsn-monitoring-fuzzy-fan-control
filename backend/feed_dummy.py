@@ -3,7 +3,7 @@ Memakai generator yang sama dengan backfill_dummy.py, jadi menyambung mulus deng
 
   python backend/feed_dummy.py                      # 3 node, tiap 10 detik
   python backend/feed_dummy.py --interval 3         # lebih cepat untuk demo
-  python backend/feed_dummy.py --silent NODE-03     # NODE-03 tidak mengirim (uji "Data lama")
+  python backend/feed_dummy.py --silent NODE-02     # NODE-02 tidak mengirim (uji "Data lama")
 """
 import argparse
 import os
@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from dummy_profile import PROFILE, Generator
+from app import settings as ops
 from app.core.database import SessionLocal
 from app.models import MockReceiverValidData
 
@@ -30,7 +31,7 @@ try:
         now = datetime.now(timezone.utc)
         local = now.astimezone()
         hour = local.hour + local.minute / 60 + local.second / 3600
-        for n in PROFILE:
+        for n in [x for x in ops.ZONE_NODE_IDS if x in PROFILE]:
             if n in args.silent:
                 continue
             t, rh, d = gen.sample(n, hour, args.interval)

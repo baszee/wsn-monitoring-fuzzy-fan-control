@@ -47,7 +47,7 @@ def ensure_demo_snapshot(
             return False
 
     hour = _virtual_hour(now, ops.DEMO_CYCLE_SECONDS)
-    for node_id in PROFILE:
+    for node_id in [n for n in ops.ZONE_NODE_IDS if n in PROFILE]:
         temperature, humidity, dust = generator.sample(node_id, hour, interval)
         db.add(MockReceiverValidData(
             node_id=node_id,

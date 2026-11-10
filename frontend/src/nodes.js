@@ -3,56 +3,55 @@
  */
 import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtRelative, fmtNumber, conditionClass, conditionLabel, startPolling,
-         normalizeNode, normalizeControl, dataQuality, dataQualityPill } from "/src/shared.js?v=20261106-3";
+         fmtRelative, fmtNumber, startPolling, normalizeNode, normalizeControl,
+         dataQuality, dataQualityPill, nodeName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-1";
 
 buildSidebar("nodes");
 
 // ── State ──────────────────────────────────────────────────────────────────
 let nodesData  = [];
 let controlData = null;
+let cfg = null;
+
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+const CLASS_KEY = { "Baik": "good", "Perlu Perhatian": "warn", "Buruk": "bad" };
 
 // ── Render Helpers ─────────────────────────────────────────────────────────
-function condPill(cls) {
-  return `<span class="pill-${cls}">${conditionLabel(cls)}</span>`;
+function condPill(node) {
+  if (!node.is_valid || !node.condition_class) return `<span class="pill-unknown">Belum dinilai</span>`;
+  return `<span class="pill-${CLASS_KEY[node.condition_class] ?? "unknown"}">${esc(node.condition_class)}</span>`;
 }
 
 function renderNodeCard(node) {
-  const isDetermining = controlData?.control_node_id === node.node_id;
-  const cls = conditionClass(node.condition_score);
+  const isDetermining = controlData?.control_node_id === node.node_id && node.is_valid;
+  const cls = node.is_valid ? (CLASS_KEY[node.condition_class] ?? "unknown") : "unknown";
   const uiPct = node.control_level != null ? Math.round(node.control_level) : null;
-  const dust  = node.dust_index != null ? node.dust_index : null;
+  const dust = dustLevel(node.dust_index);
+  const sig = signalLevel(node.rssi, node.snr);
   const quality = dataQuality(node);
 
   return `
-    <div class="node-card ${isDetermining ? "determining" : ""}" data-node="${node.node_id}">
+    <div class="node-card ${isDetermining ? "determining" : ""}" data-node="${esc(node.node_id)}">
       <div class="node-card-head">
-        <span class="node-id-badge">${node.node_id}</span>
-        ${isDetermining ? `<span class="node-determining-tag">${icon("target")} Penentu</span>` : ""}
+        <span class="node-id-badge">${esc(nodeName(node.node_id))}</span>
+        <span class="node-code">${esc(node.node_id)}</span>
+        ${isDetermining ? `<span class="node-determining-tag" title="Kipas mengikuti sensor dengan kebutuhan tertinggi">${icon("target")} Diikuti kipas</span>` : ""}
         <span style="margin-left:auto;font-size:.72rem;color:var(--text-soft);">${fmtRelative(node.timestamp)}</span>
       </div>
-      <div class="node-params">
-        <div class="node-param">
-          <span>Suhu</span>
-          <strong>${fmtNumber(node.temperature)}°</strong>
-        </div>
-        <div class="node-param">
-          <span>Kelembapan</span>
-          <strong>${fmtNumber(node.humidity)}%</strong>
-        </div>
-        <div class="node-param">
-          <span>Indeks Debu</span>
-          <strong>${dust != null ? fmtNumber(dust, 3) : "—"}</strong>
-        </div>
+      <div class="node-params node-params-4">
+        <div class="node-param"><span>Suhu</span><strong>${fmtNumber(node.temperature)} °C</strong></div>
+        <div class="node-param"><span>Kelembapan</span><strong>${fmtNumber(node.humidity, 0)}%</strong></div>
+        <div class="node-param"><span>Debu</span><strong class="level-word ${dust.key}">${dust.label}</strong></div>
+        <div class="node-param"><span>Tekanan udara</span><strong>${node.pressure_hpa != null ? `${fmtNumber(node.pressure_hpa, 0)} hPa` : "—"}</strong></div>
       </div>
       <div class="node-condition">
         <span class="cond-dot cond-${cls}"></span>
-        <span>${conditionLabel(cls)}</span>
-        ${node.condition_score != null ? `<span style="margin-left:auto;font-size:.72rem;color:var(--text-soft);">Skor ${fmtNumber(node.condition_score)}</span>` : ""}
+        <span>${node.is_valid && node.condition_class ? esc(node.condition_class) : "Belum dinilai"}</span>
+        <span style="margin-left:auto;font-size:.72rem;color:var(--text-soft);">Sinyal <b class="level-word ${sig.key}">${sig.label}</b></span>
       </div>
-      ${uiPct != null ? `
+      ${uiPct != null && node.is_valid ? `
       <div class="node-control-bar">
-        <div class="bar-label"><span>Tingkat Kendali</span><strong>${fmtNumber(node.control_level)}</strong></div>
+        <div class="bar-label"><span>Kebutuhan kipas</span><strong>${needLabel(node.control_level, cfg)}</strong></div>
         <div class="mini-bar"><div class="mini-bar-fill" style="width:${uiPct}%"></div></div>
       </div>` : ""}
       <div class="node-footer">
@@ -63,17 +62,18 @@ function renderNodeCard(node) {
 }
 
 function renderNodeRow(node) {
-  const isDetermining = controlData?.control_node_id === node.node_id;
-  const cls = conditionClass(node.condition_score);
+  const isDetermining = controlData?.control_node_id === node.node_id && node.is_valid;
+  const dust = dustLevel(node.dust_index);
+  const sig = signalLevel(node.rssi, node.snr);
   return `
     <tr ${isDetermining ? 'style="background:rgba(89,18,236,.05);"' : ""}>
-      <td><strong>${node.node_id}</strong>${isDetermining ? ` ${icon("target")}` : ""}</td>
+      <td><strong>${esc(nodeName(node.node_id))}</strong>${isDetermining ? ` ${icon("target")}` : ""}</td>
+      <td>${condPill(node)}</td>
       <td>${fmtNumber(node.temperature)}</td>
       <td>${fmtNumber(node.humidity)}</td>
-      <td>${node.dust_index != null ? fmtNumber(node.dust_index, 3) : "—"}</td>
-      <td>${node.condition_score != null ? fmtNumber(node.condition_score) : "—"}</td>
-      <td>${condPill(cls)}</td>
-      <td>${node.control_level != null ? fmtNumber(node.control_level) : "—"}</td>
+      <td><span class="level-word ${dust.key}">${dust.label}</span></td>
+      <td>${fmtNumber(node.pressure_hpa, 1)}</td>
+      <td><span class="level-word ${sig.key}">${sig.label}</span></td>
       <td>${dataQualityPill(node)}</td>
       <td style="font-size:.72rem;color:var(--text-soft);">${fmtRelative(node.timestamp)}</td>
       <td><a href="/dashboard/nodes/detail.html?node=${encodeURIComponent(node.node_id)}" style="color:var(--blue);font-weight:600;font-size:.8rem;">Detail ${icon("arrow-right")}</a></td>
@@ -86,14 +86,15 @@ function renderKPIs() {
   document.getElementById("kpi-active").textContent = active;
   document.getElementById("kpi-valid").textContent  = valid;
   document.getElementById("kpi-determining").textContent =
-    controlData && controlData.fan_command_status !== "Kendali tidak tersedia" ? (controlData.control_node_id ?? "—") : "—";
+    controlData && controlData.fan_command_status !== "Kendali tidak tersedia" && controlData.control_node_id
+      ? nodeName(controlData.control_node_id) : "—";
 
-  // Worst condition across valid nodes
-  const scores = nodesData.filter(n => n.is_valid && n.condition_score != null).map(n => n.condition_score);
-  if (scores.length) {
-    const worst = Math.max(...scores);
-    const cls = conditionClass(worst);
-    document.getElementById("kpi-condition").innerHTML = condPill(cls);
+  // Kondisi ruangan = kondisi terburuk di antara sensor yang datanya terbaru.
+  const order = ["Baik", "Perlu Perhatian", "Buruk"];
+  const classes = nodesData.filter(n => n.is_valid && n.condition_class).map(n => n.condition_class);
+  if (classes.length) {
+    const worst = classes.reduce((a, c) => (order.indexOf(c) > order.indexOf(a) ? c : a), "Baik");
+    document.getElementById("kpi-condition").innerHTML = `<span class="pill-${CLASS_KEY[worst]}">${worst}</span>`;
   } else {
     document.getElementById("kpi-condition").textContent = "—";
   }
@@ -105,7 +106,7 @@ function render() {
   const tbody = document.getElementById("nodes-table-full");
 
   if (!nodesData.length) {
-    grid.innerHTML  = `<div class="empty-state"><p>Belum ada data node.</p></div>`;
+    grid.innerHTML  = `<div class="empty-state"><p>Belum ada data sensor.</p></div>`;
     tbody.innerHTML = `<tr><td colspan="10" class="table-loading">Tidak ada data.</td></tr>`;
     return;
   }
@@ -113,7 +114,6 @@ function render() {
   grid.innerHTML  = nodesData.map(renderNodeCard).join("");
   tbody.innerHTML = nodesData.map(renderNodeRow).join("");
 
-  // Latest update time
   const latest = nodesData.reduce((a, n) => (!a || n.timestamp > a) ? n.timestamp : a, null);
   setUpdatedAt(latest);
 }
@@ -125,6 +125,7 @@ async function fetchAll() {
       apiFetch("/api/nodes/latest"),
       apiFetch("/api/control/latest").catch(() => null),
     ]);
+    if (!cfg) cfg = await apiFetch("/api/config/active").catch(() => null);
     nodesData   = (Array.isArray(nodes) ? nodes : (nodes.nodes ?? [])).map(normalizeNode);
     controlData = ctrl ? normalizeControl(ctrl) : null;
     setConnectionBadge(true, document.getElementById("connection-badge"));

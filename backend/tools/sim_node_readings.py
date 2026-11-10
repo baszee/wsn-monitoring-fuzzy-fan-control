@@ -63,7 +63,7 @@ def main() -> None:
     parser.add_argument("--init", action="store_true", help="buat tabel node_readings pada SQLite lokal")
     parser.add_argument("--once", action="store_true", help="tulis satu putaran lalu berhenti")
     parser.add_argument("--interval", type=float, default=5.0)
-    parser.add_argument("--nodes", type=int, nargs="+", default=[1, 2, 3])
+    parser.add_argument("--nodes", type=int, nargs="+", default=[1, 2])
     args = parser.parse_args()
 
     if args.init:

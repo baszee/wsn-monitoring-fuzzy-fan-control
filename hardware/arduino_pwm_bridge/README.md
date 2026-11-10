@@ -58,3 +58,11 @@ Sebelum mengaktifkan factory pada web, bridge dapat diuji terpisah:
 ```
 
 Alat uji selalu mengirim 0% dan menutup COM13 ketika selesai atau dihentikan.
+
+## Hasil uji fisik
+
+| Tanggal | Perintah | Hasil |
+|---|---|---|
+| 11 Nov 2026 | PWM 0% | Fan ID-COOLING XF-120-K **tidak berhenti**; tetap berputar pada putaran minimum. |
+
+Akibatnya, status backend `Mati` ditampilkan di dashboard sebagai **"Putaran minimum"**. Bila kondisi benar-benar mati dibutuhkan, diperlukan pemutus daya 12 V terpisah (MOSFET/relay). `D_min` dan `Delta_D_update` masih perlu diuji.

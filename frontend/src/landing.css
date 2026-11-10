@@ -247,7 +247,7 @@ ol, ul { list-style: none; }
 .pv-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); font-size: 12.5px; font-weight: 600; }
 .pv-status i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .pv-body { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 18px; align-items: stretch; }
-.pv-nodes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pv-nodes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .pv-node { position: relative; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
 .pv-node.determining { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(89, 18, 236, .1); }
 .pv-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }

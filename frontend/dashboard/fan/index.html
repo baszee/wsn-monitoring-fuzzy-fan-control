@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fan &amp; Kendali — WSNova</title>
+  <title>Kipas — WSNova</title>
   <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
-  <link rel="stylesheet" href="/src/site.css?v=20261106-3"/>
-  <link rel="stylesheet" href="/src/pages.css?v=20261106-3"/>
-  <link rel="stylesheet" href="/src/ui.css?v=20261106-3" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261111-1" />
+  <link rel="stylesheet" href="/src/site.css?v=20261111-1"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261111-1"/>
+  <link rel="stylesheet" href="/src/ui.css?v=20261111-1" />
 </head>
 <body class="dashboard-body">
 <div class="p2-shell">
@@ -20,7 +20,7 @@
     <header class="p2-topbar">
       <div class="p2-topbar-title">
         <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
-        <div><h1>Fan &amp; Kendali</h1><p id="zone-label">Perintah PWM</p></div>
+        <div><h1>Kipas</h1><p id="zone-label">Kecepatan kipas dan cara menentukannya</p></div>
       </div>
       <div class="p2-topbar-right">
         <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa</span></div>
@@ -32,63 +32,49 @@
     <div class="page-body">
       <div class="fan-grid">
         <div class="fan-visual-card" id="fan-card">
-          <div class="decision-head" style="width:100%"><h3 style="margin:0">Perintah fan</h3><span class="status-pill" id="fan-status">Memuat</span></div>
+          <div class="decision-head" style="width:100%"><h3 style="margin:0">Kipas ruangan</h3><span class="status-pill" id="fan-status">Memuat</span></div>
           <div class="fan-stage"><canvas id="fan-canvas" role="img" aria-label="Ilustrasi kipas"></canvas></div>
-          <div class="pwm-readout"><span>Perintah PWM</span><strong id="pwm-value">—</strong></div>
+          <div class="pwm-readout"><span>Kecepatan kipas</span><strong id="pwm-value">—</strong></div>
           <p class="decision-note" id="decision-note"></p>
-          <p class="fan-label-badge">Ilustrasi perintah PWM, bukan RPM</p>
+          <p class="fan-label-badge">Persen adalah perintah kecepatan, bukan putaran yang diukur</p>
           <div class="fan-stats">
-            <div class="fan-stat"><span>Tingkat kendali zona</span><strong id="stat-uzona">—</strong></div>
-            <div class="fan-stat"><span>Node penentu</span><strong id="stat-node">—</strong></div>
+            <div class="fan-stat"><span>Kebutuhan kipas</span><strong id="stat-uzona">—</strong></div>
+            <div class="fan-stat"><span>Mengikuti</span><strong id="stat-node">—</strong></div>
             <div class="fan-stat"><span>Mode</span><strong id="stat-mode">—</strong></div>
-            <div class="fan-stat"><span>Konfigurasi</span><strong id="stat-config">—</strong></div>
+            <div class="fan-stat"><span>Diperbarui</span><strong id="stat-time">—</strong></div>
           </div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:1rem;">
           <div class="fan-chain-card">
-            <h3>Dari data node ke perintah PWM</h3>
+            <h3>Bagaimana kecepatan kipas ditentukan</h3>
             <div class="chain-steps" id="chain-steps"></div>
           </div>
 
-          <div class="panel-full">
-            <h3>Siklus terakhir</h3>
-            <div class="settings-list">
-              <div class="settings-row"><span>ID siklus</span><strong id="det-cycle">—</strong></div>
-              <div class="settings-row"><span>Keputusan terakhir disimpan</span><strong id="det-time">—</strong></div>
-              <div class="settings-row"><span>Terakhir dievaluasi</span><strong id="det-eval">—</strong></div>
-              <div class="settings-row" id="row-auto" hidden><span>PWM otomatis (pembanding)</span><strong id="det-auto">—</strong></div>
-              <div class="settings-row"><span>Batas kesegaran data</span><strong id="det-fresh">—</strong></div>
-            </div>
-          </div>
-
           <div class="panel-full control-safety-card" id="mode-card">
-            <div class="control-safety-head"><div><h3>Mode kendali</h3></div><span class="pill-good" id="mode-pill">Otomatis</span></div>
-            <p id="mode-text">Perintah fan dihitung otomatis dari data node.</p>
+            <div class="control-safety-head"><div><h3>Mode kipas</h3></div><span class="pill-good" id="mode-pill">Otomatis</span></div>
+            <p id="mode-text">Kecepatan kipas diatur otomatis dari data sensor.</p>
             <div class="admin-controls" id="admin-controls" hidden>
-              <label class="manual-label" for="manual-slider"><span>PWM manual</span><strong id="manual-value">0%</strong></label>
+              <label class="manual-label" for="manual-slider"><span>Kecepatan manual</span><strong id="manual-value">0%</strong></label>
               <input type="range" id="manual-slider" min="0" max="100" step="1" value="0" />
+              <p class="plain-note" style="margin:0;">Pada 0% kipas tetap berputar pelan. Kipas ini tidak berhenti total lewat pengaturan kecepatan.</p>
               <div class="manual-actions">
                 <button class="button button-small button-primary" type="button" id="manual-apply">Terapkan</button>
                 <button class="button button-small button-quiet" type="button" id="manual-auto" hidden>Kembali ke Otomatis</button>
               </div>
             </div>
-            <p class="admin-hint" id="admin-hint"><a href="/dashboard/login/">Masuk sebagai admin</a> untuk mengubah mode kendali.</p>
+            <p class="admin-hint" id="admin-hint"><a href="/dashboard/login/">Masuk sebagai admin</a> untuk mengatur kecepatan secara manual.</p>
           </div>
         </div>
       </div>
 
-      <div class="panel-full">
-        <h3>Aturan fuzzy aktif pada node penentu</h3>
-        <p style="font-size:.78rem;color:var(--text-soft);margin:0 0 .75rem;">Hanya aturan dengan derajat pemicu di atas 0, diurutkan dari yang terbesar.</p>
-        <div id="determining-rules"><p style="color:var(--text-soft);font-size:.82rem;">Memuat aturan...</p></div>
-      </div>
+      <div id="tech-root"></div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"><span></span><div><strong id="toast-title">Info</strong><p id="toast-message"></p></div></div>
-<script type="module" src="/src/fan.js?v=20261106-3"></script>
+<script type="module" src="/src/fan.js?v=20261111-1"></script>
   <script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
 </body>
 </html>

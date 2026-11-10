@@ -10,8 +10,8 @@
     <link rel="apple-touch-icon" href="/src/brand/apple-touch-icon.png" />
     <link rel="preload" href="/src/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/src/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/src/tokens.css?v=20261106-3" />
-    <link rel="stylesheet" href="/src/landing.css?v=20261106-3" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261111-1" />
+    <link rel="stylesheet" href="/src/landing.css?v=20261111-1" />
     <script>
       /* Penanda untuk reveal saat scroll. Bila skrip utama gagal, konten tetap ditampilkan. */
       document.documentElement.classList.add("js");
@@ -238,10 +238,10 @@
             <p class="lead">Setiap node dinilai sendiri. Hasilnya digabung menjadi satu perintah untuk kipas.</p>
           </div>
           <ol class="timeline">
-            <li class="reveal"><b>Bacaan masuk</b><span>Suhu, kelembapan, dan debu dari tiap node.</span></li>
-            <li class="reveal" style="--d:70ms"><b>Dinilai per node</b><span>Setiap node mendapat skor, satu dari tiga kondisi, dan tingkat kendali.</span></li>
-            <li class="reveal" style="--d:140ms"><b>Yang tertinggi menentukan</b><span>Tingkat kendali tertinggi menjadi kendali untuk satu zona.</span></li>
-            <li class="reveal" style="--d:210ms"><b>Menjadi perintah kipas</b><span>Kendali zona diubah menjadi daya kipas (PWM).</span></li>
+            <li class="reveal"><b>Bacaan masuk</b><span>Suhu, kelembapan, dan debu dari tiap sensor.</span></li>
+            <li class="reveal" style="--d:70ms"><b>Dinilai per sensor</b><span>Setiap sensor dinilai kondisinya, sekaligus seberapa perlu kipas dinyalakan.</span></li>
+            <li class="reveal" style="--d:140ms"><b>Yang paling butuh diikuti</b><span>Kipas mengikuti sensor yang paling membutuhkan kipas.</span></li>
+            <li class="reveal" style="--d:210ms"><b>Menjadi kecepatan kipas</b><span>Kebutuhan itu diubah menjadi kecepatan kipas dalam persen.</span></li>
           </ol>
         </div>
 
@@ -267,35 +267,31 @@
             <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-gauge"/></svg></span><h3>Klasifikasi kondisi</h3><p>Setiap node dinilai Baik, Perlu Perhatian, atau Buruk.</p></article>
             <article class="card feature reveal" style="--d:140ms"><span class="ico"><svg class="ic"><use href="#i-clock"/></svg></span><h3>Riwayat data dan keputusan</h3><p>Telusuri bacaan sensor dan keputusan kendali dari waktu ke waktu.</p></article>
             <article class="card feature reveal"><span class="ico"><svg class="ic"><use href="#i-repeat"/></svg></span><h3>Kendali Otomatis dan Manual</h3><p>Mode Otomatis mengikuti penilaian sistem. Mode Manual hanya tersedia bagi pengguna berwenang, dan penilaian tetap dihitung.</p></article>
-            <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-target"/></svg></span><h3>Analisis fuzzy</h3><p>Lihat bagaimana sebuah bacaan diubah menjadi kondisi dan tingkat kendali.</p></article>
+            <article class="card feature reveal" style="--d:70ms"><span class="ico"><svg class="ic"><use href="#i-target"/></svg></span><h3>Analisis fuzzy</h3><p>Halaman teknis: lihat bagaimana bacaan sensor dinilai menjadi kondisi dan kebutuhan kipas.</p></article>
             <article class="card feature reveal" style="--d:140ms"><span class="ico"><svg class="ic"><use href="#i-flask"/></svg></span><h3>Simulasi</h3><p>Coba nilai bayangan untuk melihat hasil penilaian. Simulasi tidak menjalankan kipas.</p></article>
           </div>
 
           <div class="preview reveal" aria-labelledby="pv-title">
             <div class="pv-head">
               <h3 id="pv-title">Contoh tampilan ringkasan</h3>
-              <p class="pv-status"><i aria-hidden="true"></i>Data demonstrasi · 3 node contoh · Mode Otomatis</p>
+              <p class="pv-status"><i aria-hidden="true"></i>Data demonstrasi · 2 sensor contoh · Mode Otomatis</p>
             </div>
             <div class="pv-body">
               <ul class="pv-nodes">
                 <li class="pv-node">
-                  <div class="pv-top"><b>NODE-01</b><span class="pv-tag ok">Baik</span></div>
-                  <dl><div><dt>Suhu</dt><dd>28,4 °C</dd></div><div><dt>Kelembapan</dt><dd>61 %</dd></div><div><dt>Indeks debu</dt><dd>0,24</dd></div></dl>
+                  <div class="pv-top"><b>Sensor 1</b><span class="pv-tag ok">Baik</span></div>
+                  <dl><div><dt>Suhu</dt><dd>28,4 °C</dd></div><div><dt>Kelembapan</dt><dd>61 %</dd></div><div><dt>Debu</dt><dd>Rendah</dd></div><div><dt>Tekanan</dt><dd>1009 hPa</dd></div></dl>
                 </li>
                 <li class="pv-node determining">
-                  <div class="pv-top"><b>NODE-02</b><span class="pv-tag warn">Perlu Perhatian</span></div>
-                  <span class="pv-decider"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Penentu</span>
-                  <dl><div><dt>Suhu</dt><dd>31,2 °C</dd></div><div><dt>Kelembapan</dt><dd>74 %</dd></div><div><dt>Indeks debu</dt><dd>0,58</dd></div></dl>
-                </li>
-                <li class="pv-node">
-                  <div class="pv-top"><b>NODE-03</b><span class="pv-tag ok">Baik</span></div>
-                  <dl><div><dt>Suhu</dt><dd>29,0 °C</dd></div><div><dt>Kelembapan</dt><dd>55 %</dd></div><div><dt>Indeks debu</dt><dd>0,31</dd></div></dl>
+                  <div class="pv-top"><b>Sensor 2</b><span class="pv-tag warn">Perlu Perhatian</span></div>
+                  <span class="pv-decider"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Diikuti kipas</span>
+                  <dl><div><dt>Suhu</dt><dd>31,2 °C</dd></div><div><dt>Kelembapan</dt><dd>74 %</dd></div><div><dt>Debu</dt><dd>Sedang</dd></div><div><dt>Tekanan</dt><dd>1008 hPa</dd></div></dl>
                 </li>
               </ul>
               <dl class="pv-side">
-                <div><dt>Kondisi zona</dt><dd class="warn">Perlu Perhatian</dd></div>
-                <div><dt>Node penentu</dt><dd class="decider">NODE-02</dd></div>
-                <div><dt>PWM kipas</dt><dd class="pwm">65 %</dd></div>
+                <div><dt>Kondisi ruangan</dt><dd class="warn">Perlu Perhatian</dd></div>
+                <div><dt>Kipas mengikuti</dt><dd class="decider">Sensor 2</dd></div>
+                <div><dt>Kecepatan kipas</dt><dd class="pwm">65 %</dd></div>
                 <div><dt>Pembaruan</dt><dd class="muted">10 detik lalu</dd></div>
               </dl>
             </div>
@@ -380,8 +376,8 @@
             <h3>Dashboard</h3>
             <ul>
               <li><a href="/dashboard/">Ringkasan</a></li>
-              <li><a href="/dashboard/nodes/">Node Sensor</a></li>
-              <li><a href="/dashboard/fan/">Fan &amp; Kendali</a></li>
+              <li><a href="/dashboard/nodes/">Sensor</a></li>
+              <li><a href="/dashboard/fan/">Kipas</a></li>
               <li><a href="/dashboard/history/">Riwayat</a></li>
               <li><a href="/dashboard/fuzzy/">Analisis Fuzzy</a></li>
               <li><a href="/dashboard/simulation/">Simulasi</a></li>
@@ -404,6 +400,6 @@
       </div>
     </footer>
 
-    <script type="module" src="/src/landing.js?v=20261106-3"></script>
+    <script type="module" src="/src/landing.js?v=20261111-1"></script>
   </body>
 </html>

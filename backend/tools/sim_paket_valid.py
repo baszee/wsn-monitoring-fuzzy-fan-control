@@ -78,7 +78,7 @@ def main() -> None:
                         help="izinkan menulis ke PostgreSQL (hanya database uji milik sendiri)")
     parser.add_argument("--once", action="store_true", help="tulis satu putaran lalu berhenti")
     parser.add_argument("--interval", type=float, default=10.0, help="detik antarputaran (default 10)")
-    parser.add_argument("--nodes", type=int, nargs="+", default=[1, 2, 3])
+    parser.add_argument("--nodes", type=int, nargs="+", default=[1, 2])
     parser.add_argument("--mode", choices=("sensor", "uji"), default="sensor", help="mode sesi_uji")
     parser.add_argument("--label", default="", help="keterangan tambahan pada label sesi")
     parser.add_argument("--incomplete-every", type=int, default=0,

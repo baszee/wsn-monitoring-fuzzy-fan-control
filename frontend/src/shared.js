@@ -4,26 +4,26 @@
  */
 
 
-import { COLORS } from "/src/theme.js?v=20261106-3";
+import { COLORS } from "/src/theme.js?v=20261111-1";
 import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
 // ─── Konfigurasi Sidebar ───────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { group: "Monitoring", items: [
+  { group: "Pemantauan", items: [
     { id: "ringkasan",   label: "Ringkasan",        href: "/dashboard/",            icon: "grid" },
-    { id: "nodes",       label: "Node Sensor",      href: "/dashboard/nodes/",      icon: "radio" },
-    { id: "fan",         label: "Fan & Kendali",    href: "/dashboard/fan/",        icon: "fan" },
+    { id: "nodes",       label: "Sensor",           href: "/dashboard/nodes/",      icon: "radio" },
+    { id: "fan",         label: "Kipas",            href: "/dashboard/fan/",        icon: "fan" },
     { id: "riwayat",     label: "Riwayat",          href: "/dashboard/history/",    icon: "bars" },
   ]},
-  { group: "Analisis", items: [
+  // Halaman berikut berisi rumus dan parameter metode, untuk penguji/pengembang.
+  { group: "Detail teknis", items: [
     { id: "fuzzy",       label: "Analisis Fuzzy",   href: "/dashboard/fuzzy/",      icon: "activity" },
     { id: "simulasi",    label: "Simulasi What-If", href: "/dashboard/simulation/", icon: "flask" },
-  ]},
-  { group: "Sistem", items: [
     { id: "konfigurasi", label: "Konfigurasi",      href: "/dashboard/settings/",   icon: "settings" },
   ]},
 ];
+const TECH_PAGES = new Set(["fuzzy", "simulasi", "konfigurasi"]);
 
 /**
  * Bangun HTML sidebar dan injeksikan ke elemen target.
@@ -54,7 +54,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
     </div>
 
     <div class="sidebar-zone">
-      <span>Zona aktif</span>
+      <span>Area pantau</span>
       <strong id="sidebar-zone-name"><i></i> Zona</strong>
       <small id="sidebar-zone-count">Memuat...</small>
     </div>
@@ -71,6 +71,7 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
 
   _initAdminLink();
   _initModeBanner();
+  if (TECH_PAGES.has(activeId)) _initTechNotice();
 
   // Update jumlah node dan badge secara dinamis dari API
   apiFetch("/api/nodes/latest")
@@ -78,10 +79,10 @@ export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
       const list = Array.isArray(nodes) ? nodes : (nodes.nodes ?? []);
       const count = list.length;
       const zoneEl = root.querySelector("#sidebar-zone-count");
-      if (zoneEl) zoneEl.textContent = `${count} node terdaftar`;
+      if (zoneEl) zoneEl.textContent = `${count} sensor terpasang`;
       const zoneNameEl = root.querySelector("#sidebar-zone-name");
       if (zoneNameEl && list[0]?.zone_id) {
-        zoneNameEl.innerHTML = `<i></i> ${list[0].zone_id}`;
+        zoneNameEl.innerHTML = `<i></i> ${zoneName(list[0].zone_id)}`;
       }
       const badgeEl = root.querySelector("#sidebar-node-badge");
       if (badgeEl && count > 0) {
@@ -182,6 +183,17 @@ async function _initAdminLink() {
   link.addEventListener("click", (e) => { e.preventDefault(); logoutAdmin(); });
 }
 
+// ─── Penanda halaman teknis ───────────────────────────────────────────────
+function _initTechNotice() {
+  const host = document.querySelector(".page-body, .dashboard-content");
+  if (!host || document.getElementById("tech-notice")) return;
+  const el = document.createElement("div");
+  el.id = "tech-notice";
+  el.className = "tech-notice";
+  el.innerHTML = `<strong>Halaman teknis</strong><span>Berisi rumus dan parameter metode fuzzy untuk penguji dan pengembang. Untuk melihat kondisi ruangan, buka <a href="/dashboard/">Ringkasan</a>.</span>`;
+  host.insertBefore(el, host.firstChild);
+}
+
 // ─── Banner MODE MANUAL (semua halaman dashboard) ──────────────────────────
 function _initModeBanner() {
   const render = (c) => {
@@ -196,7 +208,7 @@ function _initModeBanner() {
       el.setAttribute("role", "status");
       host.insertBefore(el, host.firstChild);
     }
-    el.innerHTML = `<strong>MODE MANUAL</strong><span>Perintah fan ditentukan admin. PWM otomatis saat ini ${fmtNumber(c.auto_pwm_percent, 1)}%.</span>`;
+    el.innerHTML = `<strong>MODE MANUAL</strong><span>Kecepatan kipas sedang diatur langsung oleh admin, bukan otomatis dari sensor.</span>`;
   };
   const tick = async () => { try { render(await apiFetch("/api/control/latest")); } catch { /* abaikan */ } };
   tick();
@@ -299,19 +311,88 @@ export function normalizeControl(control = {}) {
 // Status data dihitung backend (FRESHNESS_SECONDS). Frontend hanya menampilkan.
 export function dataQuality(node = {}) {
   const table = {
-    "Valid":          { key: "valid",   className: "pill-good" },
-    "Data lama":      { key: "stale",   className: "pill-warn" },
-    "Masukan tidak lengkap": { key: "incomplete", className: "pill-warn" },
-    "Tidak valid":    { key: "invalid", className: "pill-bad" },
-    "Tidak ada data": { key: "none",    className: "pill-unknown" },
+    "Valid":          { key: "valid",   className: "pill-good",    text: "Terbaru" },
+    "Data lama":      { key: "stale",   className: "pill-warn",    text: "Terlambat" },
+    "Masukan tidak lengkap": { key: "incomplete", className: "pill-warn", text: "Belum lengkap" },
+    "Tidak valid":    { key: "invalid", className: "pill-bad",     text: "Tidak terbaca" },
+    "Tidak ada data": { key: "none",    className: "pill-unknown", text: "Belum ada data" },
   };
-  const label = node.data_status ?? "Tidak ada data";
-  return { ...(table[label] ?? table["Tidak ada data"]), label };
+  const status = node.data_status ?? "Tidak ada data";
+  const row = table[status] ?? table["Tidak ada data"];
+  // label = kata untuk umum; status = istilah asli dari backend.
+  return { ...row, label: row.text, status };
 }
 
 export function dataQualityPill(node) {
   const quality = dataQuality(node);
   return `<span class="${quality.className}">${quality.label}</span>`;
+}
+
+
+// ─── Bahasa umum untuk pengunjung dashboard ────────────────────────────────
+// Dashboard dibaca siapa saja, bukan hanya penguji. Istilah teknis (skor,
+// tingkat kendali, PWM, indeks, RSSI/SNR) diterjemahkan ke kata sehari-hari di
+// sini; angka teknis tetap tersedia di bagian "Detail teknis".
+
+/** "NODE-01" -> "Sensor 1". Label lain ditampilkan apa adanya. */
+export function nodeName(id) {
+  const m = /^NODE-0*(\d+)$/i.exec(String(id ?? ""));
+  return m ? `Sensor ${m[1]}` : String(id ?? "—");
+}
+
+/** "ZONA-1" -> "Zona 1". */
+export function zoneName(id) {
+  const m = /^ZONA-0*(\d+)$/i.exec(String(id ?? ""));
+  return m ? `Zona ${m[1]}` : String(id ?? "zona");
+}
+
+/** Tingkat debu relatif 0..1 -> kata. Batas mengikuti titik silang himpunan fuzzy debu. */
+export function dustLevel(index) {
+  const v = Number(index);
+  if (index == null || !Number.isFinite(v)) return { key: "unknown", label: "—", pct: 0 };
+  const pct = Math.round(Math.max(0, Math.min(1, v)) * 100);
+  if (v < 0.3) return { key: "good", label: "Rendah", pct };
+  if (v < 0.7) return { key: "warn", label: "Sedang", pct };
+  return { key: "bad", label: "Tinggi", pct };
+}
+
+/** Kualitas sinyal radio dari RSSI (dBm) dan SNR (dB). Perkiraan untuk LoRa. */
+export function signalLevel(rssi, snr) {
+  const r = Number(rssi), s = Number(snr);
+  if (rssi == null || !Number.isFinite(r)) return { key: "unknown", label: "—" };
+  if (r >= -95 && (snr == null || s >= 0)) return { key: "good", label: "Kuat" };
+  if (r >= -110 && (snr == null || s >= -7)) return { key: "warn", label: "Cukup" };
+  return { key: "bad", label: "Lemah" };
+}
+
+/** Status perintah kipas dari backend -> kata untuk umum.
+ *  Catatan uji: perintah 0% tidak menghentikan kipas XF-120-K, sehingga "Mati"
+ *  ditampilkan sebagai "Putaran minimum". */
+export function fanStatusLabel(status) {
+  return ({ "Aktif": "Menyala", "Mati": "Putaran minimum", "Kendali tidak tersedia": "Menunggu data sensor" })[status] ?? (status ?? "—");
+}
+
+/** Kebutuhan kipas dalam kata, dari tingkat kendali 0..100 dan batas konfigurasi. */
+export function needLabel(u, cfg) {
+  const off = cfg?.u_off ?? 15, max = cfg?.u_max ?? 88.33;
+  if (u == null || !Number.isFinite(Number(u))) return "—";
+  if (u <= off) return "Tidak perlu";
+  const r = (u - off) / (max - off);
+  return r < 1 / 3 ? "Rendah" : r < 2 / 3 ? "Sedang" : "Tinggi";
+}
+
+/** Umur data dalam kata. */
+export function ageWords(sec) {
+  if (sec == null || !Number.isFinite(Number(sec))) return "";
+  if (sec < 60) return `${Math.max(1, Math.round(sec))} detik lalu`;
+  if (sec < 3600) return `${Math.floor(sec / 60)} menit lalu`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} jam lalu`;
+  return `${Math.floor(sec / 86400)} hari lalu`;
+}
+
+/** Pembungkus "Detail teknis" yang tertutup secara bawaan. */
+export function techDetails(title, innerHtml) {
+  return `<details class="tech-details"><summary><span>Detail teknis</span><small>${title}</small></summary><div class="tech-body">${innerHtml}</div></details>`;
 }
 
 // ─── API Base ───────────────────────────────────────────────────────────────

@@ -56,6 +56,26 @@ if _invalid_paket_valid_modes:
 # detik memberi ruang untuk jitter jaringan dan penulisan database.
 FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 30)
 
+# Node sensor yang dipasang pada ZONA-1, dipisah koma. Prototipe saat ini memakai
+# dua node; tambahkan "NODE-03" bila node ketiga benar-benar dipasang. Bootstrap
+# menonaktifkan node lain (riwayatnya tetap disimpan, tidak dihapus).
+def _node_ids(raw: str) -> tuple:
+    ids = []
+    for part in raw.split(","):
+        part = part.strip().upper()
+        if not part:
+            continue
+        if part.isdigit():
+            part = f"NODE-{int(part):02d}"
+        if part not in ids:
+            ids.append(part)
+    if not ids:
+        raise ValueError("ZONE_NODE_IDS tidak boleh kosong; contoh: NODE-01,NODE-02")
+    return tuple(ids)
+
+
+ZONE_NODE_IDS = _node_ids(os.getenv("ZONE_NODE_IDS", "NODE-01,NODE-02"))
+
 # Interval worker memeriksa rekaman baru (detik).
 WORKER_INTERVAL_SECONDS = _int("WORKER_INTERVAL_SECONDS", 1)
 

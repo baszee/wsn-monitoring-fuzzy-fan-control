@@ -13,6 +13,7 @@ from datetime import datetime, timezone, timedelta
 # Pastikan direktori backend masuk sys.path saat dieksekusi langsung
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from app import settings as ops
 from app.core.database import SessionLocal
 from app.core.migrations import upgrade_database
 from app.models import ZoneNode, ControlConfig, MockReceiverValidData
@@ -117,18 +118,27 @@ def seed_database(include_samples: bool = True):
             print(f"Konfigurasi '{config_version}' sudah tersedia.")
 
         # 2. Seeding zone_nodes
-        nodes_to_register = [
-            ("ZONA-1", "NODE-01"),
-            ("ZONA-1", "NODE-02"),
-            ("ZONA-1", "NODE-03"),
-        ]
-        for zone_id, node_id in nodes_to_register:
+        # Daftar node mengikuti ZONE_NODE_IDS (bawaan: NODE-01, NODE-02). Node
+        # lain di zona yang sama dinonaktifkan, bukan dihapus, agar riwayat aman.
+        zone_id = "ZONA-1"
+        wanted = list(ops.ZONE_NODE_IDS)
+        for node_id in wanted:
             existing_node = db.query(ZoneNode).filter_by(zone_id=zone_id, node_id=node_id).first()
             if not existing_node:
                 print(f"Mendaftarkan {node_id} pada {zone_id}...")
                 db.add(ZoneNode(zone_id=zone_id, node_id=node_id, is_active=True))
+            elif not existing_node.is_active:
+                print(f"Mengaktifkan kembali {node_id} pada {zone_id}...")
+                existing_node.is_active = True
             else:
                 print(f"Node {node_id} pada {zone_id} sudah terdaftar.")
+        for extra in db.query(ZoneNode).filter(
+            ZoneNode.zone_id == zone_id,
+            ZoneNode.is_active == True,  # noqa: E712
+            ZoneNode.node_id.notin_(wanted),
+        ):
+            print(f"Menonaktifkan {extra.node_id}: tidak ada di ZONE_NODE_IDS.")
+            extra.is_active = False
 
         # 3. Data contoh hanya ditambahkan saat skrip seeder dijalankan manual.
         # Bootstrap produksi memanggil fungsi ini tanpa data contoh agar setiap
@@ -193,6 +203,8 @@ def seed_database(include_samples: bool = True):
 
             print("Menyisipkan data sampel ke tabel mock_receiver_valid_data...")
             for row in sample_records:
+                if row["node_id"] not in ops.ZONE_NODE_IDS:
+                    continue
                 mock_entry = MockReceiverValidData(**row)
                 db.add(mock_entry)
 
