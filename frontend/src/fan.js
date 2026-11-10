@@ -1,8 +1,8 @@
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js?v=20261111-3";
+import { createFan } from "/src/fan-canvas.js?v=20261111-4";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
          startPolling, getSession, adminPost, nodeName, zoneName, needLabel, fanStatusLabel,
-         durationWords, staleControlNote, ageWords } from "/src/shared.js?v=20261111-3";
+         durationWords, staleControlNote, ageWords, workerStoppedNote } from "/src/shared.js?v=20261111-4";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);
@@ -42,8 +42,10 @@ function renderChain(ctrl, nodes, unavailable, manual) {
 
 // ── Kontrol admin ──────────────────────────────────────────────────────────
 function renderAdmin(manual, ctrl) {
-  $("admin-controls").hidden = !session.authenticated;
-  $("admin-hint").hidden = session.authenticated;
+  const displayOnly = ctrl.control_enabled === false;
+  $("admin-controls").hidden = displayOnly || !session.authenticated;
+  $("admin-hint").hidden = !displayOnly && session.authenticated;
+  if (displayOnly) $("admin-hint").textContent = "Dashboard ini hanya untuk melihat. Kecepatan manual diatur dari perangkat pengendali kipas.";
   $("manual-auto").hidden = !manual;
   $("mode-pill").textContent = manual ? "Manual" : "Otomatis";
   $("mode-pill").className = manual ? "pill-warn" : "pill-good";
@@ -98,9 +100,9 @@ async function fetchAll() {
     pill.className = "status-pill";
     const note = $("decision-note");
     if (unavailable) {
-      pill.textContent = fanStatusLabel("Kendali tidak tersedia");
+      pill.textContent = ctrl && !ctrl.worker_alive && ctrl.control_enabled === false ? "Pengendali tidak aktif" : fanStatusLabel("Kendali tidak tersedia");
       pill.classList.add("unavailable");
-      note.textContent = !ctrl.worker_alive ? "Pengolahan data sedang berhenti."
+      note.textContent = !ctrl.worker_alive ? workerStoppedNote(ctrl)
         : `Tidak ada data sensor dalam ${durationWords(ctrl.control_hold_seconds)} terakhir. Kipas diatur ke putaran terendah.`;
       fan.setTarget(0, true);
       $("pwm-value").textContent = "—";

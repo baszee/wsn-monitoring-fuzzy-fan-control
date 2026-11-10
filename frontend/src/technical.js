@@ -4,7 +4,7 @@
  * bagian yang dibuka lewat alamat (#fuzzy, #kendali, #simulasi, #konfigurasi),
  * dan mengisi bagian Kendali kipas.
  */
-import { buildSidebar, apiFetch, fmtNumber, fmtClock, parseTs, startPolling } from "/src/shared.js?v=20261111-3";
+import { buildSidebar, apiFetch, fmtNumber, fmtClock, parseTs, startPolling } from "/src/shared.js?v=20261111-4";
 
 buildSidebar("teknis");
 

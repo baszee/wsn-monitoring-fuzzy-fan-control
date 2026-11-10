@@ -1,10 +1,10 @@
 import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock, visibleInterval,
          nodeName, zoneName, dustLevel, signalLevel, fanStatusLabel, needLabel as needWord, ageWords,
-         durationWords, staleControlNote } from "/src/shared.js?v=20261111-3";
+         durationWords, staleControlNote, workerStoppedNote } from "/src/shared.js?v=20261111-4";
 import { icon } from "/src/icons.js";
-import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-3";
-import { createFan } from "/src/fan-canvas.js?v=20261111-3";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-3";
+import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-4";
+import { createFan } from "/src/fan-canvas.js?v=20261111-4";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-4";
 
 buildSidebar("ringkasan");
 
@@ -32,7 +32,7 @@ function renderStatus() {
   const c = state.control;
   $("#zone-label").textContent = c?.zone_id ? `Kondisi ruangan, ${zoneName(c.zone_id)}` : "Kondisi ruangan saat ini";
   $("#updated-at").textContent = !c ? "—"
-    : !c.worker_alive ? "Pengolahan data sedang berhenti"
+    : !c.worker_alive ? "Pembaruan sedang berhenti"
     : `Diperbarui ${clock(parseTs(c.last_evaluated_at))}`;
 }
 
@@ -73,10 +73,10 @@ function renderDecision() {
   const note = $("#decision-note");
 
   if (unavailable) {
-    pill.textContent = fanStatusLabel("Kendali tidak tersedia");
+    pill.textContent = c && !c.worker_alive && c.control_enabled === false ? "Pengendali tidak aktif" : fanStatusLabel("Kendali tidak tersedia");
     pill.classList.add("unavailable");
     note.textContent = !c ? "Data kipas belum dapat dimuat."
-      : !c.worker_alive ? "Pengolahan data sedang berhenti."
+      : !c.worker_alive ? workerStoppedNote(c)
       : `Tidak ada data sensor dalam ${durationWords(c.control_hold_seconds)} terakhir. Kipas diatur ke putaran terendah.`;
     fan.setTarget(0, true);
     $("#pwm-value").textContent = "—";

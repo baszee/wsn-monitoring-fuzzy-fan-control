@@ -48,6 +48,7 @@ class ZoneControlResponse(BaseModel):
     using_stale_data: bool = False              # node penentu memakai data lama
     last_evaluated_at: Optional[datetime] = None
     worker_alive: bool = False
+    control_enabled: bool = True                # false = instance tampilan (tanpa kendali)
     control_status: str                         # Aktif / Mati / Kendali tidak tersedia
     fan_command_status: str                     # Aktif / Mati / Kendali tidak tersedia
     control_mode: str = "auto"                  # auto / manual

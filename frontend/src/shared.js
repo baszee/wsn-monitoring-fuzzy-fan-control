@@ -4,7 +4,7 @@
  */
 
 
-import { COLORS } from "/src/theme.js?v=20261111-3";
+import { COLORS } from "/src/theme.js?v=20261111-4";
 import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
@@ -197,6 +197,9 @@ function _initTechNotice() {
 // ─── Banner MODE MANUAL (semua halaman dashboard) ──────────────────────────
 function _initModeBanner() {
   const render = (c) => {
+    // Versi tampilan (Vercel): tidak ada kendali, jadi tautan admin disembunyikan.
+    const admin = document.getElementById("admin-link");
+    if (admin && c?.control_enabled === false) admin.hidden = true;
     let el = document.getElementById("mode-banner");
     if (c?.control_mode !== "manual") { el?.remove(); return; }
     if (!el) {
@@ -391,6 +394,13 @@ export function durationWords(sec) {
   if (v < 60) return `${Math.round(v)} detik`;
   if (v < 3600) return `${Math.round(v / 60)} menit`;
   return `${Math.round(v / 3600)} jam`;
+}
+
+/** Kalimat saat pengolahan data tidak berjalan. */
+export function workerStoppedNote(c) {
+  return c?.control_enabled === false
+    ? "Perangkat pengendali kipas sedang tidak mengirim pembaruan. Data terakhir tetap ditampilkan."
+    : "Pengolahan data sedang berhenti.";
 }
 
 /** Kalimat bila kipas sedang memakai data terakhir yang sudah terlambat. */

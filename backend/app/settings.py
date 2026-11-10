@@ -103,6 +103,13 @@ SERVERLESS_MODE = _bool("SERVERLESS_MODE", bool(os.getenv("VERCEL")))
 # Instance dashboard/read-only milik anggota tim harus mengisi false.
 WORKER_ENABLED = _bool("WORKER_ENABLED", True)
 
+# Instance tampilan saja (mis. Vercel untuk semua orang): tidak menjalankan worker,
+# tidak menghitung fuzzy, tidak mengubah mode kipas, dan membaca status worker dari
+# detak di database. Perangkat pengendali (laptop/Orange Pi) tetap DISPLAY_ONLY=false.
+DISPLAY_ONLY = _bool("DISPLAY_ONLY", False)
+if DISPLAY_ONLY:
+    WORKER_ENABLED = False
+
 # Driver keluaran fan. ``mock`` aman untuk Vercel/PC tanpa perangkat;
 # ``arduino`` mengirim perintah ke bridge PWM melalui USB serial. Driver
 # Orange Pi disediakan sebagai pilihan konfigurasi sejak awal, tetapi akan

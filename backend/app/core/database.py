@@ -1,6 +1,9 @@
 from typing import Optional
 
+import os
+
 from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import declarative_base, sessionmaker
 from app.core.config import settings
 
@@ -21,7 +24,14 @@ engine_kwargs = {
     "echo": False,
     "connect_args": connect_args,
 }
-if not settings.DATABASE_URL.startswith("sqlite"):
+# Function serverless (Vercel) hidup sebentar dan bisa berjalan paralel; menahan
+# pool koneksi di sana cepat menghabiskan kuota pooler Supabase.
+SERVERLESS = os.getenv("SERVERLESS_MODE", "").strip().lower() in {"1", "true", "yes", "on"} or (
+    bool(os.getenv("VERCEL")) and os.getenv("SERVERLESS_MODE", "").strip().lower() not in {"0", "false", "no", "off"}
+)
+if SERVERLESS and not settings.DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update({"poolclass": NullPool, "pool_pre_ping": False})
+elif not settings.DATABASE_URL.startswith("sqlite"):
     engine_kwargs.update({
         "pool_size": 3,
         "max_overflow": 2,

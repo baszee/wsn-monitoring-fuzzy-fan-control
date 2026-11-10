@@ -2,9 +2,9 @@
  * fuzzy-analysis.js — Halaman Analisis Fuzzy
  * Visualisasi fungsi keanggotaan + 27 aturan
  */
-import { COLORS } from "/src/theme.js?v=20261111-3";
+import { COLORS } from "/src/theme.js?v=20261111-4";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling, nodeName } from "/src/shared.js?v=20261111-3";
+         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling, nodeName } from "/src/shared.js?v=20261111-4";
 
 buildSidebar("fuzzy");
 

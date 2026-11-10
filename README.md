@@ -148,6 +148,7 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 | `FRESHNESS_SECONDS` | 30 | Batas usia data disebut "Terbaru" di dashboard |
 | `CONTROL_HOLD_SECONDS` | 600 | Batas usia data lama yang masih dipakai mengendalikan fan; lewat batas ini kendali tidak tersedia (0%) |
 | `ZONE_NODE_IDS` | `NODE-01,NODE-02` | Node yang dipasang di ZONA-1 |
+| `DISPLAY_ONLY` | `false` | `true` untuk dashboard tampilan (Vercel): tanpa worker dan tanpa kendali; lihat `docs/DEPLOY_VERCEL.md` |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |
 | `CORS_ORIGINS` | `http://localhost:8000` | Asal yang diizinkan, dipisah koma |

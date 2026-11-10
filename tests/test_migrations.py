@@ -39,7 +39,7 @@ def test_fresh_database_upgrades_to_head(tmp_path):
     assert result.returncode == 0, result.stderr
     assert "source_name" in _columns(db_path, "fuzzy_results")
     with sqlite3.connect(db_path) as db:
-        assert db.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "0002_source_identity"
+        assert db.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "0003_worker_heartbeat"
         tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert {"zone_nodes", "control_config", "fuzzy_results", "zone_controls"} <= tables
     assert "paket_valid" not in tables

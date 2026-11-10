@@ -16,6 +16,7 @@ APP_TABLES = {
     "mock_receiver_valid_data",
     "fuzzy_results",
     "zone_controls",
+    "worker_heartbeats",
 }
 
 

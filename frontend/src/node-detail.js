@@ -4,8 +4,8 @@
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, startPolling, parseTs, normalizeNode, dataQualityPill,
-         nodeName, zoneName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-3";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-3";
+         nodeName, zoneName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-4";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-4";
 
 buildSidebar("nodes");
 

@@ -28,6 +28,7 @@ from app.models import (
     ZoneNode,
     FuzzyResult,
     ZoneControl,
+    WorkerHeartbeat,
 )
 from app.services.fuzzy import FuzzyMamdaniEngine, evaluate_fuzzy, normalize_dust
 from app.services.zone import aggregate_zone
@@ -399,6 +400,41 @@ def apply_auto(
         return _run_processing_cycle(db, fan_ctrl, zone_id)
 
 
+HEARTBEAT_ID = "main"
+HEARTBEAT_EVERY_SECONDS = 10.0
+_last_heartbeat = {"at": 0.0, "error": None}
+
+
+def write_heartbeat(interval_seconds: int, force: bool = False) -> None:
+    """Simpan detak worker ke database (paling sering tiap 10 detik).
+
+    Instance tampilan seperti Vercel tidak menjalankan worker; dari baris ini ia
+    tahu bahwa perangkat pengendali masih hidup. Kegagalan tidak menghentikan worker.
+    """
+    err = worker_status.get("last_error")
+    mono = time.monotonic()
+    if not force and err == _last_heartbeat["error"] and mono - _last_heartbeat["at"] < HEARTBEAT_EVERY_SECONDS:
+        return
+    db = SessionLocal()
+    try:
+        row = db.get(WorkerHeartbeat, HEARTBEAT_ID) or WorkerHeartbeat(worker_id=HEARTBEAT_ID)
+        row.last_cycle_at = worker_status.get("last_cycle_at")
+        row.last_source_time = worker_status.get("last_source_time")
+        row.last_error = err
+        row.last_error_at = worker_status.get("last_error_at")
+        row.interval_seconds = int(interval_seconds)
+        row.source_mode = worker_status.get("source_mode")
+        row.updated_at = datetime.now(timezone.utc)
+        db.merge(row)
+        db.commit()
+        _last_heartbeat.update(at=mono, error=err)
+    except Exception as exc:  # database putus: cukup dicatat, worker tetap jalan
+        db.rollback()
+        logger.debug(f"Detak worker tidak tersimpan: {type(exc).__name__}")
+    finally:
+        db.close()
+
+
 async def background_worker_loop(
     interval_seconds: int = 5,
     stop_event: Optional[asyncio.Event] = None
@@ -423,6 +459,7 @@ async def background_worker_loop(
         except Exception as e:
             _apply_auto_failsafe(e)
             logger.error(f"Kesalahan pada background worker cycle: {e}")
+        write_heartbeat(interval_seconds)
 
         try:
             if stop_event:

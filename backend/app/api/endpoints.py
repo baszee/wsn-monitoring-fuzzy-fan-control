@@ -21,7 +21,8 @@ from app.models import (
     ZoneNode,
     FuzzyResult,
     ZoneControl,
-    ControlConfig
+    ControlConfig,
+    WorkerHeartbeat,
 )
 from app.schemas import (
     NodeMeasurementResponse,
@@ -41,7 +42,7 @@ from app.services.pwm import calculate_candidate_pwm
 from app.core.ratelimit import rate_limit
 from app.core.security import require_admin
 from app.services.freshness import age_seconds, is_fresh, is_usable_for_control
-from app.services.worker import apply_auto, apply_manual, global_fan_controller, worker_status
+from app.services.worker import HEARTBEAT_ID, apply_auto, apply_manual, global_fan_controller, worker_status
 from app.services.serverless import run_request_cycle
 from app.sources import get_sensor_source
 
@@ -51,6 +52,39 @@ router = APIRouter()
 def _worker_alive() -> bool:
     last = worker_status["last_cycle_at"]
     return last is not None and age_seconds(last) <= 3 * ops.WORKER_INTERVAL_SECONDS
+
+
+def _worker_view(db: Optional[Session] = None) -> dict:
+    """Status worker. Instance tampilan (tanpa worker lokal) membacanya dari detak di database."""
+    if not ops.DISPLAY_ONLY or db is None:
+        return {
+            "enabled": ops.WORKER_ENABLED,
+            "alive": _worker_alive(),
+            "last_cycle_at": worker_status["last_cycle_at"],
+            "last_source_time": worker_status.get("last_source_time"),
+            "last_error": worker_status.get("last_error"),
+            "last_error_at": worker_status.get("last_error_at"),
+            "remote": False,
+        }
+    try:
+        hb = db.get(WorkerHeartbeat, HEARTBEAT_ID)
+    except Exception:
+        db.rollback()
+        hb = None
+    alive = False
+    if hb is not None and hb.updated_at is not None:
+        # Detak ditulis paling jarang tiap 10 detik; beri kelonggaran jaringan.
+        limit = max(3 * (hb.interval_seconds or 1), 10) + 25
+        alive = age_seconds(hb.updated_at) <= limit and hb.last_error is None
+    return {
+        "enabled": ops.WORKER_ENABLED,
+        "alive": alive,
+        "last_cycle_at": hb.last_cycle_at if hb else None,
+        "last_source_time": hb.last_source_time if hb else None,
+        "last_error": hb.last_error if hb else None,
+        "last_error_at": hb.last_error_at if hb else None,
+        "remote": True,
+    }
 
 
 def _pwm_status():
@@ -81,14 +115,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "error": type(exc).__name__,
             },
             "source": {"mode": source.name, "available": False, "is_fresh": False},
-            "worker": {
-                "enabled": ops.WORKER_ENABLED,
-                "alive": _worker_alive(),
-                "last_cycle_at": worker_status["last_cycle_at"],
-                "last_source_time": worker_status.get("last_source_time"),
-                "last_error": worker_status.get("last_error"),
-                "last_error_at": worker_status.get("last_error_at"),
-            },
+            "worker": _worker_view(db),
             "pwm": _pwm_status(),
             "nodes": [],
         }
@@ -122,14 +149,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "age_seconds": round(age_seconds(latest.timestamp, now), 1) if latest else None,
                 "is_fresh": is_fresh(latest.timestamp, now) if latest else False,
             },
-            "worker": {
-                "enabled": ops.WORKER_ENABLED,
-                "alive": _worker_alive(),
-                "last_cycle_at": worker_status["last_cycle_at"],
-                "last_source_time": worker_status.get("last_source_time"),
-                "last_error": worker_status.get("last_error"),
-                "last_error_at": worker_status.get("last_error_at"),
-            },
+            "worker": _worker_view(db),
             "pwm": _pwm_status(),
             "nodes": nodes,
         }
@@ -146,14 +166,7 @@ def get_integration_status(db: Session = Depends(get_db)):
                 "is_fresh": False,
                 "error": type(exc).__name__,
             },
-            "worker": {
-                "enabled": ops.WORKER_ENABLED,
-                "alive": _worker_alive(),
-                "last_cycle_at": worker_status["last_cycle_at"],
-                "last_source_time": worker_status.get("last_source_time"),
-                "last_error": worker_status.get("last_error"),
-                "last_error_at": worker_status.get("last_error_at"),
-            },
+            "worker": _worker_view(db),
             "pwm": _pwm_status(),
             "nodes": [],
         }
@@ -322,6 +335,7 @@ def get_node_history(
 
 
 def _control_response(latest_ctrl: ZoneControl, db: Optional[Session] = None) -> ZoneControlResponse:
+    worker = _worker_view(db)
     det_age = None
     if db is not None and latest_ctrl.control_fuzzy_result_id is not None:
         det = db.get(FuzzyResult, latest_ctrl.control_fuzzy_result_id)
@@ -341,8 +355,9 @@ def _control_response(latest_ctrl: ZoneControl, db: Optional[Session] = None) ->
         auto_pwm_percent=latest_ctrl.auto_pwm_percent,
         hysteresis_held=latest_ctrl.hysteresis_held,
         freshness_seconds=ops.FRESHNESS_SECONDS,
-        last_evaluated_at=worker_status["last_cycle_at"],
-        worker_alive=_worker_alive(),
+        last_evaluated_at=worker["last_cycle_at"],
+        worker_alive=worker["alive"],
+        control_enabled=not ops.DISPLAY_ONLY,
         control_status=latest_ctrl.control_status,
         fan_command_status=latest_ctrl.fan_command_status,
         control_mode=latest_ctrl.control_mode,
@@ -382,8 +397,9 @@ def get_latest_control(db: Session = Depends(get_db)):
         auto_pwm_percent=0.0,
         hysteresis_held=False,
         freshness_seconds=ops.FRESHNESS_SECONDS,
-        last_evaluated_at=worker_status["last_cycle_at"],
-        worker_alive=_worker_alive(),
+        last_evaluated_at=_worker_view(db)["last_cycle_at"],
+        worker_alive=_worker_view(db)["alive"],
+        control_enabled=not ops.DISPLAY_ONLY,
         control_status="Kendali tidak tersedia",
         fan_command_status="Mati" if global_fan_controller.d_prev == 0.0 else "Aktif",
         control_mode="auto",
@@ -399,6 +415,16 @@ class ManualPwmRequest(BaseModel):
     pwm_percent: float = Field(ge=0, le=100, allow_inf_nan=False)
 
 
+def _require_control_instance() -> None:
+    """Instance tampilan (DISPLAY_ONLY=true) tidak boleh mengubah mode kipas:
+    perintahnya tidak akan sampai ke kipas di perangkat pengendali."""
+    if ops.DISPLAY_ONLY:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Dashboard ini hanya tampilan. Kipas diatur dari perangkat pengendali (laptop/Orange Pi).",
+        )
+
+
 @router.post("/control/manual", response_model=ZoneControlResponse,
              summary="Memilih Manual dan menerapkan PWM 0-100% (khusus admin)")
 def set_manual_control(
@@ -406,6 +432,7 @@ def set_manual_control(
     _admin: dict = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    _require_control_instance()
     apply_manual(db, req.pwm_percent)
     return get_latest_control(db)
 
@@ -416,6 +443,7 @@ def set_auto_control(
     _admin: dict = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    _require_control_instance()
     apply_auto(db)
     return get_latest_control(db)
 

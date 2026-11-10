@@ -4,7 +4,7 @@
 import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtRelative, fmtNumber, startPolling, normalizeNode, normalizeControl,
-         dataQuality, dataQualityPill, nodeName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-3";
+         dataQuality, dataQualityPill, nodeName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-4";
 
 buildSidebar("nodes");
 
