@@ -13,18 +13,15 @@ from sqlalchemy import (
     LargeBinary,
     SmallInteger,
 )
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import Session
 
-from app.sources.base import SensorReading, database_now
-
-
-# Metadata sengaja dipisahkan dari Base aplikasi. bootstrap/create_all milik Abbas
-# tidak akan membuat, mengubah, atau menghapus tabel milik M2.
-SourceBase = declarative_base()
+from app.core.database import SOURCE_SCHEMA
+from app.sources.base import SensorReading, SourceBase, database_now
 
 
 class NodeReading(SourceBase):
     __tablename__ = "node_readings"
+    __table_args__ = {"schema": SOURCE_SCHEMA}
 
     id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
     received_at = Column(DateTime(timezone=True), nullable=False)

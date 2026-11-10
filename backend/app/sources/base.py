@@ -6,7 +6,13 @@ import math
 from typing import Optional, Protocol, Sequence
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, declarative_base
+
+
+# Metadata tabel milik subsistem penerima, sengaja terpisah dari Base aplikasi.
+# bootstrap/create_all WSNova tidak pernah membuat, mengubah, atau menghapus
+# tabel ini; hanya tes dan simulator SQLite yang membuatnya secara eksplisit.
+SourceBase = declarative_base()
 
 
 def _as_datetime(value) -> datetime:

@@ -24,10 +24,24 @@ def _bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
-# Sumber sensor: mock (pengembangan sekarang) atau node_readings (tabel M2).
+# Sumber sensor:
+#   mock          -> tabel tiruan mock_receiver_valid_data (pengembangan/demo)
+#   paket_valid   -> tabel paket_valid milik penerima M2 (schema.sql terbaru)
+#   node_readings -> tabel lama penerima M2 (dipertahankan untuk kompatibilitas)
+# Nilai lain ditolak saat start agar aplikasi tidak diam-diam memakai data tiruan.
+SENSOR_SOURCES = ("mock", "paket_valid", "node_readings")
 SENSOR_SOURCE = os.getenv("SENSOR_SOURCE", "mock").strip().lower()
-if SENSOR_SOURCE not in {"mock", "node_readings"}:
-    SENSOR_SOURCE = "mock"
+if SENSOR_SOURCE not in SENSOR_SOURCES:
+    raise ValueError(
+        f"SENSOR_SOURCE={SENSOR_SOURCE!r} tidak dikenal; pilih salah satu dari "
+        f"{', '.join(SENSOR_SOURCES)}."
+    )
+
+# Filter mode sesi_uji untuk sumber paket_valid, dipisah koma (mis. "sensor").
+# Kosong = semua sesi, sesuai schema penerima yang menyebut paket_valid sebagai
+# sumber data dashboard. Isi "sensor" bila baris sesi uji jarak/BER tidak boleh
+# memengaruhi fuzzy dan kendali fan.
+PAKET_VALID_SESSION_MODES = os.getenv("PAKET_VALID_SESSION_MODES", "").strip().lower()
 
 # Kesegaran data (detik). Node M2 mengirim sekitar tiap 10 detik, sehingga 30
 # detik memberi ruang untuk jitter jaringan dan penulisan database.

@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from pydantic import BaseModel
 
@@ -35,6 +36,19 @@ def normalize_database_url(url: str) -> str:
         return url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url
 
+_SCHEMA_NAME = re.compile(r"^[a-z_][a-z0-9_]{0,62}$")
+
+
+def schema_name(env_name: str) -> str:
+    """Baca nama schema PostgreSQL dari environment; kosong berarti search_path bawaan."""
+    value = os.getenv(env_name, "").strip()
+    if value and not _SCHEMA_NAME.fullmatch(value):
+        raise ValueError(
+            f"{env_name}={value!r} tidak valid: gunakan huruf kecil, angka, dan garis bawah."
+        )
+    return value
+
+
 class Settings(BaseModel):
     PROJECT_NAME: str = "WSN Fuzzy Fan Control & Monitoring"
     PROJECT_VERSION: str = "0.1.0"
@@ -43,6 +57,15 @@ class Settings(BaseModel):
     DATABASE_URL: str = normalize_database_url(
         os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_SQLITE_PATH}")
     )
+
+    # Schema PostgreSQL untuk tabel milik WSNova (zone_nodes, control_config,
+    # fuzzy_results, zone_controls). Kosong = search_path bawaan (perilaku lama).
+    # Contoh: APP_DB_SCHEMA=wsnova agar tabel WSNova terpisah dari tabel penerima.
+    APP_DB_SCHEMA: str = schema_name("APP_DB_SCHEMA")
+
+    # Schema tabel milik penerima (sesi_uji, paket_valid, node_readings). Kosong =
+    # search_path bawaan, atau "public" bila APP_DB_SCHEMA diisi.
+    SOURCE_DB_SCHEMA: str = schema_name("SOURCE_DB_SCHEMA")
 
     # Akun admin (satu akun). Kata sandi disimpan sebagai hash, dibuat dengan make_admin_hash.py.
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "")
