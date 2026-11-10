@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rincian teknis metode fuzzy Mamdani, simulasi, dan konfigurasi WSNova." />
+  <title>Detail Teknis — WSNova</title>
+  <link rel="icon" type="image/svg+xml" href="/src/brand/wsnova-favicon.svg" />
+    <link rel="stylesheet" href="/src/tokens.css?v=20261111-3" />
+  <link rel="stylesheet" href="/src/site.css?v=20261111-3"/>
+  <link rel="stylesheet" href="/src/pages.css?v=20261111-3"/>
+    <link rel="stylesheet" href="/src/ui.css?v=20261111-3" />
+</head>
+<body class="dashboard-body">
+<div class="p2-shell">
+  <aside class="sidebar" id="sidebar-root"></aside>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <div class="p2-main">
+    <header class="p2-topbar">
+      <div class="p2-topbar-title">
+        <button class="menu-button" id="menu-button" aria-label="Buka navigasi"><i data-icon="menu"></i></button>
+        <div>
+          <h1>Detail teknis</h1>
+          <p>Rincian metode untuk penguji dan pengembang</p>
+        </div>
+      </div>
+      <div class="p2-topbar-right">
+        <div class="data-badge" id="connection-badge"><i></i><span>Memeriksa</span></div>
+        <span class="updated-at" id="updated-at">—</span>
+        <button class="icon-button" id="refresh-btn" title="Muat ulang" aria-label="Muat ulang">
+          <svg viewBox="0 0 24 24"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.7-2.6L20 11M4 13l2.2 4.6A7 7 0 0 0 18 15"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="page-body tech-page">
+      <p class="tech-intro">Pilih bagian di bawah untuk membukanya. Semua bagian tertutup secara bawaan agar halaman tetap ringkas.</p>
+
+      <details class="tech-section" id="fuzzy">
+        <summary><span class="tech-section-title">Analisis fuzzy per sensor</span><small>Derajat keanggotaan, aturan aktif, skor kondisi, dan tingkat kendali</small></summary>
+        <div class="tech-section-body">
+          <div class="fuzzy-node-selector tech-node-select">
+            <label for="node-select">Sensor:</label>
+            <select id="node-select"><option value="">Memuat...</option></select>
+          </div>
+
+      <!-- Output Summary -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+        <div class="metric-card">
+          <div class="metric-head"><span>Skor Kondisi</span><span class="metric-icon metric-purple"><i data-icon="gauge"></i></span></div>
+          <div class="metric-value"><strong id="out-score">—</strong><span>/100</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Tingkat Kendali</span><span class="metric-icon metric-purple"><i data-icon="fan"></i></span></div>
+          <div class="metric-value"><strong id="out-control">—</strong><span>/100</span></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Kelas Kondisi</span><span class="metric-icon metric-green"><i data-icon="check"></i></span></div>
+          <div class="metric-value"><strong id="out-class" style="font-size:1rem;">—</strong></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head"><span>Aturan Aktif</span><span class="metric-icon metric-purple">#</span></div>
+          <div class="metric-value"><strong id="out-rules">—</strong><span>aturan</span></div>
+        </div>
+      </div>
+
+      <!-- MF Charts -->
+      <div class="fuzzy-grid">
+        <div class="mf-card">
+          <h3>Peta Kategori Suhu</h3>
+          <svg class="mf-chart" id="mf-temp" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-temp"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Kelembapan</h3>
+          <svg class="mf-chart" id="mf-rh" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-rh"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Indeks Debu</h3>
+          <svg class="mf-chart" id="mf-dust" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-dust"></div>
+        </div>
+        <div class="mf-card">
+          <h3>Peta Kategori Skor Kondisi</h3>
+          <svg class="mf-chart" id="mf-score" viewBox="0 0 300 120"></svg>
+          <div class="mf-legend" id="legend-score"></div>
+        </div>
+      </div>
+
+      <!-- Active Rules Table -->
+      <div class="rules-card">
+        <h3>Aturan yang Aktif</h3>
+        <p style="font-size:.76rem;color:var(--text-soft);margin:0 0 .75rem;">Baris berikut menjelaskan kombinasi kondisi yang memengaruhi hasil node terpilih.</p>
+        <div style="overflow-x:auto;">
+          <table class="rules-table" id="rules-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Suhu</th>
+                <th>Kelembapan</th>
+                <th>Debu</th>
+                <th>Hasil Kondisi</th>
+                <th>Hasil Kendali</th>
+                <th>Kekuatan</th>
+                <th>Visual</th>
+              </tr>
+            </thead>
+            <tbody id="rules-tbody">
+              <tr><td colspan="8" class="table-loading">Pilih node untuk melihat aturan</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+        </div>
+      </details>
+
+      <details class="tech-section" id="kendali">
+        <summary><span class="tech-section-title">Kendali kipas</span><small>Kendali zona, pemetaan ke PWM, histeresis, dan umur data</small></summary>
+        <div class="tech-section-body"><div class="panel-full"><div class="settings-list" id="control-tech"><p style="color:var(--text-soft)">Memuat...</p></div></div></div>
+      </details>
+
+      <details class="tech-section" id="simulasi">
+        <summary><span class="tech-section-title">Simulasi what-if</span><small>Coba nilai masukan tanpa menggerakkan kipas</small></summary>
+        <div class="tech-section-body">
+          <div class="tech-section-tools"><button class="button button-small button-quiet" type="button" id="reset-btn">Kembalikan nilai awal</button></div>
+
+      <!-- Info notice -->
+      <div style="background:var(--purple-surface);border:1px solid var(--purple-line);border-radius:12px;padding:0.85rem 1.25rem;display:flex;align-items:center;gap:0.75rem;">
+        <i data-icon="flask"></i>
+        <div style="font-size:0.82rem;color:var(--purple-dark);">
+          <strong>Mode simulasi:</strong> Geser nilai untuk mencoba skenario. Hasil simulasi tidak mengubah data tersimpan dan tidak mengirim perintah ke fan.
+        </div>
+      </div>
+
+      <div class="sim-layout">
+        <!-- Input Sliders -->
+        <div class="sim-inputs">
+          <h3>Parameter Masukan</h3>
+
+          <div class="sim-slider-group">
+            <label for="sim-temp">
+              <span>Suhu Udara</span>
+              <strong id="val-temp">28.0 °C</strong>
+            </label>
+            <input type="range" id="sim-temp" min="0" max="50" step="0.5" value="28.0"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0 °C (Rendah)</span>
+              <span>25 °C</span>
+              <span>50 °C (Tinggi)</span>
+            </div>
+          </div>
+
+          <div class="sim-slider-group">
+            <label for="sim-rh">
+              <span>Kelembapan Relatif (RH)</span>
+              <strong id="val-rh">55 %</strong>
+            </label>
+            <input type="range" id="sim-rh" min="0" max="100" step="1" value="55"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0% (Kering)</span>
+              <span>50%</span>
+              <span>100% (Lembap)</span>
+            </div>
+          </div>
+
+          <div class="sim-slider-group">
+            <label for="sim-dust">
+              <span>Indeks Debu (Normalisasi)</span>
+              <strong id="val-dust">0.250</strong>
+            </label>
+            <input type="range" id="sim-dust" min="0" max="1" step="0.01" value="0.25"/>
+            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-soft);">
+              <span>0.0 (Bersih)</span>
+              <span>0.5 (Sedang)</span>
+              <span>1.0 (Pekat)</span>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--text-soft);display:block;margin-bottom:0.5rem;">Skenario Cepat (Preset):</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+              <button class="sim-preset-btn" data-t="24" data-rh="50" data-d="0.10" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Normal / Sejuk</button>
+              <button class="sim-preset-btn" data-t="34" data-rh="30" data-d="0.15" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Panas Kering</button>
+              <button class="sim-preset-btn" data-t="28" data-rh="75" data-d="0.20" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Sangat Lembap</button>
+              <button class="sim-preset-btn" data-t="36" data-rh="40" data-d="0.85" style="padding:0.4rem;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:0.75rem;cursor:pointer;">Kritis (Debu Pekat)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Results -->
+        <div class="sim-results">
+          <h3>Hasil Simulasi</h3>
+
+          <div class="sim-result-grid">
+            <div class="sim-result-item">
+              <span>Skor Kondisi</span>
+              <strong id="res-score">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>Kelas Kondisi</span>
+              <strong id="res-class" style="font-size:1.1rem;">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>Tingkat Kendali</span>
+              <strong id="res-control">—</strong>
+            </div>
+            <div class="sim-result-item">
+              <span>PWM (sebelum penyaring perubahan kecil)</span>
+              <strong id="res-pwm" style="color:var(--purple);">—</strong>
+            </div>
+          </div>
+
+          <!-- Derajat Keanggotaan Terhitung -->
+          <div style="margin-bottom:1.25rem;">
+            <h4 style="font-size:0.82rem;font-weight:700;margin:0 0 0.5rem;color:var(--text);">Kecocokan Kondisi:</h4>
+            <div id="sim-mf-badges" style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+              <span class="mf-badge">Memuat...</span>
+            </div>
+          </div>
+
+          <!-- Active Rules -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <h4 style="font-size:0.82rem;font-weight:700;margin:0;color:var(--text);">Aturan yang Memengaruhi Hasil:</h4>
+              <span id="active-rules-count" style="font-size:0.75rem;color:var(--text-soft);">0 aturan aktif</span>
+            </div>
+            <div class="sim-rules-list" id="sim-rules-list">
+              <div class="sim-empty">Menggeser slider akan menampilkan aturan aktif di sini.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+      </details>
+
+      <details class="tech-section" id="konfigurasi">
+        <summary><span class="tech-section-title">Konfigurasi metode</span><small>Parameter fungsi keanggotaan, acuan debu, dan parameter kendali aktif</small></summary>
+        <div class="tech-section-body">
+
+      <!-- Grid 2 Kolom -->
+      <div class="settings-grid">
+
+        <!-- Kartu 1: Parameter Kendali Aktif -->
+        <div class="settings-card">
+          <h3>Pengaturan Kendali Aktif</h3>
+          <div class="settings-list">
+            <div class="settings-row">
+              <span>Versi Konfigurasi</span>
+              <strong id="cfg-version">—</strong>
+            </div>
+            <div class="settings-row">
+              <span>Status Konfigurasi</span>
+              <strong id="cfg-status"><span class="active-pill">Aktif</span></strong>
+            </div>
+            <div class="settings-row">
+              <span>Acuan Debu Bersih</span>
+              <strong id="cfg-c0">— V</strong>
+            </div>
+            <div class="settings-row">
+              <span>Acuan Debu Pekat</span>
+              <strong id="cfg-ch">— V</strong>
+            </div>
+            <div class="settings-row">
+              <span>Batas Fan Mati</span>
+              <strong id="cfg-uoff">—</strong>
+            </div>
+            <div class="settings-row">
+              <span>Batas Kendali Penuh</span>
+              <strong id="cfg-umax">—</strong>
+            </div>
+            <div class="settings-row">
+              <span>Daya Awal Saat Fan Aktif</span>
+              <strong id="cfg-dmin">— %</strong>
+            </div>
+            <div class="settings-row">
+              <span>Toleransi Perubahan Perintah</span>
+              <strong id="cfg-delta">— %</strong>
+            </div>
+            <div class="settings-row">
+              <span>Jumlah Aturan Basis</span>
+              <strong id="cfg-rules">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kartu 2: Metadata Penelitian & Arsitektur -->
+        <div class="settings-card">
+          <h3>Metadata &amp; Batasan Sistem</h3>
+          <div class="settings-list">
+            <div class="settings-row">
+              <span>Sistem</span>
+              <strong>Subsistem Mahasiswa 3 (WSN)</strong>
+            </div>
+            <div class="settings-row">
+              <span>Fokus Penelitian</span>
+              <strong>Monitoring, Klasifikasi &amp; Kendali Fan Fuzzy</strong>
+            </div>
+            <div class="settings-row">
+              <span>Peneliti / Pengembang</span>
+              <strong>Abbas Abdurrahman</strong>
+            </div>
+            <div class="settings-row">
+              <span>Dosen Pembimbing</span>
+              <strong>Vera Noviana Sulistyawan, S.T., M.T.</strong>
+            </div>
+            <div class="settings-row">
+              <span>Institusi</span>
+              <strong>Teknik Komputer — UNNES</strong>
+            </div>
+            <div class="settings-row">
+              <span>Jenis Kendali</span>
+              <strong>Perintah PWM; kecepatan putar fan tidak diukur</strong>
+            </div>
+            <div class="settings-row">
+              <span>Metode Penilaian</span>
+              <strong>Logika fuzzy Mamdani dengan 27 aturan</strong>
+            </div>
+            <div class="settings-row">
+              <span>Riwayat Keputusan</span>
+              <strong>Tersimpan lengkap untuk setiap node</strong>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings-grid -->
+
+      <!-- Tabel Node Terdaftar di Zona -->
+      <div class="panel-full">
+        <h3>Node Terdaftar di Zona</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Node ID</th>
+                <th>Zona ID</th>
+                <th>Status Pendaftaran</th>
+                <th>Status Data Terkini</th>
+                <th>Terakhir Terdeteksi</th>
+              </tr>
+            </thead>
+            <tbody id="registered-nodes-table">
+              <tr><td colspan="5" class="table-loading">Memuat data node terdaftar...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ringkasan kategori pembacaan -->
+      <div class="panel-full">
+        <h3>Panduan Kategori Pembacaan</h3>
+        <p style="font-size:0.78rem;color:var(--text-soft);margin:0 0 1rem;">
+          Kategori ini membantu menjelaskan hasil sistem dengan bahasa sederhana. Peralihan antarkategori dibuat bertahap agar tidak berubah secara mendadak.
+        </p>
+        <div id="mf-summary" class="mf-summary"></div>
+      </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span></span>
+  <div><strong id="toast-title">Info</strong><p id="toast-message"></p></div>
+</div>
+
+<script type="module" src="/src/technical.js?v=20261111-3"></script>
+<script type="module" src="/src/fuzzy-analysis.js?v=20261111-3"></script>
+<script type="module" src="/src/simulation.js?v=20261111-3"></script>
+<script type="module" src="/src/settings.js?v=20261111-3"></script>
+<script type="module">import { applyBrand } from "/src/brand.js?v=1"; applyBrand();</script>
+</body>
+</html>

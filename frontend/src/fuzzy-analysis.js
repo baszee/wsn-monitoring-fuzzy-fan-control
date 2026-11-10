@@ -2,9 +2,9 @@
  * fuzzy-analysis.js — Halaman Analisis Fuzzy
  * Visualisasi fungsi keanggotaan + 27 aturan
  */
-import { COLORS } from "/src/theme.js?v=20261111-2";
+import { COLORS } from "/src/theme.js?v=20261111-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
-         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling } from "/src/shared.js?v=20261111-2";
+         fmtNumber, conditionClass, conditionLabel, normalizeNode, startPolling, nodeName } from "/src/shared.js?v=20261111-3";
 
 buildSidebar("fuzzy");
 
@@ -110,9 +110,10 @@ async function loadNodes() {
     nodeIds     = nodes.map(n => n.node_id);
 
     const sel = document.getElementById("node-select");
-    sel.innerHTML = nodeIds.map(id => `<option value="${id}">${id}</option>`).join("");
+    sel.innerHTML = nodeIds.map(id => `<option value="${id}">${nodeName(id)} (${id})</option>`).join("");
     if (nodeIds.length) {
-      currentNodeId = nodeIds[0];
+      const wanted = new URLSearchParams(location.search).get("node");
+      currentNodeId = nodeIds.includes(wanted) ? wanted : nodeIds[0];
       sel.value     = currentNodeId;
       fetchDetail();
     }

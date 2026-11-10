@@ -1,8 +1,8 @@
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js?v=20261111-2";
+import { createFan } from "/src/fan-canvas.js?v=20261111-3";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
          startPolling, getSession, adminPost, nodeName, zoneName, needLabel, fanStatusLabel,
-         techDetails, durationWords, staleControlNote, ageWords } from "/src/shared.js?v=20261111-2";
+         durationWords, staleControlNote, ageWords } from "/src/shared.js?v=20261111-3";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);
@@ -38,38 +38,6 @@ function renderChain(ctrl, nodes, unavailable, manual) {
     chainStep("repeat", "3. Perubahan kecil diabaikan agar kipas tidak naik-turun", step3),
     chainStep("check", "4. Kecepatan yang dikirim ke kipas", out, manual ? "Mode manual: diatur langsung oleh admin" : ""),
   ].join("");
-}
-
-function renderTech(ctrl, rules) {
-  const root = $("tech-root");
-  const prev = root.querySelector("details");
-  const open = prev ? prev.open : false;
-  const rows = [
-    ["Tingkat kendali zona u", ctrl.zone_control_level != null ? fmtNumber(ctrl.zone_control_level, 2) : "—"],
-    ["Node penentu", esc(ctrl.determining_node_id ?? "—")],
-    ["PWM hasil pemetaan (kandidat)", ctrl.candidate_pwm_percent != null ? `${fmtNumber(ctrl.candidate_pwm_percent, 1)}%` : "—"],
-    ["PWM sebelumnya", ctrl.previous_pwm_percent != null ? `${fmtNumber(ctrl.previous_pwm_percent, 1)}%` : "—"],
-    ["PWM otomatis (pembanding saat Manual)", ctrl.auto_pwm_percent != null ? `${fmtNumber(ctrl.auto_pwm_percent, 1)}%` : "—"],
-    ["Ditahan histeresis", ctrl.hysteresis_held ? "Ya" : "Tidak"],
-    ["u_off · u_max", cfg ? `${fmtNumber(cfg.u_off, 2)} · ${fmtNumber(cfg.u_max, 2)}` : "—"],
-    ["D_min · ΔD_update", cfg ? `${fmtNumber(cfg.d_min, 0)}% · ${fmtNumber(cfg.delta_d_update, 0)}%` : "—"],
-    ["Batas data disebut terbaru (FRESHNESS_SECONDS)", `${ctrl.freshness_seconds ?? "—"} detik`],
-    ["Batas data lama masih dipakai kipas (CONTROL_HOLD_SECONDS)", `${ctrl.control_hold_seconds ?? "—"} detik`],
-    ["Umur data node penentu", ctrl.determining_data_age_seconds != null ? `${fmtNumber(ctrl.determining_data_age_seconds, 0)} detik` : "—"],
-    ["Status perintah (backend)", esc(ctrl.fan_command_status ?? "—")],
-    ["Versi konfigurasi", esc(ctrl.config_version ?? "—")],
-    ["ID siklus", esc(ctrl.processing_cycle_id ?? "—")],
-    ["Terakhir dievaluasi", ctrl.last_evaluated_at ? fmtClock(parseTs(ctrl.last_evaluated_at)) : "—"],
-  ];
-  const active = rules.filter((r) => (r.alpha ?? 0) > 0).sort((a, b) => b.alpha - a.alpha).slice(0, 10);
-  const rulesHtml = active.length ? active.map((r) =>
-    `<div class="settings-row"><span>Aturan ${esc(r.id)}: debu ${esc(r.dust)}, RH ${esc(r.rh)}, suhu ${esc(r.temp)} → ${esc(r.condition_class)} · kendali ${esc(r.control_level)}</span><strong>${(r.alpha * 100).toFixed(0)}%</strong></div>`).join("")
-    : `<p style="color:var(--text-soft)">Tidak ada aturan aktif.</p>`;
-  root.innerHTML = techDetails("pemetaan u → PWM, histeresis, dan aturan fuzzy node penentu",
-    `<div class="settings-list">${rows.map(([k, v]) => `<div class="settings-row"><span>${k}</span><strong>${v}</strong></div>`).join("")}</div>
-     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Aturan fuzzy aktif pada node penentu</h4>
-     <div class="settings-list">${rulesHtml}</div>`);
-  root.querySelector("details").open = open;
 }
 
 // ── Kontrol admin ──────────────────────────────────────────────────────────
@@ -159,10 +127,6 @@ async function fetchAll() {
     renderAdmin(manual, ctrl);
     setConnectionBadge(true, $("connection-badge"));
 
-    const detail = hasAuto && ctrl.determining_node_id
-      ? await apiFetch(`/api/fuzzy/${encodeURIComponent(ctrl.determining_node_id)}/detail`).catch(() => null)
-      : null;
-    renderTech(ctrl, detail?.active_rules ?? []);
   } catch (e) {
     setConnectionBadge(false, $("connection-badge"));
     showToast("Gagal memuat data kipas", e.message, "error");

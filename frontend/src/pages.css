@@ -243,3 +243,18 @@
 .reading-card .reading-unit .level-word { font-size: inherit; }
 .node-card-head { flex-wrap: wrap; row-gap: .35rem; }
 .node-id-badge, .node-determining-tag, .node-card-head .node-code { white-space: nowrap; }
+
+/* Halaman Detail teknis: bagian yang dapat dibuka-tutup */
+.tech-intro { margin: 0; font-size: .8rem; color: var(--text-soft); }
+.tech-section { border: 1px solid var(--border); border-radius: 14px; background: #fff; }
+.tech-section > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .75rem; padding: 1rem 1.25rem; }
+.tech-section > summary::-webkit-details-marker { display: none; }
+.tech-section > summary::before { content: "▸"; color: var(--text-soft); transition: transform .15s ease; }
+.tech-section[open] > summary::before { transform: rotate(90deg); }
+.tech-section-title { font-weight: 700; font-size: .92rem; color: var(--text); }
+.tech-section > summary small { color: var(--text-soft); font-size: .76rem; }
+.tech-section-body { display: flex; flex-direction: column; gap: 1rem; padding: 0 1.25rem 1.25rem; }
+.tech-node-select, .tech-section-tools { display: flex; align-items: center; gap: .5rem; }
+.tech-section .settings-row strong { text-align: right; }
+.tech-link { margin: 0; font-size: .8rem; color: var(--text-soft); }
+.tech-link a { color: var(--blue); font-weight: 600; }

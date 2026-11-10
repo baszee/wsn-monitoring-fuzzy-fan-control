@@ -4,7 +4,7 @@
  */
 
 
-import { COLORS } from "/src/theme.js?v=20261111-2";
+import { COLORS } from "/src/theme.js?v=20261111-3";
 import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
@@ -16,14 +16,12 @@ const NAV_ITEMS = [
     { id: "fan",         label: "Kipas",            href: "/dashboard/fan/",        icon: "fan" },
     { id: "riwayat",     label: "Riwayat",          href: "/dashboard/history/",    icon: "bars" },
   ]},
-  // Halaman berikut berisi rumus dan parameter metode, untuk penguji/pengembang.
-  { group: "Detail teknis", items: [
-    { id: "fuzzy",       label: "Analisis Fuzzy",   href: "/dashboard/fuzzy/",      icon: "activity" },
-    { id: "simulasi",    label: "Simulasi What-If", href: "/dashboard/simulation/", icon: "flask" },
-    { id: "konfigurasi", label: "Konfigurasi",      href: "/dashboard/settings/",   icon: "settings" },
+  // Satu halaman berisi rumus dan parameter metode, untuk penguji/pengembang.
+  { group: "Untuk penguji", items: [
+    { id: "teknis",      label: "Detail teknis",    href: "/dashboard/technical/",  icon: "activity" },
   ]},
 ];
-const TECH_PAGES = new Set(["fuzzy", "simulasi", "konfigurasi"]);
+const TECH_PAGES = new Set(["teknis"]);
 
 /**
  * Bangun HTML sidebar dan injeksikan ke elemen target.
@@ -32,7 +30,9 @@ const TECH_PAGES = new Set(["fuzzy", "simulasi", "konfigurasi"]);
  */
 export function buildSidebar(activeId, targetSelector = "#sidebar-root") {
   const root = document.querySelector(targetSelector);
-  if (!root) return;
+  // Halaman Detail teknis memuat beberapa skrip; sidebar cukup dibangun sekali.
+  if (!root || root.dataset.built) return;
+  root.dataset.built = "1";
 
   const navHTML = NAV_ITEMS.map(({ group, items }) => {
     const linksHTML = items
@@ -190,7 +190,7 @@ function _initTechNotice() {
   const el = document.createElement("div");
   el.id = "tech-notice";
   el.className = "tech-notice";
-  el.innerHTML = `<strong>Halaman teknis</strong><span>Berisi rumus dan parameter metode fuzzy untuk penguji dan pengembang. Untuk melihat kondisi ruangan, buka <a href="/dashboard/">Ringkasan</a>.</span>`;
+  el.innerHTML = `<strong>Halaman teknis</strong><span>Berisi angka dan parameter metode fuzzy untuk penguji dan pengembang. Untuk melihat kondisi ruangan, buka <a href="/dashboard/">Ringkasan</a>.</span>`;
   host.insertBefore(el, host.firstChild);
 }
 

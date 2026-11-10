@@ -1,7 +1,7 @@
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs, visibleInterval,
-         nodeName, dustLevel, needLabel } from "/src/shared.js?v=20261111-2";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
-import { ZONE_COLOR } from "/src/theme.js?v=20261111-2";
+         nodeName, dustLevel, needLabel } from "/src/shared.js?v=20261111-3";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-3";
+import { ZONE_COLOR } from "/src/theme.js?v=20261111-3";
 
 buildSidebar("riwayat");
 

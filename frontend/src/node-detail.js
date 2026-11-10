@@ -4,8 +4,8 @@
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, startPolling, parseTs, normalizeNode, dataQualityPill,
-         nodeName, zoneName, dustLevel, signalLevel, needLabel, techDetails } from "/src/shared.js?v=20261111-2";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
+         nodeName, zoneName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-3";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-3";
 
 buildSidebar("nodes");
 
@@ -22,13 +22,13 @@ if (!NODE_ID) {
   $("page-title").textContent = nodeName(NODE_ID);
   $("page-sub").textContent = NODE_ID;
   document.title = `${nodeName(NODE_ID)} — WSNova`;
+  $("tech-link").href = `/dashboard/technical/?node=${encodeURIComponent(NODE_ID)}#fuzzy`;
 }
 
 let cfg = null;
 let currentMetric = "temperature";
 let currentRange = "24h";
 let histData = [];
-let techOpen = false;
 
 const METRICS = {
   temperature:  { label: "Suhu (°C)", title: "suhu (°C)", dec: 1 },
@@ -42,17 +42,15 @@ const RANGE_TEXT = { "1h": "1 jam", "6h": "6 jam", "24h": "24 jam" };
 // ── Data terkini ───────────────────────────────────────────────────────────
 async function fetchLatest() {
   try {
-    const [nodesAll, control, detail] = await Promise.all([
+    const [nodesAll, control] = await Promise.all([
       apiFetch("/api/nodes/latest"),
       apiFetch("/api/control/latest").catch(() => null),
-      apiFetch(`/api/fuzzy/${encodeURIComponent(NODE_ID)}/detail`).catch(() => null),
     ]);
     if (!cfg) cfg = await apiFetch("/api/config/active").catch(() => null);
 
     const nodes = Array.isArray(nodesAll) ? nodesAll : (nodesAll.nodes ?? []);
     const node = nodes.map(normalizeNode).find((n) => n.node_id === NODE_ID);
     if (node) renderNode(node, control);
-    renderTech(node, detail);
     setConnectionBadge(true, $("connection-badge"));
   } catch (e) {
     setConnectionBadge(false, $("connection-badge"));
@@ -82,40 +80,6 @@ function renderNode(node, control) {
   $("info-zone").textContent = zoneName(node.zone_id);
   $("page-sub").textContent = `${NODE_ID} · ${zoneName(node.zone_id)}`;
   setUpdatedAt(node.timestamp);
-}
-
-// ── Detail teknis (untuk penguji) ──────────────────────────────────────────
-function renderTech(node, detail) {
-  const root = $("tech-root");
-  const prev = root.querySelector("details");
-  if (prev) techOpen = prev.open;
-
-  const rows = node ? [
-    ["Tegangan keluaran sensor debu (v0)", `${fmtNumber(node.dust_raw_voltage, 3)} V`],
-    ["Indeks debu ternormalisasi", fmtNumber(node.dust_index, 4)],
-    ["Skor kondisi (0–100)", fmtNumber(node.condition_score, 1)],
-    ["Tingkat kendali u (0–100)", fmtNumber(node.control_level, 1)],
-    ["RSSI", node.rssi != null ? `${node.rssi} dBm` : "—"],
-    ["SNR", node.snr != null ? `${fmtNumber(node.snr, 1)} dB` : "—"],
-    ["Status data (backend)", esc(node.data_status ?? "—")],
-  ] : [];
-  const table = `<div class="settings-list">${rows.map(([k, v]) => `<div class="settings-row"><span>${k}</span><strong>${v}</strong></div>`).join("")}</div>`;
-
-  const labels = { temperature: "Suhu", humidity: "Kelembapan", dust: "Debu" };
-  const mf = Object.entries(detail?.memberships ?? {}).flatMap(([g, terms]) =>
-    Object.entries(terms ?? {}).map(([t, v]) => `<div class="settings-row"><span>${labels[g] ?? g} · ${esc(t)}</span><strong>${(Number(v) * 100).toFixed(1)}%</strong></div>`));
-  const rules = (detail?.active_rules ?? []).filter((r) => (r.alpha ?? 0) > 0).sort((a, b) => b.alpha - a.alpha);
-  const rulesHtml = rules.length ? rules.map((r) =>
-    `<div class="settings-row"><span>Aturan ${esc(r.id)}: suhu ${esc(r.temp)}, kelembapan ${esc(r.rh)}, debu ${esc(r.dust)} → ${esc(r.condition_class)} · kendali ${esc(r.control_level)}</span><strong>${(r.alpha * 100).toFixed(1)}%</strong></div>`).join("")
-    : `<p style="color:var(--text-soft)">Tidak ada aturan aktif.</p>`;
-
-  root.innerHTML = techDetails("nilai mentah, derajat keanggotaan, dan aturan fuzzy",
-    `${table}
-     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Derajat keanggotaan</h4>
-     <div class="settings-list">${mf.join("") || `<p style="color:var(--text-soft)">Tidak ada data.</p>`}</div>
-     <h4 style="margin:1rem 0 .4rem;font-size:.8rem;">Aturan aktif (α &gt; 0)</h4>
-     <div class="settings-list">${rulesHtml}</div>`);
-  root.querySelector("details").open = techOpen;
 }
 
 // ── Riwayat ────────────────────────────────────────────────────────────────

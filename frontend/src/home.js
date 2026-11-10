@@ -1,10 +1,10 @@
 import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock, visibleInterval,
          nodeName, zoneName, dustLevel, signalLevel, fanStatusLabel, needLabel as needWord, ageWords,
-         durationWords, staleControlNote } from "/src/shared.js?v=20261111-2";
+         durationWords, staleControlNote } from "/src/shared.js?v=20261111-3";
 import { icon } from "/src/icons.js";
-import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-2";
-import { createFan } from "/src/fan-canvas.js?v=20261111-2";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
+import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-3";
+import { createFan } from "/src/fan-canvas.js?v=20261111-3";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-3";
 
 buildSidebar("ringkasan");
 
