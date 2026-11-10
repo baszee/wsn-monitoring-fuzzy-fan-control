@@ -4,13 +4,14 @@ Backend Abbas tidak mengubah source atau tabel milik M2. Integrasi dilakukan mel
 adaptor read-only dengan alur berikut:
 
 ```text
-receiver.py M2 -> node_readings -> adaptor backend -> fuzzy -> zone_controls
+receiver.py M2 -> sesi_uji + paket_valid -> adaptor backend -> fuzzy -> zone_controls
 ```
 
 ## Mode pengembangan
 
 - `SENSOR_SOURCE=mock`: memakai `mock_receiver_valid_data` dan `feed_dummy.py`.
-- `SENSOR_SOURCE=node_readings`: membaca tabel `node_readings` milik M2.
+- `SENSOR_SOURCE=paket_valid`: membaca `paket_valid` dan opsional memfilter `sesi_uji.mode`.
+- `SENSOR_SOURCE=node_readings`: kompatibilitas untuk kontrak tabel M2 versi lama.
 
 Kedua mode menggunakan `DATABASE_URL` yang sama. Saat PostgreSQL Orange Pi siap,
 perpindahan dilakukan melalui konfigurasi `.env`, bukan perubahan fuzzy atau frontend.
@@ -28,9 +29,12 @@ perpindahan dilakukan melalui konfigurasi `.env`, bukan perubahan fuzzy atau fro
 | `pressure_hpa` | metadata dashboard |
 | `rssi`, `snr` | metadata komunikasi |
 
-Setiap baris yang sudah berada di `node_readings` dianggap paket valid karena receiver
+Setiap baris yang sudah berada di `paket_valid` dianggap paket valid karena receiver
 M2 membuang paket CRC error. Kelengkapan suhu, kelembapan, dan `v0` diperiksa terpisah.
 Rekaman valid tetapi tidak lengkap tidak diproses oleh fuzzy.
+
+Gunakan `PAKET_VALID_SESSION_MODES=sensor` bila sesi dengan mode `uji` tidak boleh
+memengaruhi fuzzy dan kendali fan. Nilai kosong memakai semua sesi.
 
 ## Keamanan database bersama
 
@@ -43,13 +47,13 @@ Rekaman valid tetapi tidak lengkap tidak diproses oleh fuzzy.
 ## Pengujian lokal tanpa Orange Pi
 
 1. Gunakan SQLite pengembangan terpisah, misalnya `DATABASE_URL=sqlite:///./wsn_m2_dev.db`.
-2. Set `SENSOR_SOURCE=node_readings` di `.env` atau environment proses.
+2. Set `SENSOR_SOURCE=paket_valid` di `.env` atau environment proses.
 3. Jalankan `python backend/bootstrap_db.py` untuk tabel aplikasi dan konfigurasi awal.
-4. Jalankan `python backend/tools/sim_node_readings.py --init --interval 5`.
+4. Jalankan `python backend/tools/sim_paket_valid.py --init --interval 5`.
 5. Jalankan backend seperti biasa dengan environment yang sama.
 6. Periksa `GET /api/status` dan dashboard.
 
-Database terpisah mencegah ID `node_readings` simulator bertabrakan dengan
+Database terpisah mencegah ID `paket_valid` simulator bertabrakan dengan
 `source_record_id` dari riwayat dummy lama di `wsn.db`.
 
 Opsi `--init` simulator hanya dapat membuat tabel pada SQLite. Simulator menolak membuat

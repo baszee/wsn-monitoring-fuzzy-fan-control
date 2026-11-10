@@ -42,6 +42,15 @@ if SENSOR_SOURCE not in SENSOR_SOURCES:
 # sumber data dashboard. Isi "sensor" bila baris sesi uji jarak/BER tidak boleh
 # memengaruhi fuzzy dan kendali fan.
 PAKET_VALID_SESSION_MODES = os.getenv("PAKET_VALID_SESSION_MODES", "").strip().lower()
+_paket_valid_modes = {
+    mode.strip() for mode in PAKET_VALID_SESSION_MODES.split(",") if mode.strip()
+}
+_invalid_paket_valid_modes = _paket_valid_modes - {"sensor", "uji"}
+if _invalid_paket_valid_modes:
+    raise ValueError(
+        "PAKET_VALID_SESSION_MODES berisi nilai tidak dikenal: "
+        f"{', '.join(sorted(_invalid_paket_valid_modes))}; gunakan sensor dan/atau uji."
+    )
 
 # Kesegaran data (detik). Node M2 mengirim sekitar tiap 10 detik, sehingga 30
 # detik memberi ruang untuk jitter jaringan dan penulisan database.

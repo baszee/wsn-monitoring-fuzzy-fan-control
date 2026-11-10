@@ -273,3 +273,12 @@ def test_invalid_schema_name_env_stops_startup():
     proc = _import_settings_with({"SENSOR_SOURCE": "mock", "APP_DB_SCHEMA": "wsnova; drop"})
     assert proc.returncode != 0
     assert "APP_DB_SCHEMA" in proc.stderr
+
+
+def test_invalid_session_mode_env_stops_startup():
+    proc = _import_settings_with({
+        "SENSOR_SOURCE": "paket_valid",
+        "PAKET_VALID_SESSION_MODES": "sensor, typo",
+    })
+    assert proc.returncode != 0
+    assert "PAKET_VALID_SESSION_MODES" in proc.stderr

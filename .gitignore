@@ -33,6 +33,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Generated Codex / presentation artifacts
+output/
+.build-*/
+.codex-finalizer*/
+build_slide3_final.mjs
+build_studi_kasus_fuzzy.mjs
+
 # IDE & Editors
 .vscode/
 .idea/

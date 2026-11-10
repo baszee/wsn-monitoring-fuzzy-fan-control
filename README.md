@@ -81,27 +81,29 @@ python backend/feed_dummy.py          # biarkan menyala agar data tetap segar
 
 Database SQLite default ada di `wsn.db` pada root proyek. Untuk PostgreSQL, isi `DATABASE_URL`.
 
-### Sumber data M2 (`node_readings`)
+### Sumber data M2 (`paket_valid`)
 
 Secara bawaan aplikasi tetap memakai `mock_receiver_valid_data`. Untuk membaca tabel
-`node_readings` milik subsistem penerima M2, tambahkan ke `.env`:
+`paket_valid` dan `sesi_uji` dari `schema.sql` subsistem penerima M2, tambahkan ke `.env`:
 
 ```text
-SENSOR_SOURCE=node_readings
+SENSOR_SOURCE=paket_valid
+PAKET_VALID_SESSION_MODES=sensor
 FRESHNESS_SECONDS=30
 ```
 
 Adaptor hanya membaca tabel M2. Bootstrap aplikasi tidak membuat, mengubah, atau
-menghapus `node_readings`. Pemetaan yang digunakan adalah `received_at` sebagai waktu
+menghapus `paket_valid` maupun `sesi_uji`. Pemetaan yang digunakan adalah `received_at` sebagai waktu
 sumber, `v0` sebagai nilai debu mentah, dan ID angka `1` sebagai label `NODE-01`.
+Sumber lama `node_readings` masih tersedia sebagai mode kompatibilitas.
 
 Sebelum PostgreSQL/Orange Pi siap, tabel tersebut dapat disimulasikan pada SQLite lokal:
 
 ```powershell
 $env:DATABASE_URL="sqlite:///./wsn_m2_dev.db"
-$env:SENSOR_SOURCE="node_readings"
+$env:SENSOR_SOURCE="paket_valid"
 python backend/bootstrap_db.py
-python backend/tools/sim_node_readings.py --init --interval 5
+python backend/tools/sim_paket_valid.py --init --interval 5
 ```
 
 Gunakan file database pengembangan terpisah seperti `wsn_m2_dev.db` agar ID rekaman
@@ -129,7 +131,10 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 
 | Nama | Bawaan | Fungsi |
 | :--- | :--- | :--- |
-| `SENSOR_SOURCE` | `mock` | Sumber sensor: `mock` atau tabel M2 `node_readings` |
+| `SENSOR_SOURCE` | `mock` | Sumber sensor: `mock`, `paket_valid`, atau mode lama `node_readings` |
+| `PAKET_VALID_SESSION_MODES` | kosong | Filter `sensor`, `uji`, atau keduanya; kosong memakai semua sesi |
+| `APP_DB_SCHEMA` | kosong | Schema PostgreSQL opsional untuk tabel WSNova, misalnya `wsnova` |
+| `SOURCE_DB_SCHEMA` | kosong | Schema PostgreSQL tabel penerima; otomatis `public` bila `APP_DB_SCHEMA` diisi |
 | `FRESHNESS_SECONDS` | 30 | Batas usia data yang masih dipakai |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |
