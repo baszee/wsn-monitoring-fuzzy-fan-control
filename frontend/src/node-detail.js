@@ -4,8 +4,8 @@
  */
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtTime, fmtNumber, startPolling, parseTs, normalizeNode, dataQualityPill,
-         nodeName, zoneName, dustLevel, signalLevel, needLabel, techDetails } from "/src/shared.js?v=20261111-1";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-1";
+         nodeName, zoneName, dustLevel, signalLevel, needLabel, techDetails } from "/src/shared.js?v=20261111-2";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
 
 buildSidebar("nodes");
 
@@ -63,7 +63,7 @@ async function fetchLatest() {
 function renderNode(node, control) {
   const dust = dustLevel(node.dust_index);
   const sig = signalLevel(node.rssi, node.snr);
-  const scored = node.is_valid && node.condition_class;
+  const scored = node.usable && node.condition_class;
 
   $("rd-temp").textContent = fmtNumber(node.temperature);
   $("rd-rh").textContent = fmtNumber(node.humidity);
@@ -74,8 +74,8 @@ function renderNode(node, control) {
     ? `<span class="level-word ${CLASS_KEY[node.condition_class] ?? ""}">${esc(node.condition_class)}</span>` : "—";
   $("rd-signal").innerHTML = `<span class="level-word ${sig.key}">${sig.label}</span>`;
 
-  const determining = node.is_valid && control?.determining_node_id === NODE_ID && control?.fan_command_status !== "Kendali tidak tersedia";
-  $("info-need").textContent = node.is_valid ? needLabel(node.control_level, cfg) : "—";
+  const determining = node.usable && control?.determining_node_id === NODE_ID && control?.fan_command_status !== "Kendali tidak tersedia";
+  $("info-need").textContent = node.usable ? needLabel(node.control_level, cfg) : "—";
   $("info-determining").textContent = determining ? "Ya, kebutuhannya paling tinggi" : "Tidak";
   $("info-valid").innerHTML = dataQualityPill(node);
   $("info-time").textContent = fmtTime(node.timestamp);

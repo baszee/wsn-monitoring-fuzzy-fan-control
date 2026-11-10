@@ -1,9 +1,10 @@
 import { buildSidebar, apiFetch, showToast, fmtNumber, parseTs, fmtClock as clock, visibleInterval,
-         nodeName, zoneName, dustLevel, signalLevel, fanStatusLabel, needLabel as needWord, ageWords } from "/src/shared.js?v=20261111-1";
+         nodeName, zoneName, dustLevel, signalLevel, fanStatusLabel, needLabel as needWord, ageWords,
+         durationWords, staleControlNote } from "/src/shared.js?v=20261111-2";
 import { icon } from "/src/icons.js";
-import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-1";
-import { createFan } from "/src/fan-canvas.js?v=20261111-1";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-1";
+import { ZONE_COLOR as ZONE_LINE } from "/src/theme.js?v=20261111-2";
+import { createFan } from "/src/fan-canvas.js?v=20261111-2";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
 
 buildSidebar("ringkasan");
 
@@ -40,7 +41,7 @@ const needLabel = (u) => needWord(u, cfg);
 
 // Kondisi zona = kondisi terburuk di antara node yang datanya valid.
 function zoneCondition() {
-  const valid = state.nodes.filter((n) => n.data_status === "Valid" && n.condition_class);
+  const valid = state.nodes.filter((n) => (n.data_status === "Valid" || n.used_for_control) && n.condition_class);
   if (!valid.length) return null;
   const order = ["Baik", "Perlu Perhatian", "Buruk"];
   const worst = valid.reduce((a, n) => (order.indexOf(n.condition_class) > order.indexOf(a) ? n.condition_class : a), "Baik");
@@ -76,7 +77,7 @@ function renderDecision() {
     pill.classList.add("unavailable");
     note.textContent = !c ? "Data kipas belum dapat dimuat."
       : !c.worker_alive ? "Pengolahan data sedang berhenti."
-      : `Belum ada sensor yang mengirim data dalam ${c.freshness_seconds} detik terakhir. Kipas diatur ke putaran terendah.`;
+      : `Tidak ada data sensor dalam ${durationWords(c.control_hold_seconds)} terakhir. Kipas diatur ke putaran terendah.`;
     fan.setTarget(0, true);
     $("#pwm-value").textContent = "—";
     $("#fact-need").textContent = "—";
@@ -88,6 +89,7 @@ function renderDecision() {
     $("#pwm-value").textContent = `${fmtNumber(c.pwm_command_percent, 0)}%`;
     const minimum = Number(c.pwm_command_percent) <= 0;
     note.textContent = manual ? "Kecepatan sedang diatur langsung oleh admin."
+      : c.using_stale_data ? staleControlNote(c)
       : c.hysteresis_held ? "Kecepatan dipertahankan karena perubahan kebutuhan masih kecil."
       : minimum ? "Kondisi ruangan tidak memerlukan kipas. Kipas berputar pelan pada pengaturan terendah."
       : "";
@@ -103,7 +105,8 @@ function renderDecision() {
 
 // ── Kartu node ─────────────────────────────────────────────────────────────
 function tileHtml(n) {
-  const ok = n.data_status === "Valid";
+  const ok = n.data_status === "Valid" || n.used_for_control;
+  const late = ok && n.data_status !== "Valid";
   const scored = n.condition_score != null;
   const det = ok && n.is_determining_node;
   const href = `/dashboard/nodes/detail.html?node=${encodeURIComponent(n.node_id)}`;
@@ -119,7 +122,8 @@ function tileHtml(n) {
   if (!ok) body = `<p class="tile-reason">${esc(reason)}</p>`;
   else if (!scored) body = `<p class="tile-wait">Data baru masuk, kondisi sedang dinilai.</p>`;
   else body = `<div class="tile-need"><span>Kebutuhan kipas</span><strong>${needLabel(n.control_level)}</strong></div>
-    <div class="tile-bar" aria-hidden="true"><i style="width:${u}%"></i></div>`;
+    <div class="tile-bar" aria-hidden="true"><i style="width:${u}%"></i></div>
+    ${late ? `<p class="tile-late">Data terlambat ${esc(ageWords(n.data_age_seconds))}, masih dipakai kipas</p>` : ""}`;
 
   return `
     <a class="panel node-tile${ok ? "" : " inactive"}${det ? " determining" : ""}" href="${href}">

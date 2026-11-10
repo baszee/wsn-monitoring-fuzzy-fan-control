@@ -56,6 +56,13 @@ if _invalid_paket_valid_modes:
 # detik memberi ruang untuk jitter jaringan dan penulisan database.
 FRESHNESS_SECONDS = _int("FRESHNESS_SECONDS", 30)
 
+# Batas umur data yang masih boleh dipakai mengendalikan fan (detik). Data yang
+# lebih tua dari FRESHNESS_SECONDS ditampilkan "Data lama", tetapi kipas tetap
+# mengikuti data terakhir sampai batas ini agar jeda kiriman LoRa tidak membuat
+# kipas turun ke putaran minimum. Lewat batas ini: kendali tidak tersedia (0%).
+# Tidak pernah lebih kecil daripada FRESHNESS_SECONDS.
+CONTROL_HOLD_SECONDS = max(_int("CONTROL_HOLD_SECONDS", 600), FRESHNESS_SECONDS)
+
 # Node sensor yang dipasang pada ZONA-1, dipisah koma. Prototipe saat ini memakai
 # dua node; tambahkan "NODE-03" bila node ketiga benar-benar dipasang. Bootstrap
 # menonaktifkan node lain (riwayatnya tetap disimpan, tidak dihapus).

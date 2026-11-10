@@ -4,7 +4,7 @@
 import { icon } from "./icons.js";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt,
          fmtRelative, fmtNumber, startPolling, normalizeNode, normalizeControl,
-         dataQuality, dataQualityPill, nodeName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-1";
+         dataQuality, dataQualityPill, nodeName, dustLevel, signalLevel, needLabel } from "/src/shared.js?v=20261111-2";
 
 buildSidebar("nodes");
 
@@ -18,13 +18,13 @@ const CLASS_KEY = { "Baik": "good", "Perlu Perhatian": "warn", "Buruk": "bad" };
 
 // ── Render Helpers ─────────────────────────────────────────────────────────
 function condPill(node) {
-  if (!node.is_valid || !node.condition_class) return `<span class="pill-unknown">Belum dinilai</span>`;
+  if (!node.usable || !node.condition_class) return `<span class="pill-unknown">Belum dinilai</span>`;
   return `<span class="pill-${CLASS_KEY[node.condition_class] ?? "unknown"}">${esc(node.condition_class)}</span>`;
 }
 
 function renderNodeCard(node) {
-  const isDetermining = controlData?.control_node_id === node.node_id && node.is_valid;
-  const cls = node.is_valid ? (CLASS_KEY[node.condition_class] ?? "unknown") : "unknown";
+  const isDetermining = controlData?.control_node_id === node.node_id && node.usable;
+  const cls = node.usable ? (CLASS_KEY[node.condition_class] ?? "unknown") : "unknown";
   const uiPct = node.control_level != null ? Math.round(node.control_level) : null;
   const dust = dustLevel(node.dust_index);
   const sig = signalLevel(node.rssi, node.snr);
@@ -46,10 +46,10 @@ function renderNodeCard(node) {
       </div>
       <div class="node-condition">
         <span class="cond-dot cond-${cls}"></span>
-        <span>${node.is_valid && node.condition_class ? esc(node.condition_class) : "Belum dinilai"}</span>
+        <span>${node.usable && node.condition_class ? esc(node.condition_class) : "Belum dinilai"}</span>
         <span style="margin-left:auto;font-size:.72rem;color:var(--text-soft);">Sinyal <b class="level-word ${sig.key}">${sig.label}</b></span>
       </div>
-      ${uiPct != null && node.is_valid ? `
+      ${uiPct != null && node.usable ? `
       <div class="node-control-bar">
         <div class="bar-label"><span>Kebutuhan kipas</span><strong>${needLabel(node.control_level, cfg)}</strong></div>
         <div class="mini-bar"><div class="mini-bar-fill" style="width:${uiPct}%"></div></div>
@@ -62,7 +62,7 @@ function renderNodeCard(node) {
 }
 
 function renderNodeRow(node) {
-  const isDetermining = controlData?.control_node_id === node.node_id && node.is_valid;
+  const isDetermining = controlData?.control_node_id === node.node_id && node.usable;
   const dust = dustLevel(node.dust_index);
   const sig = signalLevel(node.rssi, node.snr);
   return `
@@ -91,7 +91,7 @@ function renderKPIs() {
 
   // Kondisi ruangan = kondisi terburuk di antara sensor yang datanya terbaru.
   const order = ["Baik", "Perlu Perhatian", "Buruk"];
-  const classes = nodesData.filter(n => n.is_valid && n.condition_class).map(n => n.condition_class);
+  const classes = nodesData.filter(n => n.usable && n.condition_class).map(n => n.condition_class);
   if (classes.length) {
     const worst = classes.reduce((a, c) => (order.indexOf(c) > order.indexOf(a) ? c : a), "Baik");
     document.getElementById("kpi-condition").innerHTML = `<span class="pill-${CLASS_KEY[worst]}">${worst}</span>`;

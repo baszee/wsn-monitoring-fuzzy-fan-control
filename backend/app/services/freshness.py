@@ -18,4 +18,10 @@ def age_seconds(ts: datetime, now: Optional[datetime] = None) -> float:
 
 
 def is_fresh(ts: datetime, now: Optional[datetime] = None) -> bool:
+    """Data cukup baru untuk disebut "Terbaru" di dashboard."""
     return age_seconds(ts, now) <= ops.FRESHNESS_SECONDS
+
+
+def is_usable_for_control(ts: datetime, now: Optional[datetime] = None) -> bool:
+    """Data masih boleh dipakai mengendalikan fan (boleh lebih tua dari is_fresh)."""
+    return age_seconds(ts, now) <= max(ops.CONTROL_HOLD_SECONDS, ops.FRESHNESS_SECONDS)

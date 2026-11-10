@@ -145,7 +145,9 @@ Dapat diubah lewat environment variable atau berkas `.env`.
 | `PWM_SERIAL_BAUD` | `115200` | Baud rate protokol bridge Arduino |
 | `PWM_FREQUENCY_HZ` | `25000` | Frekuensi target PWM fan 4-pin |
 | `PWM_INVERTED` | `true` | Inversi untuk rangkaian NPN open-collector; dilakukan oleh driver perangkat |
-| `FRESHNESS_SECONDS` | 30 | Batas usia data yang masih dipakai |
+| `FRESHNESS_SECONDS` | 30 | Batas usia data disebut "Terbaru" di dashboard |
+| `CONTROL_HOLD_SECONDS` | 600 | Batas usia data lama yang masih dipakai mengendalikan fan; lewat batas ini kendali tidak tersedia (0%) |
+| `ZONE_NODE_IDS` | `NODE-01,NODE-02` | Node yang dipasang di ZONA-1 |
 | `WORKER_INTERVAL_SECONDS` | 1 | Jeda pemeriksaan rekaman baru |
 | `CENTROID_STEP` | 0.01 | Resolusi defuzzifikasi |
 | `CORS_ORIGINS` | `http://localhost:8000` | Asal yang diizinkan, dipisah koma |

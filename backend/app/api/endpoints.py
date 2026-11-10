@@ -40,7 +40,7 @@ from app.services.fuzzy import (
 from app.services.pwm import calculate_candidate_pwm
 from app.core.ratelimit import rate_limit
 from app.core.security import require_admin
-from app.services.freshness import age_seconds, is_fresh
+from app.services.freshness import age_seconds, is_fresh, is_usable_for_control
 from app.services.worker import apply_auto, apply_manual, global_fan_controller, worker_status
 from app.services.serverless import run_request_cycle
 from app.sources import get_sensor_source
@@ -187,9 +187,11 @@ def get_latest_nodes(db: Session = Depends(get_db)):
 
         if not sensor_data:
             data_status, age, fresh, inputs_complete = "Tidak ada data", None, False, False
+            usable = False
         else:
             age = age_seconds(sensor_data.timestamp, source_now)
             fresh = is_fresh(sensor_data.timestamp, source_now)
+            usable = is_usable_for_control(sensor_data.timestamp, source_now)
             inputs_complete = sensor_data.inputs_complete
             if not sensor_data.status_valid:
                 data_status = "Tidak valid"
@@ -203,7 +205,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
         is_determining = (
             bool(determining_node_id)
             and determining_node_id == node.node_id
-            and fresh
+            and usable
             and inputs_complete
         )
 
@@ -222,7 +224,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
                 .order_by(FuzzyResult.processed_at.desc())
                 .first()
             )
-            if fuzzy_data is None and fresh and inputs_complete:
+            if fuzzy_data is None and usable and inputs_complete:
                 # Rekaman terbaru belum selesai diproses (selisih satu siklus worker).
                 # Tampilkan rekaman terproses sebelumnya secara utuh, bukan campuran.
                 prev = (
@@ -268,6 +270,7 @@ def get_latest_nodes(db: Session = Depends(get_db)):
             is_determining_node=is_determining,
             data_age_seconds=age,
             is_fresh=fresh,
+            used_for_control=bool(sensor_data) and sensor_data.status_valid and inputs_complete and usable,
             data_status=data_status,
         )
         results.append(item)
@@ -318,8 +321,17 @@ def get_node_history(
     ]
 
 
-def _control_response(latest_ctrl: ZoneControl) -> ZoneControlResponse:
+def _control_response(latest_ctrl: ZoneControl, db: Optional[Session] = None) -> ZoneControlResponse:
+    det_age = None
+    if db is not None and latest_ctrl.control_fuzzy_result_id is not None:
+        det = db.get(FuzzyResult, latest_ctrl.control_fuzzy_result_id)
+        if det is not None and det.source_timestamp is not None:
+            det_age = age_seconds(det.source_timestamp, get_sensor_source().db_now(db))
     return ZoneControlResponse(
+        control_hold_seconds=max(ops.CONTROL_HOLD_SECONDS, ops.FRESHNESS_SECONDS),
+        determining_data_age_seconds=det_age,
+        using_stale_data=det_age is not None and det_age > ops.FRESHNESS_SECONDS
+        and latest_ctrl.control_mode == "auto",
         zone_id=latest_ctrl.zone_id,
         zone_control_level=latest_ctrl.zone_control_level,
         determining_node_id=latest_ctrl.control_node_id,
@@ -357,7 +369,7 @@ def get_latest_control(db: Session = Depends(get_db)):
     )
 
     if latest_ctrl:
-        return _control_response(latest_ctrl)
+        return _control_response(latest_ctrl, db)
 
     # Fallback jika belum ada siklus tersimpan di basis data
     return ZoneControlResponse(

@@ -61,15 +61,32 @@ def test_new_record_creates_new_row():
     assert db.query(FuzzyResult).count() == 2
 
 
-def test_stale_data_turns_fan_off_and_is_unavailable():
+def test_data_older_than_hold_turns_fan_off_and_is_unavailable(monkeypatch):
     ops.FRESHNESS_SECONDS = 10
+    monkeypatch.setattr(ops, "CONTROL_HOLD_SECONDS", 300)
     db, ctrl = _db(), _ctrl()
-    _record(db, 60)
+    _record(db, 600)
     r = run_processing_cycle(db, controller=ctrl)
     assert r["nodes_evaluated"] == 0
     assert r["pwm_decision"]["final_pwm"] == 0.0
     assert r["pwm_decision"]["fan_command_status"] == "Kendali tidak tersedia"
     assert db.query(FuzzyResult).count() == 0
+
+
+def test_late_data_within_hold_keeps_controlling_fan(monkeypatch):
+    """Data lama (lewat FRESHNESS) tetap dipakai sampai CONTROL_HOLD_SECONDS."""
+    ops.FRESHNESS_SECONDS = 10
+    monkeypatch.setattr(ops, "CONTROL_HOLD_SECONDS", 300)
+    db, ctrl = _db(), _ctrl()
+    _record(db, 60)
+    r = run_processing_cycle(db, controller=ctrl)
+    assert r["nodes_evaluated"] == 1
+    assert r["nodes_fresh"] == 0
+    assert r["using_stale_data"] is True
+    assert r["zone_decision"]["determining_node_id"] == "NODE-01"
+    assert r["pwm_decision"]["final_pwm"] > 0
+    assert r["pwm_decision"]["fan_command_status"] == "Aktif"
+    assert ctrl.driver.get_duty_cycle() == r["pwm_decision"]["final_pwm"]
 
 
 def test_previous_pwm_is_old_value():

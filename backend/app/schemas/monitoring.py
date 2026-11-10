@@ -28,6 +28,7 @@ class NodeMeasurementResponse(BaseModel):
     is_determining_node: bool = False           # Apakah node ini adalah i* penentu u_zona
     data_age_seconds: Optional[float] = None
     is_fresh: bool = False
+    used_for_control: bool = False              # masih di bawah CONTROL_HOLD_SECONDS
     data_status: str = "Tidak ada data"   # Valid | Data lama | Tidak valid | Masukan tidak lengkap | Tidak ada data
 
 
@@ -42,6 +43,9 @@ class ZoneControlResponse(BaseModel):
     auto_pwm_percent: Optional[float] = None
     hysteresis_held: bool = False
     freshness_seconds: int = 30
+    control_hold_seconds: int = 600
+    determining_data_age_seconds: Optional[float] = None
+    using_stale_data: bool = False              # node penentu memakai data lama
     last_evaluated_at: Optional[datetime] = None
     worker_alive: bool = False
     control_status: str                         # Aktif / Mati / Kendali tidak tersedia

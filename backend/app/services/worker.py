@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app import settings as ops
-from app.services.freshness import age_seconds, is_fresh
+from app.services.freshness import age_seconds, is_fresh, is_usable_for_control
 from app.core.database import SessionLocal
 from app.models import (
     ControlConfig,
@@ -115,9 +115,11 @@ def _run_processing_cycle(
         if not rec.status_valid or not rec.inputs_complete:
             continue
 
-        # Kebijakan kesegaran: sama dengan yang ditampilkan dashboard
-        if not is_fresh(rec.timestamp, now):
+        # Data terbaru dipakai seperti biasa. Data lama tetap dipakai mengendalikan
+        # fan sampai CONTROL_HOLD_SECONDS agar jeda kiriman LoRa tidak mematikan kendali.
+        if not is_usable_for_control(rec.timestamp, now):
             continue
+        rec_fresh = is_fresh(rec.timestamp, now)
 
         fuzzy_res_obj = None
         if config:
@@ -176,6 +178,7 @@ def _run_processing_cycle(
             "source_timestamp": rec.timestamp,
             "source_record_id": rec.id,
             "fuzzy_result_obj": fuzzy_res_obj,
+            "is_fresh": rec_fresh,
         })
 
     if config:
@@ -205,8 +208,12 @@ def _run_processing_cycle(
         if det_obj:
             determining_fuzzy_id = det_obj.fuzzy_result_id
 
+    det = zone_decision.get("determining_result") or {}
+    using_stale = bool(det) and not det.get("is_fresh", True)
+
     last_auto.update({
         "at": now,
+        "using_stale_data": using_stale,
         "zone_control_level": u_zona,
         "determining_node_id": zone_decision["determining_node_id"],
         "determining_fuzzy_id": determining_fuzzy_id,
@@ -278,6 +285,8 @@ def _run_processing_cycle(
         "processing_cycle_id": cycle_id,
         "config_version": config_version,
         "nodes_evaluated": len(candidates),
+        "nodes_fresh": sum(1 for c in candidates if c["is_fresh"]),
+        "using_stale_data": using_stale,
         "new_results": new_results,
         "wrote_control": wrote_control,
         "zone_decision": zone_decision,

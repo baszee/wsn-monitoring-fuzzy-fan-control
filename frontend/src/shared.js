@@ -4,7 +4,7 @@
  */
 
 
-import { COLORS } from "/src/theme.js?v=20261111-1";
+import { COLORS } from "/src/theme.js?v=20261111-2";
 import { BRAND, brandLogoHTML } from "/src/brand.js?v=1";
 import { icon, hydrateIcons } from "./icons.js";
 
@@ -298,6 +298,8 @@ export function normalizeNode(node = {}) {
     timestamp: node.source_timestamp ?? node.timestamp ?? null,
     // "valid" berarti lolos validasi M2 dan masih segar menurut backend
     is_valid: node.data_status ? node.data_status === "Valid" : (node.status_valid ?? false),
+    // Data terlambat tetap dipakai kipas sampai batas CONTROL_HOLD_SECONDS.
+    usable: (node.data_status === "Valid") || Boolean(node.used_for_control),
   };
 }
 
@@ -319,8 +321,9 @@ export function dataQuality(node = {}) {
   };
   const status = node.data_status ?? "Tidak ada data";
   const row = table[status] ?? table["Tidak ada data"];
+  const text = status === "Data lama" && node.used_for_control ? "Terlambat, masih dipakai" : row.text;
   // label = kata untuk umum; status = istilah asli dari backend.
-  return { ...row, label: row.text, status };
+  return { ...row, label: text, status };
 }
 
 export function dataQualityPill(node) {
@@ -379,6 +382,23 @@ export function needLabel(u, cfg) {
   if (u <= off) return "Tidak perlu";
   const r = (u - off) / (max - off);
   return r < 1 / 3 ? "Rendah" : r < 2 / 3 ? "Sedang" : "Tinggi";
+}
+
+/** Batas detik -> kata ("10 menit", "45 detik"). */
+export function durationWords(sec) {
+  const v = Number(sec);
+  if (!Number.isFinite(v)) return "—";
+  if (v < 60) return `${Math.round(v)} detik`;
+  if (v < 3600) return `${Math.round(v / 60)} menit`;
+  return `${Math.round(v / 3600)} jam`;
+}
+
+/** Kalimat bila kipas sedang memakai data terakhir yang sudah terlambat. */
+export function staleControlNote(c) {
+  if (!c?.using_stale_data) return "";
+  const who = nodeName(c.determining_node_id);
+  const age = ageWords(c.determining_data_age_seconds);
+  return `${who} belum mengirim data baru. Kipas memakai data terakhirnya (${age}) karena kebutuhannya paling tinggi. Data itu dipakai paling lama ${durationWords(c.control_hold_seconds)}.`;
 }
 
 /** Umur data dalam kata. */

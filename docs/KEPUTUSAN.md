@@ -9,7 +9,19 @@
 | 5 | Interval proses worker | 5 detik. Hanya memproses source_record_id baru. |
 | 6 | Cabang git | Satu cabang per tahap: tahap-1-pembersihan, tahap-2-backend, dst. |
 
-## Catatan batas kesegaran 10 detik
+## Pembaruan 11 November 2026: data lama tetap dipakai kendali
+- Keputusan lama "semua data lama -> Otomatis 0%" diganti.
+- `FRESHNESS_SECONDS` (30-60 detik) hanya menentukan label "Terbaru"/"Data lama" di dashboard.
+- `CONTROL_HOLD_SECONDS` (bawaan 600 detik) menentukan umur maksimum data yang masih dipakai
+  mengendalikan fan. Node yang datanya terlambat tetapi masih di bawah batas ikut dihitung
+  dalam nilai kendali zona (maksimum), dan dashboard menulis "Terlambat, masih dipakai".
+- Lewat `CONTROL_HOLD_SECONDS`: kendali tidak tersedia dan Otomatis menuju 0% (putaran minimum,
+  karena uji fisik menunjukkan XF-120-K tidak berhenti pada 0%).
+- Alasan: jeda kiriman LoRa di lapangan 10-50 detik membuat kipas sering turun ke minimum.
+- Skenario uji E2E-05 pada runbook integrasi perlu disesuaikan.
+- Nilai lama di bawah (10 detik, worker 5 detik) adalah riwayat Tahap 0; nilai aktif ada di `.env`.
+
+## Catatan batas kesegaran 10 detik (riwayat Tahap 0)
 - Dashboard dan keputusan fan memakai batas yang sama dari backend. Frontend tidak menghitung sendiri.
 - Node yang lebih lambat dari 10 detik dianggap "data lama", dan fan mengikuti aturan fail-safe PRD.
 - Selama node masih mengirim tiap 300 detik, semua node akan selalu "data lama".

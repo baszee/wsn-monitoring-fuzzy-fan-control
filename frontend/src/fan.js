@@ -1,8 +1,8 @@
 import { icon } from "/src/icons.js";
-import { createFan } from "/src/fan-canvas.js?v=20261111-1";
+import { createFan } from "/src/fan-canvas.js?v=20261111-2";
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, fmtNumber, fmtClock, parseTs,
          startPolling, getSession, adminPost, nodeName, zoneName, needLabel, fanStatusLabel,
-         techDetails } from "/src/shared.js?v=20261111-1";
+         techDetails, durationWords, staleControlNote, ageWords } from "/src/shared.js?v=20261111-2";
 
 buildSidebar("fan");
 const $ = (id) => document.getElementById(id);
@@ -18,10 +18,10 @@ function chainStep(iconName, label, value, hint = "") {
 }
 
 function renderChain(ctrl, nodes, unavailable, manual) {
-  const valid = nodes.filter((n) => n.data_status === "Valid");
+  const valid = nodes.filter((n) => n.data_status === "Valid" || n.used_for_control);
   const perNode = valid.length
-    ? valid.map((n) => `${esc(nodeName(n.node_id))}: ${needLabel(n.control_level, cfg).toLowerCase()}`).join(" · ")
-    : "Belum ada sensor dengan data terbaru";
+    ? valid.map((n) => `${esc(nodeName(n.node_id))}: ${needLabel(n.control_level, cfg).toLowerCase()}${n.data_status !== "Valid" ? ` (data ${ageWords(n.data_age_seconds)})` : ""}`).join(" · ")
+    : `Tidak ada data sensor dalam ${durationWords(ctrl.control_hold_seconds)} terakhir`;
   const hasAuto = ctrl.zone_control_level != null && !unavailable;
 
   let step3 = "—";
@@ -53,7 +53,9 @@ function renderTech(ctrl, rules) {
     ["Ditahan histeresis", ctrl.hysteresis_held ? "Ya" : "Tidak"],
     ["u_off · u_max", cfg ? `${fmtNumber(cfg.u_off, 2)} · ${fmtNumber(cfg.u_max, 2)}` : "—"],
     ["D_min · ΔD_update", cfg ? `${fmtNumber(cfg.d_min, 0)}% · ${fmtNumber(cfg.delta_d_update, 0)}%` : "—"],
-    ["Batas kesegaran data", `${ctrl.freshness_seconds ?? "—"} detik`],
+    ["Batas data disebut terbaru (FRESHNESS_SECONDS)", `${ctrl.freshness_seconds ?? "—"} detik`],
+    ["Batas data lama masih dipakai kipas (CONTROL_HOLD_SECONDS)", `${ctrl.control_hold_seconds ?? "—"} detik`],
+    ["Umur data node penentu", ctrl.determining_data_age_seconds != null ? `${fmtNumber(ctrl.determining_data_age_seconds, 0)} detik` : "—"],
     ["Status perintah (backend)", esc(ctrl.fan_command_status ?? "—")],
     ["Versi konfigurasi", esc(ctrl.config_version ?? "—")],
     ["ID siklus", esc(ctrl.processing_cycle_id ?? "—")],
@@ -131,13 +133,14 @@ async function fetchAll() {
       pill.textContent = fanStatusLabel("Kendali tidak tersedia");
       pill.classList.add("unavailable");
       note.textContent = !ctrl.worker_alive ? "Pengolahan data sedang berhenti."
-        : `Belum ada sensor yang mengirim data dalam ${ctrl.freshness_seconds} detik terakhir. Kipas diatur ke putaran terendah.`;
+        : `Tidak ada data sensor dalam ${durationWords(ctrl.control_hold_seconds)} terakhir. Kipas diatur ke putaran terendah.`;
       fan.setTarget(0, true);
       $("pwm-value").textContent = "—";
     } else {
       pill.textContent = fanStatusLabel(ctrl.fan_command_status);
       if (ctrl.fan_command_status === "Mati") pill.classList.add("off");
       note.textContent = manual ? "Kecepatan sedang diatur langsung oleh admin."
+        : ctrl.using_stale_data ? staleControlNote(ctrl)
         : ctrl.hysteresis_held ? "Kecepatan dipertahankan karena perubahan kebutuhan masih kecil."
         : Number(ctrl.pwm_command_percent) <= 0 ? "Kondisi ruangan tidak memerlukan kipas. Kipas berputar pelan pada pengaturan terendah."
         : "";

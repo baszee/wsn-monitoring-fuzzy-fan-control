@@ -13,7 +13,7 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from app import settings as ops
-from app.api.endpoints import get_fuzzy_node_detail, get_integration_status
+from app.api.endpoints import get_fuzzy_node_detail, get_integration_status, get_latest_control, get_latest_nodes
 from app.core.database import Base
 from app.models import ControlConfig, FuzzyResult, ZoneControl, ZoneNode
 from app.services.fuzzy import DEFAULT_MEMBERSHIP_PARAMS, DEFAULT_RULE_BASE
@@ -215,10 +215,32 @@ def test_worker_processes_fresh_packet_without_touching_source_tables():
     assert db.query(SesiUji).count() == 1
 
 
-def test_stale_packet_produces_no_control():
+def test_late_packet_within_hold_still_controls_and_is_reported(monkeypatch):
+    monkeypatch.setattr(ops, "CONTROL_HOLD_SECONDS", 600)
     db = _db()
     sesi = _sesi(db)
-    db.add(_paket(sesi, received_at=datetime.now(timezone.utc) - timedelta(seconds=120)))
+    db.add(_paket(sesi, received_at=datetime.now(timezone.utc) - timedelta(seconds=120), v0=3.2,
+                  temperature=33.0, humidity=70.0))
+    db.commit()
+    result = run_processing_cycle(db)
+    assert result["nodes_evaluated"] == 1 and result["using_stale_data"] is True
+    assert result["applied_pwm"] > 0
+
+    node = get_latest_nodes(db)[0]
+    assert node.data_status == "Data lama"          # dashboard tetap jujur
+    assert node.used_for_control is True
+    assert node.is_determining_node is True
+    control = get_latest_control(db)
+    assert control.using_stale_data is True
+    assert control.determining_data_age_seconds > 100
+    assert control.control_hold_seconds == 600
+
+
+def test_packet_older_than_hold_produces_no_control(monkeypatch):
+    monkeypatch.setattr(ops, "CONTROL_HOLD_SECONDS", 600)
+    db = _db()
+    sesi = _sesi(db)
+    db.add(_paket(sesi, received_at=datetime.now(timezone.utc) - timedelta(seconds=900)))
     db.commit()
     result = run_processing_cycle(db)
     assert result["nodes_evaluated"] == 0

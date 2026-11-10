@@ -1,7 +1,7 @@
 import { buildSidebar, showToast, apiFetch, setConnectionBadge, setUpdatedAt, fmtRelative, fmtNumber, dataQualityPill, normalizeNode, startPolling, parseTs, visibleInterval,
-         nodeName, dustLevel, needLabel } from "/src/shared.js?v=20261111-1";
-import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-1";
-import { ZONE_COLOR } from "/src/theme.js?v=20261111-1";
+         nodeName, dustLevel, needLabel } from "/src/shared.js?v=20261111-2";
+import { drawChart, legendHtml, thin, PALETTE } from "/src/chart.js?v=20261111-2";
+import { ZONE_COLOR } from "/src/theme.js?v=20261111-2";
 
 buildSidebar("riwayat");
 
@@ -52,7 +52,7 @@ function renderTable() {
       <td>${fmtNumber(n.humidity, 1)}</td>
       <td><span class="level-word ${dustLevel(n.dust_index).key}">${dustLevel(n.dust_index).label}</span></td>
       <td>${fmtNumber(n.pressure_hpa, 1)}</td>
-      <td>${n.data_status === "Valid" ? needLabel(n.control_level, cfg) : "—"}</td>
+      <td>${n.data_status === "Valid" || n.used_for_control ? needLabel(n.control_level, cfg) : "—"}</td>
       <td style="font-size:.72rem;color:var(--text-soft);">${fmtRelative(n.timestamp)}</td>
     </tr>`).join("");
   setUpdatedAt(state.nodes.reduce((a, n) => (!a || parseTs(n.timestamp) > parseTs(a) ? n.timestamp : a), null));

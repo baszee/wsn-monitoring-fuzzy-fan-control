@@ -1,5 +1,5 @@
-import { NODE_PALETTE } from "/src/theme.js?v=20261111-1";
-import { fmtNumber, fmtClock } from "/src/shared.js?v=20261111-1";
+import { NODE_PALETTE } from "/src/theme.js?v=20261111-2";
+import { fmtNumber, fmtClock } from "/src/shared.js?v=20261111-2";
 
 export const PALETTE = NODE_PALETTE;
 const L = 46, R = 16, T = 12, B = 30;
